@@ -71,7 +71,7 @@ cp apps/backend/.env.example apps/backend/.env
 Run the command that will spin up all the required services and files.
 
 ```bash
-npm run gitpaas:setup
+npm run setup
 ```
 
 Run this script

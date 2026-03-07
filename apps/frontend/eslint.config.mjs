@@ -1,3 +1,3 @@
-import config from '@deploy-hub/eslint-config/frontend';
+import config from '@gitpaas/eslint-config/frontend';
 
 export default config;

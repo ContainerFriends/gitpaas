@@ -6,10 +6,16 @@
   "type": "module",
   "scripts": {
     "lint": "eslint .",
-    "setup": "tsx -r dotenv/config setup.ts && sleep 5 && pnpm run migration:run",
+    "setup": "tsx -r dotenv/config main.ts && sleep 5 && pnpm run migration:run",
     "migration:run": "tsx -r dotenv/config migration.ts"
   },
   "dependencies": {
-
+    "bl": "4.1.0",
+    "dockerode": "4.0.9"
+  },
+  "devDependencies": {
+    "@gitpaas/eslint-config": "*",
+    "@types/bl": "5.0.2",
+    "@types/dockerode": "4.0.1"
   }
 }

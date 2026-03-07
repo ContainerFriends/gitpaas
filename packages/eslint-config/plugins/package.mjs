@@ -1,4 +1,4 @@
-import jsoncParser from 'jsonc-eslint-parser';
+import * as jsoncParser from 'jsonc-eslint-parser';
 import jsonc from 'eslint-plugin-jsonc';
 
 /**

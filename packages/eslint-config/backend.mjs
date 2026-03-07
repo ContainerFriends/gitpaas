@@ -30,7 +30,6 @@ const withTsProject = (config) => ({
     parserOptions: {
       ...(config.languageOptions?.parserOptions ?? {}),
       project: ['tsconfig.json'],
-      tsconfigRootDir: __dirname,
     },
   },
 });
@@ -44,7 +43,6 @@ const withTsProjectTests = (config) => ({
     parserOptions: {
       ...(config.languageOptions?.parserOptions ?? {}),
       project: ['tsconfig.spec.json'],
-      tsconfigRootDir: __dirname,
     },
   },
 });

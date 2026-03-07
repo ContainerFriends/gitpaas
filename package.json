@@ -8,6 +8,8 @@
     "packages/*"
   ],
   "scripts": {
+    "gitpaas:setup": "tsx -r dotenv/config setup.ts && sleep 5 && npm run migration:run",
+    "migration:run": "tsx -r dotenv/config migration.ts",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "dev:frontend": "turbo run dev --filter=@deploy-hub/frontend",

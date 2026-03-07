@@ -1,11 +1,11 @@
 {
-    "name": "Project Planner Development container",
+    "name": "Deploy Hub Development container",
     "build": {
         "dockerfile": "Dockerfile",
         "context": ".."
     },
     "runArgs": [
-        "--name", "project-planner-devcontainer",
+        "--name", "deploy-hub-devcontainer",
         "--network", "host"
     ],
     "customizations": {

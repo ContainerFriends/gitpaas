@@ -19,6 +19,7 @@
   "devDependencies": {
     "@types/node": "25.3.5",
     "turbo": "2.8.14",
+    "tsx": "4.21.0",
     "typescript": "5.9.3"
   },
   "engines": {

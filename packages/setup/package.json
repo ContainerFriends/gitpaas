@@ -1,21 +1,15 @@
 {
   "name": "@gitpaas/setup",
   "version": "0.0.0",
-  "private": true,
   "description": "GitPaaS installation and configuration management",
+  "private": true,
   "type": "module",
-  "exports": {
-    ".": "./dist/index.js",
-    "./installer": "./dist/installer.js",
-    "./config": "./dist/config.js",
-    "./database": "./dist/database.js",
-    "./validation": "./dist/validation.js"
-  },
   "scripts": {
+    "lint": "eslint .",
     "setup": "tsx -r dotenv/config setup.ts && sleep 5 && pnpm run migration:run",
     "migration:run": "tsx -r dotenv/config migration.ts"
   },
   "dependencies": {
-   
+
   }
 }

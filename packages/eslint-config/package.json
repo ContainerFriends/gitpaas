@@ -5,11 +5,13 @@
   "type": "module",
   "exports": {
     "./frontend": "./frontend.mjs",
-    "./backend": "./backend.mjs"
+    "./backend": "./backend.mjs",
+    "./packages": "./packages.mjs"
   },
   "files": [
     "frontend.mjs",
-    "backend.mjs"
+    "backend.mjs",
+    "packages.mjs"
   ],
   "scripts": {
     "lint": "echo \"No linting needed for config package\"",

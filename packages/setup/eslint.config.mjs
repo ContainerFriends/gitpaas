@@ -1,3 +1,3 @@
-{
-  "extends": "@gitpaas/eslint-config/base.mjs"
-}
+import config from '@deploy-hub/eslint-config/packages';
+
+export default config;

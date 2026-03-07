@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import tseslint from 'typescript-eslint';
 import eslint from '@eslint/js';
 
-import baseConfig from './base.js';
+import baseConfig from './base.mjs';
 import base from './plugins/base.mjs';
 import preferArrow from './plugins/prefer-arrow.mjs';
 import regex from './plugins/regex.mjs';
@@ -29,7 +29,7 @@ const sourceTsConfig = (config) => ({
         parserOptions: {
             ...(config.languageOptions?.parserOptions ?? {}),
             project: ['tsconfig.json'],
-            tsconfigRootDir: __dirname,
+
         },
     },
 });
@@ -44,8 +44,7 @@ const testsTsConfig = (config) => ({
         ...(config.languageOptions ?? {}),
         parserOptions: {
             ...(config.languageOptions?.parserOptions ?? {}),
-            project: ['tsconfig.spec.json'],
-            tsconfigRootDir: __dirname,
+            project: ['tsconfig.app.json'],
         },
     },
 });
@@ -61,7 +60,6 @@ const configTsConfig = (config) => ({
         parserOptions: {
             ...(config.languageOptions?.parserOptions ?? {}),
             project: ['tsconfig.config.json'],
-            tsconfigRootDir: __dirname,
         },
     },
 });
@@ -81,7 +79,7 @@ const config = [
   {
       ignores: ['.turbo', 'dist', 'node_modules', '**/*.html'],
   },
-  ...centralConfig,
+  ...baseConfig,
   ...base,
   ...preferArrow,
   ...regex,

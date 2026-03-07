@@ -4,14 +4,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./frontend": "./frontend.js",
-    "./backend": "./backend.js",
-    "./base": "./base.js"
+    "./frontend": "./frontend.mjs",
+    "./backend": "./backend.mjs"
   },
   "files": [
-    "frontend.js",
-    "backend.js",
-    "base.js"
+    "frontend.mjs",
+    "backend.mjs"
   ],
   "scripts": {
     "lint": "echo \"No linting needed for config package\"",

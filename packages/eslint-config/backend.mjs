@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import tseslint from 'typescript-eslint';
 import eslint from '@eslint/js';
 
-import baseConfig from './base.js';
+import baseConfig from './base.mjs';
 import base from './plugins/base.mjs';
 import preferArrow from './plugins/prefer-arrow.mjs';
 import regex from './plugins/regex.mjs';

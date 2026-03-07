@@ -1,5 +1,5 @@
 {
-  "name": "deploy-hub",
+  "name": "gitpaas",
   "version": "0.0.0",
   "private": true,
   "packageManager": "npm@11.9.0",
@@ -8,12 +8,9 @@
     "packages/*"
   ],
   "scripts": {
-    "gitpaas:setup": "tsx -r dotenv/config setup.ts && sleep 5 && npm run migration:run",
-    "migration:run": "tsx -r dotenv/config migration.ts",
+    "setup": "npm run setup --workspace=@gitpaas/setup",
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "dev:frontend": "turbo run dev --filter=@deploy-hub/frontend",
-    "dev:backend": "turbo run dev --filter=@deploy-hub/backend",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "type-check": "turbo run type-check",

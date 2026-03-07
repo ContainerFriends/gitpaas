@@ -1,14 +1,30 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { DashboardLayout } from "@/components/DashboardLayout";
+import { StatsCards } from "@/components/dashboard/StatsCards";
+import { RecentDeployments } from "@/components/dashboard/RecentDeployments";
+import { ProjectsOverview } from "@/components/dashboard/ProjectsOverview";
+import { ServerStatus } from "@/components/dashboard/ServerStatus";
 
-const Index = () => {
+const Dashboard = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Overview of your deployments and infrastructure</p>
+        </div>
+        <StatsCards />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <RecentDeployments />
+          </div>
+          <div className="space-y-6">
+            <ServerStatus />
+            <ProjectsOverview />
+          </div>
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
-export default Index;
+export default Dashboard;

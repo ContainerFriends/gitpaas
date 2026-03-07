@@ -1,0 +1,48 @@
+{
+  "name": "@deploy-hub/eslint-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./frontend": "./frontend.js",
+    "./backend": "./backend.js",
+    "./base": "./base.js"
+  },
+  "files": [
+    "frontend.js",
+    "backend.js",
+    "base.js"
+  ],
+  "scripts": {
+    "lint": "echo \"No linting needed for config package\"",
+    "type-check": "echo \"No type checking needed for config package\""
+  },
+  "dependencies": {
+    "@eslint/eslintrc": "3.3.4",
+    "@stylistic/eslint-plugin": "5.9.0",
+    "eslint": "9.39.2",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-import-resolver-typescript": "4.4.4",
+    "eslint-plugin-import": "2.32.0",
+    "eslint-plugin-jest": "29.15.0",
+    "eslint-plugin-jsdoc": "62.7.1",
+    "eslint-plugin-jsonc": "3.1.1",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "eslint-plugin-no-secrets": "2.2.2",
+    "eslint-plugin-optimize-regex": "1.2.1",
+    "eslint-plugin-pii": "1.0.2",
+    "eslint-plugin-prefer-arrow": "1.2.3",
+    "eslint-plugin-prettier": "5.5.5",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "7.0.1",
+    "eslint-plugin-unused-imports": "4.4.1",
+    "eslint-plugin-yml": "3.3.0",
+    "jsonc-eslint-parser": "2.4.2",
+    "typescript-eslint": "8.56.1",
+    "yaml-eslint-parser": "2.0.0"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0",
+    "typescript": "^5.0.0"
+  }
+}

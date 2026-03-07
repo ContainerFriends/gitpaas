@@ -1,0 +1,38 @@
+{
+    "name": "Project Planner Development container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "runArgs": [
+        "--name", "project-planner-devcontainer",
+        "--network", "host"
+    ],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "http.proxyStrictSSL": false
+            },
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "sleistner.vscode-fileutils",
+                "eamodio.gitlens",
+                "ms-vscode.vscode-typescript-next",
+                "shd101wyy.markdown-preview-enhanced",
+                "stylelint.vscode-stylelint",
+                "GitHub.vscode-github-actions",
+                "redhat.vscode-yaml",
+                "sibiraj-s.vscode-scss-formatter",
+                "aeschli.vscode-css-formatter",
+                "bradlc.vscode-tailwindcss"
+            ]
+        }
+    },
+    "remoteEnv": {
+        "NODE_TLS_REJECT_UNAUTHORIZED": "0"
+    },
+    "mounts": [
+        "source=${localEnv:HOME}/.agents/skills,target=/root/.copilot/skills,type=bind,consistency=cached"
+    ]
+}
+  

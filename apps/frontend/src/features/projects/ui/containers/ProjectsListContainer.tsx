@@ -1,6 +1,8 @@
-import { Plus, Search, MoreVertical } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { ReactNode, useEffect } from 'react';
 
+import { Project } from '../../domain/models/projects.models';
+import { ProjectCard } from '../components/ProjectCard';
 import { useProjects } from '../hooks/useProjects';
 
 /**
@@ -16,6 +18,16 @@ export function ProjectsListContainer(): ReactNode {
     useEffect(() => {
         loadProjects();
     }, [loadProjects]);
+
+    const handleEditProject = (project: Project) => {
+        console.log('Edit project:', project);
+        // TODO: Implement edit functionality
+    };
+
+    const handleDeleteProject = (project: Project) => {
+        console.log('Delete project:', project);
+        // TODO: Implement delete functionality
+    };
 
     if (loading) {
         return (
@@ -65,23 +77,9 @@ export function ProjectsListContainer(): ReactNode {
                 />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredProjects.map((project) => (
-                    <div
-                        key={project.id}
-                        className="rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors cursor-pointer group"
-                    >
-                        <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-2.5">
-                                <div>
-                                    <h3 className="text-sm font-semibold">{project.name}</h3>
-                                </div>
-                            </div>
-                            <button className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors opacity-0 group-hover:opacity-100">
-                                <MoreVertical className="h-3.5 w-3.5" />
-                            </button>
-                        </div>
-                    </div>
+                    <ProjectCard key={project.id} project={project} onEdit={handleEditProject} onDelete={handleDeleteProject} />
                 ))}
             </div>
         </div>

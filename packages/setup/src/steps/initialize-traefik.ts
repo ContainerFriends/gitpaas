@@ -1,7 +1,8 @@
 import type { ContainerCreateOptions } from 'dockerode';
 
 import { paths } from '../configs/paths';
-import { TRAEFIK_HTTP3_PORT, TRAEFIK_PORT, TRAEFIK_SSL_PORT, TRAEFIK_VERSION, TraefikOptions } from '../configs/traefik';
+import { TRAEFIK_HTTP3_PORT, TRAEFIK_PORT, TRAEFIK_SSL_PORT, TRAEFIK_VERSION } from '../configs/traefik';
+import { TraefikOptions } from '../models/traefik';
 import { getRemoteDocker } from '../services/docker';
 
 /**

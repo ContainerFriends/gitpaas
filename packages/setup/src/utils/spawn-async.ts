@@ -2,16 +2,13 @@ import { type ChildProcess, type SpawnOptions, spawn } from 'node:child_process'
 
 import BufferList from 'bl';
 
-interface RegistryAuth {
-    username: string;
-    password: string;
-    registryUrl: string;
-}
-
+/**
+ * Spawn async process
+ */
 export const spawnAsync = (
     command: string,
     args?: string[] | undefined,
-    onData?: (data: string) => void, // Callback opcional para manejar datos en tiempo real
+    onData?: (data: string) => void,
     options?: SpawnOptions,
 ): Promise<BufferList> & { child: ChildProcess } => {
     const child = spawn(command, args ?? [], options ?? {});
@@ -58,15 +55,4 @@ export const spawnAsync = (
     promise.child = child;
 
     return promise;
-};
-
-export const pullImage = async (dockerImage: string, onData?: (data: any) => void, authConfig?: Partial<RegistryAuth>): Promise<void> => {
-    if (!dockerImage) {
-        throw new Error('Docker image not found');
-    }
-
-    if (authConfig?.username && authConfig?.password) {
-        await spawnAsync('docker', ['login', authConfig.registryUrl || '', '-u', authConfig.username, '-p', authConfig.password], onData);
-    }
-    await spawnAsync('docker', ['pull', dockerImage], onData);
 };

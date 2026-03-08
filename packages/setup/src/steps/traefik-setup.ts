@@ -4,7 +4,8 @@ import { join } from 'node:path';
 import { stringify } from 'yaml';
 
 import { paths } from '../configs/paths';
-import { FileConfig, getDefaultTraefikConfig } from '../configs/traefik';
+import { getDefaultTraefikConfig } from '../configs/traefik';
+import { FileConfig } from '../models/traefik';
 
 /**
  * Get default Traefik middlewares configuration as YAML string

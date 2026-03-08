@@ -1,6 +1,14 @@
 import Dockerode from 'dockerode';
 import Docker from 'dockerode';
 
+import { spawnAsync } from '../utils/spawn-async';
+
+interface RegistryAuth {
+    username: string;
+    password: string;
+    registryUrl: string;
+}
+
 export const DOCKER_API_VERSION = process.env.DOCKER_API_VERSION;
 export const DOCKER_HOST = process.env.DOCKER_HOST;
 export const DOCKER_PORT = process.env.DOCKER_PORT ? Number(process.env.DOCKER_PORT) : undefined;
@@ -34,4 +42,15 @@ export const getRemoteDocker = async (serverId?: string | null) => {
     });
 
     return dockerode;
+};
+
+export const pullImage = async (dockerImage: string, onData?: (data: any) => void, authConfig?: Partial<RegistryAuth>): Promise<void> => {
+    if (!dockerImage) {
+        throw new Error('Docker image not found');
+    }
+
+    if (authConfig?.username && authConfig?.password) {
+        await spawnAsync('docker', ['login', authConfig.registryUrl || '', '-u', authConfig.username, '-p', authConfig.password], onData);
+    }
+    await spawnAsync('docker', ['pull', dockerImage], onData);
 };

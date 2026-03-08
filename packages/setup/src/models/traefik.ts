@@ -1,10 +1,687 @@
+/* eslint-disable no-secrets/no-secrets */
+/**
+ * Traefik configuration model
+ */
+export interface MainTraefikConfig {
+    accessLog?: {
+        filePath?: string;
+        format?: string;
+        filters?: {
+            statusCodes?: string[];
+            retryAttempts?: boolean;
+            minDuration?: string;
+            [k: string]: unknown;
+        };
+        fields?: {
+            defaultMode?: string;
+            names?: Record<string, string>;
+            headers?: {
+                defaultMode?: string;
+                names?: Record<string, string>;
+                [k: string]: unknown;
+            };
+            [k: string]: unknown;
+        };
+        bufferingSize?: number;
+    };
+    api?: {
+        insecure?: boolean;
+        dashboard?: boolean;
+        debug?: boolean;
+    };
+    certificatesResolvers?: Record<
+        string,
+        {
+            acme?: {
+                email?: string;
+                caServer?: string;
+                certificatesDuration?: number;
+                preferredChain?: string;
+                storage?: string;
+                keyType?: string;
+                eab?: {
+                    kid?: string;
+                    hmacEncoded?: string;
+                    [k: string]: unknown;
+                };
+                dnsChallenge?: {
+                    provider?: string;
+                    delayBeforeCheck?: string;
+                    resolvers?: string[];
+                    disablePropagationCheck?: boolean;
+                    [k: string]: unknown;
+                };
+                httpChallenge?: {
+                    entryPoint?: string;
+                    [k: string]: unknown;
+                };
+                tlsChallenge?: Record<string, unknown>;
+                [k: string]: unknown;
+            };
+        }
+    >;
+    entryPoints?: Record<
+        string,
+        {
+            address?: string;
+            transport?: {
+                lifeCycle?: {
+                    requestAcceptGraceTimeout?: string;
+                    graceTimeOut?: string;
+                    [k: string]: unknown;
+                };
+                respondingTimeouts?: {
+                    readTimeout?: string;
+                    writeTimeout?: string;
+                    idleTimeout?: string;
+                    [k: string]: unknown;
+                };
+                [k: string]: unknown;
+            };
+            proxyProtocol?: {
+                insecure?: boolean;
+                trustedIPs?: string[];
+                [k: string]: unknown;
+            };
+            forwardedHeaders?: {
+                insecure?: boolean;
+                trustedIPs?: string[];
+                [k: string]: unknown;
+            };
+            http?: {
+                redirections?: {
+                    entryPoint?: {
+                        to?: string;
+                        scheme?: string;
+                        permanent?: boolean;
+                        priority?: number;
+                        [k: string]: unknown;
+                    };
+                    [k: string]: unknown;
+                };
+                middlewares?: string[];
+                tls?: {
+                    options?: string;
+                    certResolver?: string;
+                    domains?: Array<{
+                        main?: string;
+                        sans?: string[];
+                        [k: string]: unknown;
+                    }>;
+                    [k: string]: unknown;
+                };
+                [k: string]: unknown;
+            };
+            http2?: {
+                maxConcurrentStreams?: number;
+                [k: string]: unknown;
+            };
+            http3?: {
+                advertisedPort?: number;
+                [k: string]: unknown;
+            };
+            udp?: {
+                timeout?: string;
+                [k: string]: unknown;
+            };
+        }
+    >;
+    experimental?: {
+        kubernetesGateway?: boolean;
+        http3?: boolean;
+        hub?: boolean;
+        plugins?: Record<
+            string,
+            {
+                moduleName?: string;
+                version?: string;
+            }
+        >;
+        localPlugins?: Record<
+            string,
+            {
+                moduleName?: string;
+            }
+        >;
+    };
+    global?: {
+        checkNewVersion?: boolean;
+        sendAnonymousUsage?: boolean;
+    };
+    hostResolver?: {
+        cnameFlattening?: boolean;
+        resolvConfig?: string;
+        resolvDepth?: number;
+    };
+    hub?: {
+        tls?: {
+            insecure?: boolean;
+            ca?: string;
+            cert?: string;
+            key?: string;
+            [k: string]: unknown;
+        };
+    };
+    log?: {
+        level?: string;
+        filePath?: string;
+        format?: string;
+    };
+    metrics?: {
+        prometheus?: {
+            buckets?: number[];
+            addEntryPointsLabels?: boolean;
+            addRoutersLabels?: boolean;
+            addServicesLabels?: boolean;
+            entryPoint?: string;
+            manualRouting?: boolean;
+        };
+        datadog?: {
+            address?: string;
+            pushInterval?: string;
+            addEntryPointsLabels?: boolean;
+            addRoutersLabels?: boolean;
+            addServicesLabels?: boolean;
+            prefix?: string;
+        };
+        statsD?: {
+            address?: string;
+            pushInterval?: string;
+            addEntryPointsLabels?: boolean;
+            addRoutersLabels?: boolean;
+            addServicesLabels?: boolean;
+            prefix?: string;
+        };
+        influxDB?: {
+            address?: string;
+            protocol?: string;
+            pushInterval?: string;
+            database?: string;
+            retentionPolicy?: string;
+            username?: string;
+            password?: string;
+            addEntryPointsLabels?: boolean;
+            addRoutersLabels?: boolean;
+            addServicesLabels?: boolean;
+            additionalLabels?: Record<string, unknown>;
+        };
+        influxDB2?: {
+            address?: string;
+            token?: string;
+            pushInterval?: string;
+            org?: string;
+            bucket?: string;
+            addEntryPointsLabels?: boolean;
+            addRoutersLabels?: boolean;
+            addServicesLabels?: boolean;
+            additionalLabels?: Record<string, unknown>;
+        };
+    };
+    pilot?: {
+        token?: string;
+        dashboard?: boolean;
+    };
+    ping?: {
+        entryPoint?: string;
+        manualRouting?: boolean;
+        terminatingStatusCode?: number;
+    };
+    providers?: {
+        providersThrottleDuration?: string;
+        docker?: {
+            allowEmptyServices?: boolean;
+            constraints?: string;
+            defaultRule?: string;
+            endpoint?: string;
+            exposedByDefault?: boolean;
+            httpClientTimeout?: number;
+            network?: string;
+            swarmMode?: boolean;
+            swarmModeRefreshSeconds?: string;
+            tls?: {
+                ca?: string;
+                caOptional?: boolean;
+                cert?: string;
+                key?: string;
+                insecureSkipVerify?: boolean;
+            };
+            useBindPortIP?: boolean;
+            watch?: boolean;
+        };
+        file?: {
+            directory?: string;
+            watch?: boolean;
+            filename?: string;
+            debugLogGeneratedTemplate?: boolean;
+        };
+        marathon?: {
+            constraints?: string;
+            trace?: boolean;
+            watch?: boolean;
+            endpoint?: string;
+            defaultRule?: string;
+            exposedByDefault?: boolean;
+            dcosToken?: string;
+            tls?: {
+                ca?: string;
+                caOptional?: boolean;
+                cert?: string;
+                key?: string;
+                insecureSkipVerify?: boolean;
+            };
+            dialerTimeout?: string;
+            responseHeaderTimeout?: string;
+            tlsHandshakeTimeout?: string;
+            keepAlive?: string;
+            forceTaskHostname?: boolean;
+            basic?: {
+                httpBasicAuthUser?: string;
+                httpBasicPassword?: string;
+            };
+            respectReadinessChecks?: boolean;
+        };
+        kubernetesIngress?: {
+            endpoint?: string;
+            token?: string;
+            certAuthFilePath?: string;
+            namespaces?: string[];
+            labelSelector?: string;
+            ingressClass?: string;
+            throttleDuration?: string;
+            allowEmptyServices?: boolean;
+            allowExternalNameServices?: boolean;
+            ingressEndpoint?: {
+                ip?: string;
+                hostname?: string;
+                publishedService?: string;
+            };
+        };
+        kubernetesCRD?: {
+            endpoint?: string;
+            token?: string;
+            certAuthFilePath?: string;
+            namespaces?: string[];
+            allowCrossNamespace?: boolean;
+            allowExternalNameServices?: boolean;
+            labelSelector?: string;
+            ingressClass?: string;
+            throttleDuration?: string;
+            allowEmptyServices?: boolean;
+        };
+        kubernetesGateway?: {
+            endpoint?: string;
+            token?: string;
+            certAuthFilePath?: string;
+            namespaces?: string[];
+            labelSelector?: string;
+            throttleDuration?: string;
+        };
+        rest?: {
+            insecure?: boolean;
+        };
+        rancher?: {
+            constraints?: string;
+            watch?: boolean;
+            defaultRule?: string;
+            exposedByDefault?: boolean;
+            enableServiceHealthFilter?: boolean;
+            refreshSeconds?: number;
+            intervalPoll?: boolean;
+            prefix?: string;
+        };
+        consulCatalog?: {
+            constraints?: string;
+            prefix?: string;
+            refreshInterval?: string;
+            requireConsistent?: boolean;
+            stale?: boolean;
+            cache?: boolean;
+            exposedByDefault?: boolean;
+            defaultRule?: string;
+            connectAware?: boolean;
+            connectByDefault?: boolean;
+            serviceName?: string;
+            namespace?: string;
+            namespaces?: string[];
+            watch?: boolean;
+            endpoint?: {
+                address?: string;
+                scheme?: string;
+                datacenter?: string;
+                token?: string;
+                endpointWaitTime?: string;
+                tls?: {
+                    ca?: string;
+                    caOptional?: boolean;
+                    cert?: string;
+                    key?: string;
+                    insecureSkipVerify?: boolean;
+                };
+                httpAuth?: {
+                    username?: string;
+                    password?: string;
+                };
+            };
+            [k: string]: unknown;
+        };
+        nomad?: {
+            constraints?: string;
+            prefix?: string;
+            refreshInterval?: string;
+            stale?: boolean;
+            exposedByDefault?: boolean;
+            defaultRule?: string;
+            namespace?: string;
+            endpoint?: {
+                address?: string;
+                region?: string;
+                token?: string;
+                endpointWaitTime?: string;
+                tls?: {
+                    ca?: string;
+                    caOptional?: boolean;
+                    cert?: string;
+                    key?: string;
+                    insecureSkipVerify?: boolean;
+                };
+            };
+        };
+        ecs?: {
+            constraints?: string;
+            exposedByDefault?: boolean;
+            ecsAnywhere?: boolean;
+            refreshSeconds?: number;
+            defaultRule?: string;
+            clusters?: string[];
+            autoDiscoverClusters?: boolean;
+            region?: string;
+            accessKeyID?: string;
+            secretAccessKey?: string;
+        };
+        consul?: {
+            rootKey?: string;
+            endpoints?: string[];
+            token?: string;
+            namespace?: string;
+            namespaces?: string[];
+            tls?: {
+                ca?: string;
+                caOptional?: boolean;
+                cert?: string;
+                key?: string;
+                insecureSkipVerify?: boolean;
+            };
+        };
+        etcd?: {
+            rootKey?: string;
+            endpoints?: string[];
+            username?: string;
+            password?: string;
+            tls?: {
+                ca?: string;
+                caOptional?: boolean;
+                cert?: string;
+                key?: string;
+                insecureSkipVerify?: boolean;
+            };
+        };
+        zooKeeper?: {
+            rootKey?: string;
+            endpoints?: string[];
+            username?: string;
+            password?: string;
+        };
+        redis?: {
+            rootKey?: string;
+            endpoints?: string[];
+            username?: string;
+            password?: string;
+            db?: number;
+            tls?: {
+                ca?: string;
+                caOptional?: boolean;
+                cert?: string;
+                key?: string;
+                insecureSkipVerify?: boolean;
+            };
+        };
+        http?: {
+            endpoint?: string;
+            pollInterval?: string;
+            pollTimeout?: string;
+            tls?: {
+                ca?: string;
+                caOptional?: boolean;
+                cert?: string;
+                key?: string;
+                insecureSkipVerify?: boolean;
+            };
+        };
+        plugin?: Record<string, Record<string, unknown>>;
+        [k: string]: unknown;
+    };
+    serversTransport?: {
+        insecureSkipVerify?: boolean;
+        rootCAs?: string[];
+        maxIdleConnsPerHost?: number;
+        forwardingTimeouts?: {
+            dialTimeout?: string;
+            responseHeaderTimeout?: string;
+            idleConnTimeout?: string;
+        };
+    };
+    tracing?: {
+        serviceName?: string;
+        spanNameLimit?: number;
+        jaeger?: {
+            samplingServerURL?: string;
+            samplingType?: string;
+            samplingParam?: number;
+            localAgentHostPort?: string;
+            gen128Bit?: boolean;
+            propagation?: string;
+            traceContextHeaderName?: string;
+            disableAttemptReconnecting?: boolean;
+            collector?: {
+                endpoint?: string;
+                user?: string;
+                password?: string;
+            };
+        };
+        zipkin?: {
+            httpEndpoint?: string;
+            sameSpan?: boolean;
+            id128Bit?: boolean;
+            sampleRate?: number;
+        };
+        datadog?: {
+            localAgentHostPort?: string;
+            globalTag?: string;
+            /**
+             * Sets a list of key:value tags on all spans.
+             */
+            globalTags?: Record<string, string>;
+            debug?: boolean;
+            prioritySampling?: boolean;
+            traceIDHeaderName?: string;
+            parentIDHeaderName?: string;
+            samplingPriorityHeaderName?: string;
+            bagagePrefixHeaderName?: string;
+        };
+        instana?: {
+            localAgentHost?: string;
+            localAgentPort?: number;
+            logLevel?: string;
+            enableAutoProfile?: boolean;
+        };
+        haystack?: {
+            localAgentHost?: string;
+            localAgentPort?: number;
+            globalTag?: string;
+            traceIDHeaderName?: string;
+            parentIDHeaderName?: string;
+            spanIDHeaderName?: string;
+            baggagePrefixHeaderName?: string;
+        };
+        elastic?: {
+            serverURL?: string;
+            secretToken?: string;
+            serviceEnvironment?: string;
+        };
+    };
+}
 
+/**
+ * Traefik configuration file provider model
+ */
+export interface FileConfig {
+    http?: {
+        routers?: Record<string, HttpRouter>;
+        services?: Record<string, HttpService>;
+        /**
+         * Attached to the routers, pieces of middleware are a means of tweaking the requests before they are sent to your service (or before the answer from the services are sent to the clients).
+         *
+         * There are several available middleware in Traefik, some can modify the request, the headers, some are in charge of redirections, some add authentication, and so on.
+         *
+         * Pieces of middleware can be combined in chains to fit every scenario.
+         */
+        middlewares?: Record<string, HttpMiddleware>;
+        [k: string]: unknown;
+    };
+    tcp?: {
+        routers?: Record<string, TcpRouter>;
+        /**
+         * Each of the fields of the service section represents a kind of service. Which means, that for each specified service, one of the fields, and only one, has to be enabled to define what kind of service is created. Currently, the two available kinds are LoadBalancer, and Weighted.
+         */
+        services?: Record<string, TcpService>;
+        [k: string]: unknown;
+    };
+    udp?: {
+        /**
+         * Similarly to TCP, as UDP is the transport layer, there is no concept of a request, so there is no notion of an URL path prefix to match an incoming UDP packet with. Furthermore, as there is no good TLS support at the moment for multiple hosts, there is no Host SNI notion to match against either. Therefore, there is no criterion that could be used as a rule to match incoming packets in order to route them. So UDP "routers" at this time are pretty much only load-balancers in one form or another.
+         */
+        routers?: Record<string, UdpRouter>;
+        /**
+         * Each of the fields of the service section represents a kind of service. Which means, that for each specified service, one of the fields, and only one, has to be enabled to define what kind of service is created. Currently, the two available kinds are LoadBalancer, and Weighted.
+         */
+        services?: Record<string, UdpService>;
+    };
+    /**
+     * Configures the TLS connection, TLS options, and certificate stores.
+     */
+    tls?: {
+        certificates?: Array<{
+            certFile?: string;
+            keyFile?: string;
+            /**
+             * A list of stores can be specified here to indicate where the certificates should be stored. Although the stores list will actually be ignored and automatically set to ["default"].
+             */
+            stores?: string[];
+            [k: string]: unknown;
+        }>;
+        /**
+         * The TLS options allow one to configure some parameters of the TLS connection.
+         */
+        options?: Record<
+            string,
+            {
+                /**
+                 * Minimum TLS Version
+                 */
+                minVersion?: string;
+                /**
+                 * Maximum TLS Version. It is discouraged to use of this setting to disable TLS1.3. The recommended approach is to update the clients to support TLS1.3.
+                 */
+                maxVersion?: string;
+                /**
+                 * Cipher suites defined for TLS 1.2 and below cannot be used in TLS 1.3, and vice versa. With TLS 1.3, the cipher suites are not configurable (all supported cipher suites are safe in this case).
+                 */
+                cipherSuites?: string[];
+                /**
+                 * This option allows to set the preferred elliptic curves in a specific order.
+                 *
+                 * The names of the curves defined by crypto (e.g. CurveP521) and the RFC defined names (e.g. secp521r1) can be used.
+                 */
+                curvePreferences?: string[];
+                /**
+                 * With strict SNI checking enabled, Traefik won't allow connections from clients that do not specify a server_name extension or don't match any certificate configured on the tlsOption.
+                 */
+                sniStrict?: boolean;
+                /**
+                 * This option allows the server to choose its most preferred cipher suite instead of the client's. Please note that this is enabled automatically when minVersion or maxVersion are set.
+                 */
+                preferServerCipherSuites?: boolean;
+                /**
+                 * Traefik supports mutual authentication, through the clientAuth section.
+                 */
+                clientAuth?: {
+                    /**
+                     * For authentication policies that require verification of the client certificate, the certificate authority for the certificate should be set here.
+                     */
+                    caFiles?: string[];
+                    clientAuthType?: string;
+                    [k: string]: unknown;
+                };
+                [k: string]: unknown;
+            }
+        >;
+        /**
+         * Any store definition other than the default one (named default) will be ignored, and there is therefore only one globally available TLS store.
+         */
+        stores?: Record<
+            string,
+            {
+                /**
+                 * Traefik can use a default certificate for connections without a SNI, or without a matching domain. If no default certificate is provided, Traefik generates and uses a self-signed certificate.
+                 */
+                defaultCertificate?: {
+                    certFile?: string;
+                    keyFile?: string;
+                };
+                /**
+                 * GeneratedCert defines the default generated certificate configuration.
+                 */
+                defaultGeneratedCert?: {
+                    /**
+                     * Resolver is the name of the resolver that will be used to issue the DefaultCertificate.
+                     */
+                    resolver?: string;
+                    /**
+                     * Domain is the domain definition for the DefaultCertificate.
+                     */
+                    domain?: {
+                        /**
+                         * Main defines the main domain name.
+                         */
+                        main?: string;
+                        /**
+                         * SANs defines the subject alternative domain names.
+                         */
+                        sans?: string[];
+                        [k: string]: unknown;
+                    };
+                };
+            }
+        >;
+    };
+}
+
+/**
+ * Traefik options model
+ */
+export interface TraefikOptions {
+    env?: string[];
+    serverId?: string;
+    additionalPorts?: Array<{
+        targetPort: number;
+        publishedPort: number;
+        protocol?: string;
+    }>;
+}
 
 /**
  * The Services are responsible for configuring how to reach the actual services that will eventually handle the incoming requests.
  */
-
-
 
 export type HttpService =
     | {
@@ -157,6 +834,7 @@ export interface HttpRouter {
         [k: string]: unknown;
     };
 }
+
 /**
  * The load balancers are able to load balance the requests between multiple instances of your programs.
  *
@@ -261,6 +939,7 @@ export interface HttpLoadBalancerService {
     };
     serversTransport?: string;
 }
+
 /**
  * The WRR is able to load balance the requests between multiple services based on weights.
  *
@@ -293,6 +972,7 @@ export interface HttpWeightedService {
     };
     healthCheck?: Record<string, unknown>;
 }
+
 /**
  * The mirroring is able to mirror requests sent to a service to other services. Please note that by default the whole request is buffered in memory while it is being mirrored. See the maxBodySize option for how to modify this behaviour.
  */
@@ -309,11 +989,13 @@ export interface HttpMirroringService {
     }>;
     healthCheck?: Record<string, unknown>;
 }
+
 export interface HttpFailoverService {
     service?: string;
     fallback?: string;
     healthCheck?: Record<string, unknown>;
 }
+
 /**
  * The AddPrefix middleware updates the URL Path of the request before forwarding it.
  */
@@ -323,6 +1005,7 @@ export interface AddPrefixMiddleware {
      */
     prefix?: string;
 }
+
 /**
  * The BasicAuth middleware is a quick way to restrict access to your services to known users. If both users and usersFile are provided, the two are merged. The contents of usersFile have precedence over the values in users.
  */
@@ -351,6 +1034,7 @@ export interface BasicAuthMiddleware {
     removeHeader?: boolean;
     [k: string]: unknown;
 }
+
 /**
  * The Buffering middleware gives you control on how you want to read the requests before sending them to services.
  *
@@ -384,6 +1068,7 @@ export interface BufferingMiddleware {
      */
     retryExpression?: string;
 }
+
 /**
  * The Chain middleware enables you to define reusable combinations of other pieces of middleware. It makes reusing the same groups easier.
  */
@@ -393,6 +1078,7 @@ export interface ChainMiddleware {
      */
     middlewares?: [string, ...string[]];
 }
+
 /**
  * The circuit breaker protects your system from stacking requests to unhealthy services (resulting in cascading failures).
  *
@@ -418,6 +1104,7 @@ export interface CircuitBreakerMiddleware {
      */
     recoveryDuration?: string;
 }
+
 /**
  * The Compress middleware enables the gzip compression.
  */
@@ -435,6 +1122,7 @@ export interface CompressMiddleware {
      */
     minResponseBodyBytes?: number;
 }
+
 /**
  * The Content-Type middleware - or rather its unique autoDetect option - specifies whether to let the Content-Type header, if it has not been set by the backend, be automatically set to a value derived from the contents of the response.
  *
@@ -446,6 +1134,7 @@ export interface ContentTypeMiddleware {
      */
     autoDetect?: boolean;
 }
+
 /**
  * The DigestAuth middleware is a quick way to restrict access to your services to known users. If both users and usersFile are provided, the two are merged. The contents of usersFile have precedence over the values in users.
  */
@@ -473,6 +1162,7 @@ export interface DigestAuthMiddleware {
      */
     removeHeader?: boolean;
 }
+
 /**
  * The ErrorPage middleware returns a custom page in lieu of the default, according to configured ranges of HTTP Status codes. The error page itself is not hosted by Traefik.
  */
@@ -492,6 +1182,7 @@ export interface ErrorsMiddleware {
      */
     query?: string;
 }
+
 /**
  * The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed. Otherwise, the response from the authentication server is returned.
  */
@@ -543,6 +1234,7 @@ export interface ForwardAuthMiddleware {
      */
     authRequestHeaders?: string[];
 }
+
 /**
  * The Headers middleware can manage the requests/responses headers.
  */
@@ -681,6 +1373,7 @@ export interface HeadersMiddleware {
      */
     isDevelopment?: boolean;
 }
+
 /**
  * IPWhitelist accepts / refuses requests based on the client IP.
  */
@@ -691,6 +1384,7 @@ export interface IpWhiteListMiddleware {
     sourceRange?: string[];
     ipStrategy?: IpStrategy;
 }
+
 /**
  * The ipStrategy option defines parameters that set how Traefik will determine the client IP.
  */
@@ -704,6 +1398,7 @@ export interface IpStrategy {
      */
     excludedIPs?: string[];
 }
+
 /**
  * To proactively prevent services from being overwhelmed with high load, a limit on the number of simultaneous in-flight requests can be applied.
  */
@@ -714,6 +1409,7 @@ export interface InFlightReqMiddleware {
     amount?: number;
     sourceCriterion?: SourceCriterion;
 }
+
 /**
  * SourceCriterion defines what criterion is used to group requests as originating from a common source. The precedence order is ipStrategy, then requestHeaderName, then requestHost. If none are set, the default is to use the requestHost.
  */
@@ -728,6 +1424,7 @@ export interface SourceCriterion {
      */
     requestHost?: boolean;
 }
+
 /**
  * PassTLSClientCert adds in header the selected data from the passed client tls certificate.
  */
@@ -823,10 +1520,12 @@ export interface PassTLSClientCertMiddleware {
         [k: string]: unknown;
     };
 }
+
 /**
  * Some plugins will need to be configured by adding a dynamic configuration.
  */
 export type PluginMiddleware = Record<string, Record<string, unknown>>;
+
 /**
  * The RateLimit middleware ensures that services will receive a fair number of requests, and allows one to define what fair is.
  */
@@ -853,6 +1552,7 @@ export interface RateLimitMiddleware {
     burst?: number;
     sourceCriterion?: SourceCriterion;
 }
+
 /**
  * RegexRedirect redirect a request from an url to another with regex matching and replacement.
  */
@@ -870,6 +1570,7 @@ export interface RedirectRegexMiddleware {
      */
     replacement?: string;
 }
+
 /**
  * RedirectScheme redirect request from a scheme to another.
  */
@@ -887,6 +1588,7 @@ export interface RedirectSchemeMiddleware {
      */
     port?: string;
 }
+
 /**
  * Replace the path of the request url. It will replace the actual path by the specified one and will store the original path in a X-Replaced-Path header.
  */
@@ -896,6 +1598,7 @@ export interface ReplacePathMiddleware {
      */
     path?: string;
 }
+
 /**
  * The ReplaceRegex replace a path from an url to another with regex matching and replacement. It will replace the actual path by the specified one and store the original path in a X-Replaced-Path header.
  */
@@ -909,6 +1612,7 @@ export interface ReplacePathRegexMiddleware {
      */
     replacement?: string;
 }
+
 /**
  * The Retry middleware is in charge of reissuing a request a given number of times to a backend server if that server does not reply. To be clear, as soon as the server answers, the middleware stops retrying, regardless of the response status.
  */
@@ -922,6 +1626,7 @@ export interface RetryMiddleware {
      */
     initialInterval?: string;
 }
+
 /**
  * Remove the specified prefixes from the URL path. It will strip the matching path prefix and will store the matching path prefix in a X-Forwarded-Prefix header.
  */
@@ -939,6 +1644,7 @@ export interface StripPrefixMiddleware {
      */
     forceSlash?: boolean;
 }
+
 /**
  * Remove the matching prefixes from the URL path. It will strip the matching path prefix and will store the matching path prefix in a X-Forwarded-Prefix header.
  */
@@ -948,6 +1654,7 @@ export interface StripPrefixRegexMiddleware {
      */
     regex?: string[];
 }
+
 /**
  * If both HTTP routers and TCP routers listen to the same entry points, the TCP routers will apply before the HTTP routers. If no matching route is found for the TCP routers, then the HTTP routers will take over.
  */
@@ -1004,6 +1711,7 @@ export interface TcpRouter {
         [k: string]: unknown;
     };
 }
+
 export interface TcpLoadBalancerService {
     /**
      * Servers declare a single instance of your program.
@@ -1041,6 +1749,7 @@ export interface TcpLoadBalancerService {
         [k: string]: unknown;
     };
 }
+
 export interface TcpWeightedService {
     /**
      * @minItems 1
@@ -1056,6 +1765,7 @@ export interface TcpWeightedService {
         }>,
     ];
 }
+
 export interface UdpRouter {
     /**
      * If not specified, UDP routers will accept packets from all defined (UDP) entry points. If one wants to limit the router scope to a set of entry points, one should set the entry points option.
@@ -1066,6 +1776,7 @@ export interface UdpRouter {
      */
     service: string;
 }
+
 /**
  * The servers load balancer is in charge of balancing the requests between the servers of the same service.
  */
@@ -1086,6 +1797,7 @@ export interface UdpLoadBalancerService {
         }>,
     ];
 }
+
 export interface UdpWeightedService {
     /**
      * @minItems 1

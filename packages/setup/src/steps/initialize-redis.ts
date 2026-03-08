@@ -1,29 +1,28 @@
-/* eslint-disable no-secrets/no-secrets */
-/* eslint-disable pii/no-phone-number */
-
 import type { CreateServiceOptions } from 'dockerode';
 
-import { docker } from './constants';
-import { pullImage } from './pull-image';
+import { docker, pullImage } from '../services/docker';
 
-export const initializePostgres = async () => {
-    const imageName = 'postgres:16';
-    const containerName = 'dokploy-postgres';
+/**
+ * Initialize Redis
+ */
+export const initializeRedis = async () => {
+    const imageName = 'redis:7';
+    const containerName = 'gitpaas-redis';
+
     const settings: CreateServiceOptions = {
         Name: containerName,
         TaskTemplate: {
             ContainerSpec: {
                 Image: imageName,
-                Env: ['POSTGRES_USER=dokploy', 'POSTGRES_DB=dokploy', 'POSTGRES_PASSWORD=amukds4wi9001583845717ad2'],
                 Mounts: [
                     {
                         Type: 'volume',
-                        Source: 'dokploy-postgres',
-                        Target: '/var/lib/postgresql/data',
+                        Source: 'gitpaas-redis',
+                        Target: '/data',
                     },
                 ],
             },
-            Networks: [{ Target: 'dokploy-network' }],
+            Networks: [{ Target: 'gitpaas-network' }],
             Placement: {
                 Constraints: ['node.role==manager'],
             },
@@ -37,8 +36,8 @@ export const initializePostgres = async () => {
             EndpointSpec: {
                 Ports: [
                     {
-                        TargetPort: 5432,
-                        PublishedPort: 5432,
+                        TargetPort: 6379,
+                        PublishedPort: 6379,
                         Protocol: 'tcp',
                         PublishMode: 'host',
                     },
@@ -55,7 +54,7 @@ export const initializePostgres = async () => {
             version: Number.parseInt(inspect.Version.Index),
             ...settings,
         });
-        console.log('Postgres Started ✅');
+        console.log('✅ Redis Started');
     } catch {
         try {
             await docker.createService(settings);
@@ -63,8 +62,8 @@ export const initializePostgres = async () => {
             if (error?.statusCode !== 409) {
                 throw error;
             }
-            console.log('Postgres service already exists, continuing...');
+            console.log('Redis service already exists, continuing...');
         }
-        console.log('Postgres Not Found: Starting ✅');
+        console.log('✅ Redis Not Found: Starting');
     }
 };

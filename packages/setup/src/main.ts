@@ -4,10 +4,12 @@ import { promisify } from 'node:util';
 
 const execAsync = promisify(exec);
 
+import { TRAEFIK_VERSION } from './configs/traefik';
 import { setupDirectories } from './steps/config-paths';
 import { initializeNetwork } from './steps/initialize-network';
 import { initializeSwarm } from './steps/initialize-swarm';
-import { createDefaultMiddlewares } from './steps/traefik-setup';
+import { initializeStandaloneTraefik } from './steps/initialize-traefik';
+import { createDefaultMiddlewares, createDefaultServerTraefikConfig, createDefaultTraefikConfig } from './steps/traefik-setup';
 
 (async () => {
     try {
@@ -16,10 +18,10 @@ import { createDefaultMiddlewares } from './steps/traefik-setup';
         await initializeSwarm();
         await initializeNetwork();
         createDefaultTraefikConfig();
-        /* createDefaultServerTraefikConfig();
+        createDefaultServerTraefikConfig();
         await execAsync(`docker pull traefik:v${TRAEFIK_VERSION}`);
         await initializeStandaloneTraefik();
-        await initializeRedis();
+        /* await initializeRedis();
         await initializePostgres(); */
 
         console.log('✅ GitPaaS setup completed');

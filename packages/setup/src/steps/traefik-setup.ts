@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { stringify } from 'yaml';
 
 import { paths } from '../configs/paths';
-import { getDefaultTraefikConfig } from '../configs/traefik';
+import { FileConfig, getDefaultTraefikConfig } from '../configs/traefik';
 
 /**
  * Get default Traefik middlewares configuration as YAML string
@@ -82,4 +82,43 @@ export const createDefaultTraefikConfig = (): void => {
     writeFileSync(mainConfig, yamlStr, 'utf8');
 
     console.log('✅ Traefik config created successfully');
+};
+
+/**
+ * Initialize Traefik service in Docker Swarm
+ */
+export const createDefaultServerTraefikConfig = (): void => {
+    const { DYNAMIC_TRAEFIK_PATH } = paths();
+    const configFilePath = join(DYNAMIC_TRAEFIK_PATH, 'gitpaas.yml');
+
+    if (existsSync(configFilePath)) {
+        console.log('✅ Default traefik config already exists');
+        return;
+    }
+
+    const appName = 'gitpaas';
+    const serviceURLDefault = `http://${appName}:${process.env.PORT || 3000}`;
+    const config: FileConfig = {
+        http: {
+            routers: {
+                [`${appName}-router-app`]: {
+                    rule: `Host(\`${appName}.docker.localhost\`) && PathPrefix(\`/\`)`,
+                    service: `${appName}-service-app`,
+                    entryPoints: ['web'],
+                },
+            },
+            services: {
+                [`${appName}-service-app`]: {
+                    loadBalancer: {
+                        servers: [{ url: serviceURLDefault }],
+                        passHostHeader: true,
+                    },
+                },
+            },
+        },
+    };
+
+    const yamlStr = stringify(config);
+    mkdirSync(DYNAMIC_TRAEFIK_PATH, { recursive: true });
+    writeFileSync(join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`), yamlStr, 'utf8');
 };

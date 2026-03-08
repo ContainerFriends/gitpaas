@@ -1,100 +1,13 @@
 
-/* import type { ContainerCreateOptions, CreateServiceOptions } from 'dockerode'; */
+
 /* import { getRemoteDocker } from './remote-docker';
 import type { MainTraefikConfig, FileConfig } from './traefik-config'; */
 
-/* 
 
-export const TRAEFIK_VERSION = process.env.TRAEFIK_VERSION || '3.6.7'; */
 
-/* export interface TraefikOptions {
-    env?: string[];
-    serverId?: string;
-    additionalPorts?: Array<{
-        targetPort: number;
-        publishedPort: number;
-        protocol?: string;
-    }>;
-} */
 
-/* export const initializeStandaloneTraefik = async ({ env, serverId, additionalPorts = [] }: TraefikOptions = {}) => {
-    const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths(!!serverId);
-    const imageName = `traefik:v${TRAEFIK_VERSION}`;
-    const containerName = 'dokploy-traefik';
 
-    const exposedPorts: Record<string, {}> = {
-        [`${TRAEFIK_PORT}/tcp`]: {},
-        [`${TRAEFIK_SSL_PORT}/tcp`]: {},
-        [`${TRAEFIK_HTTP3_PORT}/udp`]: {},
-    };
 
-    const portBindings: Record<string, Array<{ HostPort: string }>> = {
-        [`${TRAEFIK_PORT}/tcp`]: [{ HostPort: TRAEFIK_PORT.toString() }],
-        [`${TRAEFIK_SSL_PORT}/tcp`]: [{ HostPort: TRAEFIK_SSL_PORT.toString() }],
-        [`${TRAEFIK_HTTP3_PORT}/udp`]: [{ HostPort: TRAEFIK_HTTP3_PORT.toString() }],
-    };
-
-    const enableDashboard = additionalPorts.some((port) => port.targetPort === 8080);
-
-    if (enableDashboard) {
-        exposedPorts['8080/tcp'] = {};
-        portBindings['8080/tcp'] = [{ HostPort: '8080' }];
-    }
-
-    for (const port of additionalPorts) {
-        const portKey = `${port.targetPort}/${port.protocol ?? 'tcp'}`;
-        exposedPorts[portKey] = {};
-        portBindings[portKey] = [{ HostPort: port.publishedPort.toString() }];
-    }
-
-    const settings: ContainerCreateOptions = {
-        name: containerName,
-        Image: imageName,
-        NetworkingConfig: {
-            EndpointsConfig: {
-                'dokploy-network': {},
-            },
-        },
-        ExposedPorts: exposedPorts,
-        HostConfig: {
-            RestartPolicy: {
-                Name: 'always',
-            },
-            Binds: [
-                `${MAIN_TRAEFIK_PATH}/traefik.yml:/etc/traefik/traefik.yml`,
-                `${DYNAMIC_TRAEFIK_PATH}:/etc/dokploy/traefik/dynamic`,
-                '/var/run/docker.sock:/var/run/docker.sock',
-            ],
-            PortBindings: portBindings,
-        },
-        Env: env,
-    };
-
-    const docker = await getRemoteDocker(serverId);
-    try {
-        await docker.pull(imageName);
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        console.log('Traefik Image Pulled ✅');
-    } catch (error) {
-        console.log('Traefik Image Not Found: Pulling ', error);
-    }
-    try {
-        const container = docker.getContainer(containerName);
-        await container.remove({ force: true });
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-    } catch {
-        console.log('Traefik Container Not Found: Starting new one');
-    }
-
-    try {
-        await docker.createContainer(settings);
-        const newContainer = docker.getContainer(containerName);
-        await newContainer.start();
-        console.log('Traefik Started ✅');
-    } catch (error) {
-        console.log('Traefik Not Found: Starting ', error);
-    }
-}; */
 
 /* export const initializeTraefikService = async ({ env, additionalPorts = [], serverId }: TraefikOptions) => {
     const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths(!!serverId);
@@ -185,41 +98,7 @@ export const TRAEFIK_VERSION = process.env.TRAEFIK_VERSION || '3.6.7'; */
     }
 }; */
 
-/* export const createDefaultServerTraefikConfig = () => {
-    const { DYNAMIC_TRAEFIK_PATH } = paths();
-    const configFilePath = path.join(DYNAMIC_TRAEFIK_PATH, 'dokploy.yml');
 
-    if (existsSync(configFilePath)) {
-        console.log('Default traefik config already exists');
-        return;
-    }
-
-    const appName = 'dokploy';
-    const serviceURLDefault = `http://${appName}:${process.env.PORT || 3000}`;
-    const config: FileConfig = {
-        http: {
-            routers: {
-                [`${appName}-router-app`]: {
-                    rule: `Host(\`${appName}.docker.localhost\`) && PathPrefix(\`/\`)`,
-                    service: `${appName}-service-app`,
-                    entryPoints: ['web'],
-                },
-            },
-            services: {
-                [`${appName}-service-app`]: {
-                    loadBalancer: {
-                        servers: [{ url: serviceURLDefault }],
-                        passHostHeader: true,
-                    },
-                },
-            },
-        },
-    };
-
-    const yamlStr = stringify(config);
-    mkdirSync(DYNAMIC_TRAEFIK_PATH, { recursive: true });
-    writeFileSync(path.join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`), yamlStr, 'utf8');
-}; */
 
 
 

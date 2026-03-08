@@ -1,20 +1,14 @@
-/* eslint-disable pii/no-email */
-import { chmodSync, existsSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import path from 'node:path';
 
-import type { ContainerCreateOptions, CreateServiceOptions } from 'dockerode';
-import { stringify } from 'yaml';
+/* import type { ContainerCreateOptions, CreateServiceOptions } from 'dockerode'; */
+/* import { getRemoteDocker } from './remote-docker';
+import type { MainTraefikConfig, FileConfig } from './traefik-config'; */
 
-import { paths } from './constants';
-import { getRemoteDocker } from './remote-docker';
-import type { MainTraefikConfig, FileConfig } from './traefik-config';
-
-export const TRAEFIK_SSL_PORT = Number.parseInt(process.env.TRAEFIK_SSL_PORT) || 443;
+/* export const TRAEFIK_SSL_PORT = Number.parseInt(process.env.TRAEFIK_SSL_PORT) || 443;
 export const TRAEFIK_PORT = Number.parseInt(process.env.TRAEFIK_PORT) || 80;
 export const TRAEFIK_HTTP3_PORT = Number.parseInt(process.env.TRAEFIK_HTTP3_PORT) || 443;
-export const TRAEFIK_VERSION = process.env.TRAEFIK_VERSION || '3.6.7';
+export const TRAEFIK_VERSION = process.env.TRAEFIK_VERSION || '3.6.7'; */
 
-export interface TraefikOptions {
+/* export interface TraefikOptions {
     env?: string[];
     serverId?: string;
     additionalPorts?: Array<{
@@ -22,9 +16,9 @@ export interface TraefikOptions {
         publishedPort: number;
         protocol?: string;
     }>;
-}
+} */
 
-export const initializeStandaloneTraefik = async ({ env, serverId, additionalPorts = [] }: TraefikOptions = {}) => {
+/* export const initializeStandaloneTraefik = async ({ env, serverId, additionalPorts = [] }: TraefikOptions = {}) => {
     const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths(!!serverId);
     const imageName = `traefik:v${TRAEFIK_VERSION}`;
     const containerName = 'dokploy-traefik';
@@ -101,9 +95,9 @@ export const initializeStandaloneTraefik = async ({ env, serverId, additionalPor
     } catch (error) {
         console.log('Traefik Not Found: Starting ', error);
     }
-};
+}; */
 
-export const initializeTraefikService = async ({ env, additionalPorts = [], serverId }: TraefikOptions) => {
+/* export const initializeTraefikService = async ({ env, additionalPorts = [], serverId }: TraefikOptions) => {
     const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths(!!serverId);
     const imageName = `traefik:v${TRAEFIK_VERSION}`;
     const appName = 'dokploy-traefik';
@@ -190,9 +184,9 @@ export const initializeTraefikService = async ({ env, additionalPorts = [], serv
         await docker.createService(settings);
         console.log('Traefik Started ✅');
     }
-};
+}; */
 
-export const createDefaultServerTraefikConfig = () => {
+/* export const createDefaultServerTraefikConfig = () => {
     const { DYNAMIC_TRAEFIK_PATH } = paths();
     const configFilePath = path.join(DYNAMIC_TRAEFIK_PATH, 'dokploy.yml');
 
@@ -226,9 +220,9 @@ export const createDefaultServerTraefikConfig = () => {
     const yamlStr = stringify(config);
     mkdirSync(DYNAMIC_TRAEFIK_PATH, { recursive: true });
     writeFileSync(path.join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`), yamlStr, 'utf8');
-};
+}; */
 
-export const getDefaultTraefikConfig = () => {
+/* export const getDefaultTraefikConfig = () => {
     const configObject: MainTraefikConfig = {
         global: {
             sendAnonymousUsage: false,
@@ -295,9 +289,9 @@ export const getDefaultTraefikConfig = () => {
     const yamlStr = stringify(configObject);
 
     return yamlStr;
-};
+}; */
 
-export const getDefaultServerTraefikConfig = () => {
+/* export const getDefaultServerTraefikConfig = () => {
     const configObject: MainTraefikConfig = {
         providers: {
             swarm: {
@@ -349,9 +343,9 @@ export const getDefaultServerTraefikConfig = () => {
     const yamlStr = stringify(configObject);
 
     return yamlStr;
-};
+}; */
 
-export const createDefaultTraefikConfig = () => {
+/* export const createDefaultTraefikConfig = () => {
     const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths();
     const mainConfig = path.join(MAIN_TRAEFIK_PATH, 'traefik.yml');
     const acmeJsonPath = path.join(DYNAMIC_TRAEFIK_PATH, 'acme.json');
@@ -379,32 +373,4 @@ export const createDefaultTraefikConfig = () => {
     const yamlStr = getDefaultTraefikConfig();
     writeFileSync(mainConfig, yamlStr, 'utf8');
     console.log('Traefik config created successfully');
-};
-
-export const getDefaultMiddlewares = () => {
-    const defaultMiddlewares = {
-        http: {
-            middlewares: {
-                'redirect-to-https': {
-                    redirectScheme: {
-                        scheme: 'https',
-                        permanent: true,
-                    },
-                },
-            },
-        },
-    };
-    const yamlStr = stringify(defaultMiddlewares);
-    return yamlStr;
-};
-export const createDefaultMiddlewares = () => {
-    const { DYNAMIC_TRAEFIK_PATH } = paths();
-    const middlewaresPath = path.join(DYNAMIC_TRAEFIK_PATH, 'middlewares.yml');
-    if (existsSync(middlewaresPath)) {
-        console.log('Default middlewares already exists');
-        return;
-    }
-    const yamlStr = getDefaultMiddlewares();
-    mkdirSync(DYNAMIC_TRAEFIK_PATH, { recursive: true });
-    writeFileSync(middlewaresPath, yamlStr, 'utf8');
-};
+}; */

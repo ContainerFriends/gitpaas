@@ -1,15 +1,4 @@
-/* eslint-disable pii/no-ip */
-import { docker } from './constants';
-
-export const dockerSwarmInitialized = async () => {
-    try {
-        await docker.swarmInspect();
-
-        return true;
-    } catch {
-        return false;
-    }
-};
+import { docker } from './services/docker';
 
 export const dockerNetworkInitialized = async () => {
     try {
@@ -17,19 +6,6 @@ export const dockerNetworkInitialized = async () => {
         return true;
     } catch {
         return false;
-    }
-};
-
-export const initializeSwarm = async () => {
-    const swarmInitialized = await dockerSwarmInitialized();
-    if (swarmInitialized) {
-        console.log('Swarm is already initilized');
-    } else {
-        await docker.swarmInit({
-            AdvertiseAddr: '127.0.0.1',
-            ListenAddr: '0.0.0.0',
-        });
-        console.log('Swarm was initilized');
     }
 };
 

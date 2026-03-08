@@ -6,7 +6,7 @@ import { createDirectoryIfNotExist } from '../utils/create-directory';
 /**
  * Setup application directories
  */
-export const setupDirectories = () => {
+export const setupDirectories = (): void => {
     // eslint-disable-next-line max-len, prettier/prettier, object-curly-newline
     const { APPLICATIONS_PATH, BASE_PATH, CERTIFICATES_PATH, DYNAMIC_TRAEFIK_PATH, LOGS_PATH, MAIN_TRAEFIK_PATH, MONITORING_PATH, SSH_PATH, SCHEDULES_PATH, VOLUME_BACKUPS_PATH } = paths();
     const directories = [

@@ -5,13 +5,15 @@ import { promisify } from 'node:util';
 const execAsync = promisify(exec);
 
 import { setupDirectories } from './steps/config-paths';
+import { initializeSwarm } from './steps/initialize-swarm';
+import { createDefaultMiddlewares } from './steps/traefik-setup';
 
 (async () => {
     try {
         setupDirectories();
-        /* createDefaultMiddlewares();
+        createDefaultMiddlewares();
         await initializeSwarm();
-        await initializeNetwork();
+        /* await initializeNetwork();
         createDefaultTraefikConfig();
         createDefaultServerTraefikConfig();
         await execAsync(`docker pull traefik:v${TRAEFIK_VERSION}`);

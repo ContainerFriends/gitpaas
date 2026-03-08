@@ -54,7 +54,7 @@ export const initializeRedis = async () => {
             version: Number.parseInt(inspect.Version.Index),
             ...settings,
         });
-        console.log('✅ Redis Started');
+        console.log('✅ Redis started');
     } catch {
         try {
             await docker.createService(settings);
@@ -62,8 +62,8 @@ export const initializeRedis = async () => {
             if (error?.statusCode !== 409) {
                 throw error;
             }
-            console.log('Redis service already exists, continuing...');
+            console.log('➡️ Redis service already exists, continuing...');
         }
-        console.log('✅ Redis Not Found: Starting');
+        console.log('➡️ Redis not found: starting...');
     }
 };

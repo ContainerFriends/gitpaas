@@ -1,4 +1,3 @@
-import Dockerode from 'dockerode';
 import Docker from 'dockerode';
 
 import { spawnAsync } from '../utils/spawn-async';
@@ -9,11 +8,10 @@ interface RegistryAuth {
     registryUrl: string;
 }
 
-export const DOCKER_API_VERSION = process.env.DOCKER_API_VERSION;
-export const DOCKER_HOST = process.env.DOCKER_HOST;
-export const DOCKER_PORT = process.env.DOCKER_PORT ? Number(process.env.DOCKER_PORT) : undefined;
+const DOCKER_API_VERSION = process.env.DOCKER_API_VERSION;
+const DOCKER_HOST = process.env.DOCKER_HOST;
+const DOCKER_PORT = process.env.DOCKER_PORT ? Number(process.env.DOCKER_PORT) : undefined;
 
-export const CLEANUP_CRON_JOB = '50 23 * * *';
 export const docker = new Docker({
     ...(DOCKER_API_VERSION && {
         version: DOCKER_API_VERSION,
@@ -26,11 +24,18 @@ export const docker = new Docker({
     }),
 });
 
+/**
+ * Get a Docker instance for a remote server
+ */
 export const getRemoteDocker = async (serverId?: string | null) => {
-    if (!serverId) return docker;
+    return docker;
+    /* if (!serverId) return docker;
+
     const server = await findServerById(serverId);
-    if (!server.sshKeyId) return docker;
-    const dockerode = new Dockerode({
+
+    if (!server?.sshKeyId) return docker;
+
+    const dockerode = new Docker({
         host: server.ipAddress,
         port: server.port,
         username: server.username,
@@ -41,9 +46,12 @@ export const getRemoteDocker = async (serverId?: string | null) => {
         },
     });
 
-    return dockerode;
+    return dockerode; */
 };
 
+/**
+ * Pull a Docker image
+ */
 export const pullImage = async (dockerImage: string, onData?: (data: any) => void, authConfig?: Partial<RegistryAuth>): Promise<void> => {
     if (!dockerImage) {
         throw new Error('Docker image not found');

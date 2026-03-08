@@ -26,7 +26,7 @@ import { createDefaultMiddlewares, createDefaultServerTraefikConfig, createDefau
         await initializeRedis();
         await initializePostgres();
 
-        console.log('✅ GitPaaS setup completed');
+        console.log('\n🥳 GitPaaS setup completed');
         exit(0);
     } catch (error) {
         console.error('❌ Error in GitPaaS setup', error);

@@ -1,4 +1,4 @@
-import { type apiCreateServer, organization, server } from '@dokploy/server/db/schema';
+/* import { type apiCreateServer, organization, server } from '@dokploy/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import type { z } from 'zod';
@@ -26,10 +26,13 @@ export const createServer = async (input: z.infer<typeof apiCreateServer>, organ
     }
 
     return newServer;
-};
+}; */
 
+/**
+ * Find a server by its ID
+ */
 export const findServerById = async (serverId: string) => {
-    const currentServer = await db.query.server.findFirst({
+   /*  const currentServer = await db.query.server.findFirst({
         where: eq(server.serverId, serverId),
         with: {
             deployments: true,
@@ -42,10 +45,11 @@ export const findServerById = async (serverId: string) => {
             message: 'Server not found',
         });
     }
-    return currentServer;
+    return currentServer; */
+    return null;
 };
 
-export const findServersByUserId = async (userId: string) => {
+/* export const findServersByUserId = async (userId: string) => {
     const orgs = await db.query.organization.findMany({
         where: eq(organization.ownerId, userId),
         with: {
@@ -118,3 +122,4 @@ export const getAllServers = async () => {
     const servers = await db.query.server.findMany();
     return servers;
 };
+ */

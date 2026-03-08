@@ -7,14 +7,12 @@ import { DashboardPage } from '@pages/DashboardPage';
 import { NetworksPage } from '@pages/NetworksPage';
 import { NotFoundPage } from '@pages/NotFoundPage';
 import { ProjectsPage } from '@pages/ProjectsPage';
+import { ServicesPage } from '@pages/ServicesPage';
 import { Toaster } from '@shared/components/sonner';
 import { TooltipProvider } from '@shared/components/tooltip';
 
 const queryClient = new QueryClient();
 
-/**
- * Main application component
- */
 export function App(): ReactNode {
     return (
         <QueryClientProvider client={queryClient}>
@@ -24,6 +22,7 @@ export function App(): ReactNode {
                         <Routes>
                             <Route path="/" element={<DashboardPage />} />
                             <Route path="/projects" element={<ProjectsPage />} />
+                            <Route path="/projects/:projectId/services" element={<ServicesPage />} />
                             <Route path="/networks" element={<NetworksPage />} />
                             <Route path="*" element={<NotFoundPage />} />
                         </Routes>

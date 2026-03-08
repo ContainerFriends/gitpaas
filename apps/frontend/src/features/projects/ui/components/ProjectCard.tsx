@@ -1,5 +1,6 @@
 import { MoreVertical, Calendar, Server } from 'lucide-react';
 import { ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Project } from '../../domain/models/projects.models';
 
@@ -17,6 +18,8 @@ interface ProjectCardProps {
  * Project card component.
  */
 export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps): ReactNode {
+    const navigate = useNavigate();
+    
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', {
@@ -26,27 +29,40 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps): Re
         });
     };
 
+    const handleCardClick = () => {
+        navigate(`/projects/${project.id}/services`);
+    };
+
+    const handleDropdownClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent card click
+    };
+
     return (
-        <Card className="min-h-[150px] flex flex-col">
+        <Card 
+            className="min-h-[150px] flex flex-col cursor-pointer transition-shadow hover:shadow-md" 
+            onClick={handleCardClick}
+        >
             <CardHeader className="flex-grow">
                 <div className="flex items-start justify-between">
                     <h3 className="font-semibold">{project.name}</h3>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" onClick={handleDropdownClick}>
                                 <MoreVertical className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-24">
                             <DropdownMenuItem
-                                onClick={() => {
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     onEdit?.(project.id);
                                 }}
                             >
                                 Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => {
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     onDelete?.(project.id);
                                 }}
                                 className="text-destructive focus:text-destructive"

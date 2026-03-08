@@ -3,7 +3,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { CreateNetworkDialog } from '../components/CreateNetworkDialog';
-import { NetworkCard } from '../components/NetworkCard';
+import { NetworksTable } from '../components/NetworksTable';
 import { useNetworks } from '../hooks/useNetworks';
 import { NetworkFormData } from '../models/network-form.models';
 
@@ -126,11 +126,7 @@ export function NetworksListContainer(): ReactNode {
                 />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {filteredNetworks.map((network) => (
-                    <NetworkCard key={network.id} network={network} onDelete={handleDeleteNetwork} />
-                ))}
-            </div>
+            <NetworksTable networks={filteredNetworks} onDelete={handleDeleteNetwork} />
 
             <CreateNetworkDialog
                 open={isCreateDialogOpen}

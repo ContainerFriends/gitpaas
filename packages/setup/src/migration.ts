@@ -1,0 +1,20 @@
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import postgres from 'postgres';
+
+import { dbUrl } from './configs/database';
+
+const sql = postgres(dbUrl, { max: 1 });
+const db = drizzle(sql);
+
+await migrate(db, { migrationsFolder: 'drizzle' })
+    .then(() => {
+        console.log('Migration complete');
+        sql.end();
+    })
+    .catch((error: any) => {
+        console.log('Migration failed', error);
+    })
+    .finally(() => {
+        sql.end();
+    });

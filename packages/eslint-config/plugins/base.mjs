@@ -43,7 +43,7 @@ export default [
       }],
       "linebreak-style": ["error", "unix"],
       "lines-around-directive": ["error", { before: "always", after: "always" }],
-      "max-len": ["error", 180, 4, {
+      "max-len": ["error", 150, 4, {
         ignoreUrls: true,
         ignoreComments: true,
         ignoreRegExpLiterals: true,

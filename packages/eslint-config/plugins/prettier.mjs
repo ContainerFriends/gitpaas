@@ -9,7 +9,7 @@ export default [
         'prettier/prettier': [
           'error',
           {
-            printWidth: 180,
+            printWidth: 150,
             singleQuote: true,
             tabWidth: 4,
           },

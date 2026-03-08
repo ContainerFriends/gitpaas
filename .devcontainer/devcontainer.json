@@ -1,11 +1,11 @@
 {
-    "name": "Deploy Hub Development container",
+    "name": "GitPaaS Development container",
     "build": {
         "dockerfile": "Dockerfile",
         "context": ".."
     },
     "runArgs": [
-        "--name", "deploy-hub-devcontainer",
+        "--name", "gitpaas-devcontainer",
         "--network", "host"
     ],
     "customizations": {

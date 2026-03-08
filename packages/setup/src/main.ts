@@ -26,6 +26,14 @@ import { createDefaultMiddlewares, createDefaultServerTraefikConfig, createDefau
         await initializeRedis();
         await initializePostgres();
 
+        // Generate Prisma client after database is ready
+        console.log('🔧 Generating Prisma client...');
+        await execAsync('npx prisma generate --config=./prisma.config.ts');
+
+        // Deploy migrations after client generation
+        console.log('📦 Deploying database migrations...');
+        await execAsync('npx prisma migrate deploy --config=./prisma.config.ts');
+
         console.log('\n🥳 GitPaaS setup completed');
         exit(0);
     } catch (error) {

@@ -8,7 +8,6 @@ import { docker, pullImage } from '../services/docker';
 export const initializeRedis = async () => {
     const imageName = process.env.REDIS_IMAGE || 'redis:8.4-alpine3.22';
     const containerName = 'gitpaas-redis';
-
     const settings: CreateServiceOptions = {
         Name: containerName,
         TaskTemplate: {

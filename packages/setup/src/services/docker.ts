@@ -60,5 +60,6 @@ export const pullImage = async (dockerImage: string, onData?: (data: any) => voi
     if (authConfig?.username && authConfig?.password) {
         await spawnAsync('docker', ['login', authConfig.registryUrl || '', '-u', authConfig.username, '-p', authConfig.password], onData);
     }
+
     await spawnAsync('docker', ['pull', dockerImage], onData);
 };

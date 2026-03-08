@@ -6,9 +6,7 @@
   "type": "module",
   "scripts": {
     "lint": "eslint .",
-    "setup": "tsx -r dotenv/config src/main.ts && sleep 5 && npm run prisma:generate && npm run prisma:migrate",
-    "prisma:generate": "prisma generate --config=./prisma.config.ts",
-    "prisma:migrate": "prisma migrate deploy --config=./prisma.config.ts"
+    "setup": "tsx -r dotenv/config src/main.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.4.2",

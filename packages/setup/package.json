@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "lint": "eslint .",
-    "setup": "tsx -r dotenv/config src/setup.ts && sleep 5 && pnpm run migration:run",
+    "setup": "tsx -r dotenv/config src/setup.ts && sleep 5 && npm run migration:run",
     "migration:run": "npm run prisma:generate && tsx -r dotenv/config src/migration.ts",
     "prisma:generate": "prisma generate --config=./prisma.config.ts"
   },

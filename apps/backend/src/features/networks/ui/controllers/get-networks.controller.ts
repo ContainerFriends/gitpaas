@@ -2,8 +2,7 @@ import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { getNetworksOrchestrator } from '../../application/orchestrators/get-networks.orchestrator';
-import { networkDockerRepository } from '../../infrastructure/docker/network-docker.repository';
-import { mapDomainToDto } from '../../infrastructure/docker/network-docker.mapper';
+import { networkDockerGateway } from '../../infrastructure/docker/network-docker.gateway';
 
 import { appLogger } from '@core/infrastructure/loggers/winston.logger';
 import { handleError } from '@core/ui/handlers/error.handler';
@@ -16,13 +15,9 @@ import { handleError } from '@core/ui/handlers/error.handler';
  */
 export const getNetworksController: RequestHandler = async (_req, res) => {
     try {
-        const networks = await getNetworksOrchestrator(networkDockerRepository);
-        const responseData = {
-            networks: networks.map(mapDomainToDto),
-            total: networks.length,
-        };
+        const networks = await getNetworksOrchestrator(networkDockerGateway);
 
-        res.status(StatusCodes.OK).send(responseData);
+        res.status(StatusCodes.OK).send(networks);
     } catch (error) {
         appLogger.error({ message: `Error: ${(error as Error).message}` }, 'Get networks controller');
         handleError(error as Error, res);

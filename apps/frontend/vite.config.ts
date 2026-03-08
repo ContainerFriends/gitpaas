@@ -13,6 +13,7 @@ export default defineConfig(() => ({
     plugins: [react()].filter(Boolean),
     resolve: {
         alias: {
+            '@core': path.resolve(__dirname, './src/core'),
             '@features': path.resolve(__dirname, './src/features'),
             '@layout': path.resolve(__dirname, './src/layout'),
             '@pages': path.resolve(__dirname, './src/pages'),

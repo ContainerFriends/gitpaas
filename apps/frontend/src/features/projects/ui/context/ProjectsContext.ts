@@ -11,7 +11,15 @@ export interface ProjectsContextValue {
     loading: boolean;
     error: string | null;
     filteredProjects: Project[];
+    selectedProject: Project | null;
+    loadingProject: boolean;
+    submittingProject: boolean;
     loadProjects: () => Promise<void>;
+    getProjectById: (id: string) => Promise<Project | null>;
+    createProject: (data: { name: string }) => Promise<Project>;
+    updateProject: (id: string, data: { name: string }) => Promise<Project>;
+    deleteProject: (id: string) => Promise<void>;
+    setFilter: (filter: string) => void;
 }
 
 /**

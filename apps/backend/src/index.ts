@@ -35,7 +35,7 @@ app.use(json({ limit: '10mb' }));
 
 // Routes
 app.use(`/health`, healthRouter);
-app.use(`/v${expressConfig.apiVersion}/projects`, projectRouter);
+app.use(`/${expressConfig.apiVersion}/projects`, projectRouter);
 
 //
 

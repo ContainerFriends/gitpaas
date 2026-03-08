@@ -9,8 +9,11 @@ type ProjectsAction =
     | { type: 'LOAD_PROJECTS_REQUEST' }
     | { type: 'SET_PROJECTS'; payload: Project[] }
     | { type: 'ADD_PROJECT'; payload: Project }
-    | { type: 'UPDATE_PROJECT'; payload: { id: string; project: Partial<Project> } }
+    | { type: 'UPDATE_PROJECT'; payload: Project }
     | { type: 'DELETE_PROJECT'; payload: string }
+    | { type: 'SET_SELECTED_PROJECT'; payload: Project | null }
+    | { type: 'SET_LOADING_PROJECT'; payload: boolean }
+    | { type: 'SET_SUBMITTING_PROJECT'; payload: boolean }
     | { type: 'SET_FILTER'; payload: string }
     | { type: 'SET_LOADING'; payload: boolean }
     | { type: 'SET_ERROR'; payload: string | null };
@@ -24,6 +27,9 @@ interface ProjectsState {
     loading: boolean;
     error: string | null;
     filteredProjects: Project[];
+    selectedProject: Project | null;
+    loadingProject: boolean;
+    submittingProject: boolean;
 }
 
 /**
@@ -35,6 +41,9 @@ const initialState: ProjectsState = {
     loading: false,
     error: null,
     filteredProjects: [],
+    selectedProject: null,
+    loadingProject: false,
+    submittingProject: false,
 };
 
 /**
@@ -81,14 +90,13 @@ function projectsReducer(state: ProjectsState, action: ProjectsAction): Projects
         }
 
         case 'UPDATE_PROJECT': {
-            const updatedProjects = state.projects.map((project) =>
-                project.id === action.payload.id ? { ...project, ...action.payload.project } : project,
-            );
+            const updatedProjects = state.projects.map((project) => (project.id === action.payload.id ? action.payload : project));
             const filteredProjects = filterProjects(updatedProjects, state.filter);
             return {
                 ...state,
                 projects: updatedProjects,
                 filteredProjects,
+                selectedProject: state.selectedProject?.id === action.payload.id ? action.payload : state.selectedProject,
             };
         }
 
@@ -124,6 +132,24 @@ function projectsReducer(state: ProjectsState, action: ProjectsAction): Projects
                 loading: false,
             };
 
+        case 'SET_SELECTED_PROJECT':
+            return {
+                ...state,
+                selectedProject: action.payload,
+            };
+
+        case 'SET_LOADING_PROJECT':
+            return {
+                ...state,
+                loadingProject: action.payload,
+            };
+
+        case 'SET_SUBMITTING_PROJECT':
+            return {
+                ...state,
+                submittingProject: action.payload,
+            };
+
         default:
             return state;
     }
@@ -153,8 +179,29 @@ export function useProjectsState() {
     /**
      * Updates an existing project.
      */
-    const updateProject = useCallback((id: string, project: Partial<Project>) => {
-        dispatch({ type: 'UPDATE_PROJECT', payload: { id, project } });
+    const updateProject = useCallback((project: Project) => {
+        dispatch({ type: 'UPDATE_PROJECT', payload: project });
+    }, []);
+
+    /**
+     * Sets the selected project.
+     */
+    const setSelectedProject = useCallback((project: Project | null) => {
+        dispatch({ type: 'SET_SELECTED_PROJECT', payload: project });
+    }, []);
+
+    /**
+     * Sets the loading project state.
+     */
+    const setLoadingProject = useCallback((loading: boolean) => {
+        dispatch({ type: 'SET_LOADING_PROJECT', payload: loading });
+    }, []);
+
+    /**
+     * Sets the submitting project state.
+     */
+    const setSubmittingProject = useCallback((submitting: boolean) => {
+        dispatch({ type: 'SET_SUBMITTING_PROJECT', payload: submitting });
     }, []);
 
     /**
@@ -191,6 +238,9 @@ export function useProjectsState() {
         addProject,
         updateProject,
         deleteProject,
+        setSelectedProject,
+        setLoadingProject,
+        setSubmittingProject,
         setFilter,
         setLoading,
         setError,

@@ -94,9 +94,6 @@ export function ProjectsProvider({ children }: ProjectsProviderProps): ReactNode
                 toast.success('Project created successfully');
                 return newProject;
             } catch (error) {
-                if (isConfigurationError(error)) {
-                    console.error('Configuration error:', error.errorData?.message || (error as Error).message);
-                }
                 setError('Failed to create project');
                 toast.error('Failed to create project');
                 throw error;
@@ -144,9 +141,6 @@ export function ProjectsProvider({ children }: ProjectsProviderProps): ReactNode
                 deleteProject(id);
                 toast.success('Project deleted successfully');
             } catch (error) {
-                if (isConfigurationError(error)) {
-                    console.error('Configuration error:', error.errorData?.message || (error as Error).message);
-                }
                 setError('Failed to delete project');
                 toast.error('Failed to delete project');
                 throw error;

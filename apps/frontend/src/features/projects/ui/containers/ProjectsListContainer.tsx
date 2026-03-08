@@ -14,7 +14,7 @@ import { Button } from '@shared/components/button';
  */
 export function ProjectsListContainer(): ReactNode {
     // eslint-disable-next-line object-curly-newline
-    const { filteredProjects, filter, loading, error, loadProjects } = useProjects();
+    const { filteredProjects, filter, loading, error, loadProjects, createProject } = useProjects();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
 
@@ -41,13 +41,11 @@ export function ProjectsListContainer(): ReactNode {
     const handleCreateProject = async (data: ProjectFormData) => {
         setIsCreating(true);
         try {
-            console.log('Creating project:', data);
-            // TODO: Implement project creation
-            // await createProject(data);
-            // await loadProjects();
+            await createProject(data);
+            await loadProjects();
             setIsCreateDialogOpen(false);
-        } catch (error) {
-            console.error('Failed to create project:', error);
+        } catch {
+            console.error('Failed to create project');
         } finally {
             setIsCreating(false);
         }

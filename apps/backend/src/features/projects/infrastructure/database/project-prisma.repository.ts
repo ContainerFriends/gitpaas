@@ -1,5 +1,3 @@
-import { PrismaClient } from '@core/infrastructure/prisma/generated/client';
-
 import { CreateProjectDto } from '../../domain/dtos/create-project.dto';
 import { UpdateProjectDto } from '../../domain/dtos/update-project.dto';
 import { Project } from '../../domain/models/project.models';
@@ -8,6 +6,7 @@ import { ProjectRepository } from '../../domain/repositories/project.repository'
 import { projectPrismaMapper } from './project-prisma.mapper';
 
 import { DatabaseError, DatabaseErrorType } from '@core/domain/errors/database.error';
+import { PrismaClient } from '@core/infrastructure/prisma/client';
 import { prismaClient } from '@core/infrastructure/prisma/prisma.client';
 
 /**

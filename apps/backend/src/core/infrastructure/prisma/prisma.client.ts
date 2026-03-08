@@ -4,7 +4,7 @@ import { DatabaseClient } from '../../domain/interfaces/database-client.interfac
 import { appLogger } from '../loggers/winston.logger';
 
 // eslint-disable-next-line import/no-relative-packages
-import { PrismaClient } from '../../../../../../packages/setup/src/.prisma/client';
+import { PrismaClient } from './client';
 
 /**
  * Global Prisma client instance

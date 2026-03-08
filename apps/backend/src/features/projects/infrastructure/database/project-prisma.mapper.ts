@@ -1,8 +1,8 @@
-import { Project as PrismaProject } from '@core/infrastructure/prisma/generated/client';
-
 import { CreateProjectDto } from '../../domain/dtos/create-project.dto';
 import { UpdateProjectDto } from '../../domain/dtos/update-project.dto';
 import { Project } from '../../domain/models/project.models';
+
+import { Project as PrismaProject } from '@core/infrastructure/prisma/client';
 
 /**
  * Project Prisma data mapper

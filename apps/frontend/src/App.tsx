@@ -1,25 +1,29 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import Index from '@pages/Index';
-import NotFound from '@pages/NotFound';
-import Projects from '@pages/Projects';
+import { DashboardPage } from '@pages/DashboardPage';
+import { NotFoundPage } from '@pages/NotFoundPage';
+import { ProjectsPage } from '@pages/ProjectsPage';
 import { TooltipProvider } from '@shared/components/tooltip';
 
 const queryClient = new QueryClient();
 
-const App = () => (
-    <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/projects" element={<Projects />} />
-                    <Route path="*" element={<NotFound />} />
-                </Routes>
-            </BrowserRouter>
-        </TooltipProvider>
-    </QueryClientProvider>
-);
-
-export default App;
+/**
+ * Main application component
+ */
+export function App(): ReactNode {
+    return (
+        <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+                <BrowserRouter>
+                    <Routes>
+                        <Route path="/" element={<DashboardPage />} />
+                        <Route path="/projects" element={<ProjectsPage />} />
+                        <Route path="*" element={<NotFoundPage />} />
+                    </Routes>
+                </BrowserRouter>
+            </TooltipProvider>
+        </QueryClientProvider>
+    );
+}

@@ -2,11 +2,11 @@ import { ProjectsOverview } from '@features/dashboard/ui/components/ProjectsOver
 import { RecentDeployments } from '@features/dashboard/ui/components/RecentDeployments';
 import { ServerStatus } from '@features/dashboard/ui/components/ServerStatus';
 import { StatsCards } from '@features/dashboard/ui/components/StatsCards';
-import { DashboardLayout } from '@features/dashboard/ui/containers/DashboardLayout';
+import { AppLayout } from '@layout/containers/AppLayout';
 
-const Dashboard = () => {
+export const DashboardPage = () => {
     return (
-        <DashboardLayout>
+        <AppLayout>
             <div className="space-y-6">
                 <div>
                     <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
@@ -23,8 +23,6 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
-        </DashboardLayout>
+        </AppLayout>
     );
 };
-
-export default Dashboard;

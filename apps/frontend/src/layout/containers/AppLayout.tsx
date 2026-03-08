@@ -1,13 +1,18 @@
 import { Bell, Search } from 'lucide-react';
+import { ReactNode } from 'react';
 
-import { AppSidebar } from '@layout/components/AppSidebar';
+import { LayoutSidebar } from '../components/LayoutSidebar';
+
 import { SidebarProvider, SidebarTrigger } from '@shared/components/sidebar';
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+/**
+ * Application layout component.
+ */
+export function AppLayout({ children }: { children: ReactNode }): ReactNode {
     return (
         <SidebarProvider>
             <div className="min-h-screen flex w-full">
-                <AppSidebar />
+                <LayoutSidebar />
                 <div className="flex-1 flex flex-col min-w-0">
                     <header className="h-14 flex items-center justify-between border-b border-border px-4 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
                         <div className="flex items-center gap-3">

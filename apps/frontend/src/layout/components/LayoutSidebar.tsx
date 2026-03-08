@@ -1,5 +1,6 @@
 // eslint-disable-next-line object-curly-newline
 import { LayoutDashboard, Layers, Globe, Server, Database, Terminal, Settings, Bell, Shield, GitBranch } from 'lucide-react';
+import { ReactNode } from 'react';
 
 import { NavLink } from './NavLink';
 
@@ -35,7 +36,10 @@ const settingsNav = [
     { title: 'Settings', url: '/settings', icon: Settings },
 ];
 
-export function AppSidebar() {
+/**
+ * Sidebar layout component.
+ */
+export function LayoutSidebar(): ReactNode {
     const { state } = useSidebar();
     const collapsed = state === 'collapsed';
 

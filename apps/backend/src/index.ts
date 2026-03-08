@@ -13,6 +13,7 @@ import { appLogger } from '@core/infrastructure/loggers/winston.logger';
 import { healthRouter } from '@core/ui/routes/health.routes';
 import { networkRouter } from '@features/networks/ui/routes/network.routes';
 import { projectRouter } from '@features/projects/ui/routes/project.routes';
+import { servicesRouter } from '@features/services/ui/routes/services.routes';
 
 // Check for required environment variables
 const requiredEnvVars = ['PORT', 'HOST', 'NODE_ENV', 'API_VERSION', 'CORS_ORIGIN', 'REQUEST_TIMEOUT', 'DATABASE_URL'];
@@ -38,6 +39,7 @@ app.use(json({ limit: '10mb' }));
 app.use(`/health`, healthRouter);
 app.use(`/${expressConfig.apiVersion}/projects`, projectRouter);
 app.use(`/${expressConfig.apiVersion}/networks`, networkRouter);
+app.use(`/${expressConfig.apiVersion}/services`, servicesRouter);
 
 //
 

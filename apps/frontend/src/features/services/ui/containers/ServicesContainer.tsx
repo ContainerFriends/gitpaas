@@ -7,7 +7,6 @@ import { CreateServiceDialog } from '../components/CreateServiceDialog';
 import { EditServiceDialog } from '../components/EditServiceDialog';
 import { ServicesList } from '../components/ServicesList';
 import { useServices } from '../hooks/useServices';
-import { ServiceFormSchema } from '../schemas/service.schemas';
 
 import { useProjects } from '@features/projects/ui/hooks/useProjects';
 import { Button } from '@shared/components/button';

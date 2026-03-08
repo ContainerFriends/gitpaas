@@ -2,7 +2,6 @@ import { Layers, Plus, Search } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { Project } from '../../domain/models/projects.models';
 import { CreateProjectDialog } from '../components/CreateProjectDialog';
 import { EditProjectDialog } from '../components/EditProjectDialog';
 import { ProjectCard } from '../components/ProjectCard';
@@ -16,7 +15,7 @@ import { Button } from '@shared/components/button';
  */
 export function ProjectsListContainer(): ReactNode {
     // eslint-disable-next-line max-len, object-curly-newline, prettier/prettier
-    const { filteredProjects, selectedProject, loadingProject, filter, loading, error, loadProjects, createProject, getProjectById, updateProject } = useProjects();
+    const { filteredProjects, selectedProject, loadingProject, filter, loading, error, loadProjects, createProject, getProjectById, updateProject, deleteProject } = useProjects();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -40,9 +39,17 @@ export function ProjectsListContainer(): ReactNode {
         }
     };
 
-    const handleDeleteProject = (project: Project) => {
-        console.log('Delete project:', project);
-        // TODO: Implement delete functionality
+    /**
+     * Handle delete project action
+     */
+    const handleDeleteProject = async (projectId: string) => {
+        try {
+            await deleteProject(projectId);
+            await loadProjects();
+            toast.success('Project deleted successfully');
+        } catch {
+            toast.error('Failed to delete project');
+        }
     };
 
     /**

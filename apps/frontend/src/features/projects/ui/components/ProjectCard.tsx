@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 interface ProjectCardProps {
     project: Project;
     onEdit?: (projectId: string) => void;
-    onDelete?: (project: Project) => void;
+    onDelete?: (projectId: string) => void;
 }
 
 /**
@@ -47,7 +47,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps): Re
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => {
-                                    onDelete?.(project);
+                                    onDelete?.(project.id);
                                 }}
                                 className="text-destructive focus:text-destructive"
                             >

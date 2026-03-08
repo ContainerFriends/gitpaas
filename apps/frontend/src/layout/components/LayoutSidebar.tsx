@@ -50,7 +50,7 @@ export function LayoutSidebar(): ReactNode {
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                         <GitBranch className="h-4 w-4 text-primary-foreground" />
                     </div>
-                    {!collapsed && <span className="text-base font-semibold text-sidebar-accent-foreground tracking-tight">DeployHub</span>}
+                    {!collapsed && <span className="text-base font-semibold text-sidebar-accent-foreground tracking-tight">GitPaaS</span>}
                 </div>
             </SidebarHeader>
 

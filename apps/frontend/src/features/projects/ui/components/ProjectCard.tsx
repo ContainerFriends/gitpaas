@@ -29,7 +29,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps): Re
         <Card className="min-h-[150px] flex flex-col">
             <CardHeader className="flex-grow">
                 <div className="flex items-start justify-between">
-                    <h3 className="text-sm font-semibold">{project.name}</h3>
+                    <h3 className="font-semibold">{project.name}</h3>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button
@@ -38,7 +38,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps): Re
                                     e.stopPropagation();
                                 }}
                             >
-                                <MoreVertical className="h-3.5 w-3.5" />
+                                <MoreVertical className="h-4 w-4" />
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-24">
@@ -63,11 +63,11 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps): Re
             </CardHeader>
             <CardFooter>
                 <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                         <Server className="h-3 w-3" />
                         <span>{project.servicesCount} services</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                         <Calendar className="h-3 w-3" />
                         <span>Created {formatDate(project.createdAt)}</span>
                     </div>

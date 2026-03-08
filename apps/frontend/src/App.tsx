@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { DashboardPage } from '@pages/DashboardPage';
+import { NetworksPage } from '@pages/NetworksPage';
 import { NotFoundPage } from '@pages/NotFoundPage';
 import { ProjectsPage } from '@pages/ProjectsPage';
 import { Toaster } from '@shared/components/sonner';
@@ -23,6 +24,7 @@ export function App(): ReactNode {
                         <Routes>
                             <Route path="/" element={<DashboardPage />} />
                             <Route path="/projects" element={<ProjectsPage />} />
+                            <Route path="/networks" element={<NetworksPage />} />
                             <Route path="*" element={<NotFoundPage />} />
                         </Routes>
                     </BrowserRouter>

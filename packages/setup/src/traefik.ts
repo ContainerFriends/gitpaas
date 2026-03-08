@@ -3,9 +3,8 @@
 /* import { getRemoteDocker } from './remote-docker';
 import type { MainTraefikConfig, FileConfig } from './traefik-config'; */
 
-/* export const TRAEFIK_SSL_PORT = Number.parseInt(process.env.TRAEFIK_SSL_PORT) || 443;
-export const TRAEFIK_PORT = Number.parseInt(process.env.TRAEFIK_PORT) || 80;
-export const TRAEFIK_HTTP3_PORT = Number.parseInt(process.env.TRAEFIK_HTTP3_PORT) || 443;
+/* 
+
 export const TRAEFIK_VERSION = process.env.TRAEFIK_VERSION || '3.6.7'; */
 
 /* export interface TraefikOptions {
@@ -222,74 +221,7 @@ export const TRAEFIK_VERSION = process.env.TRAEFIK_VERSION || '3.6.7'; */
     writeFileSync(path.join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`), yamlStr, 'utf8');
 }; */
 
-/* export const getDefaultTraefikConfig = () => {
-    const configObject: MainTraefikConfig = {
-        global: {
-            sendAnonymousUsage: false,
-        },
-        providers: {
-            ...(process.env.NODE_ENV === 'development'
-                ? {
-                      docker: {
-                        defaultRule: 'Host(`{{ trimPrefix `/` .Name }}.docker.localhost`)',
-                      },
-                  }
-                : {
-                      swarm: {
-                          exposedByDefault: false,
-                          watch: true,
-                      },
-                      docker: {
-                          exposedByDefault: false,
-                          watch: true,
-                        network: 'dokploy-network',
-                      },
-                  }),
-            file: {
-                directory: '/etc/dokploy/traefik/dynamic',
-                watch: true,
-            },
-        },
-        entryPoints: {
-            web: {
-                address: `:${TRAEFIK_PORT}`,
-            },
-            websecure: {
-                address: `:${TRAEFIK_SSL_PORT}`,
-                http3: {
-                    advertisedPort: TRAEFIK_HTTP3_PORT,
-                },
-                ...(process.env.NODE_ENV === 'production' && {
-                    http: {
-                        tls: {
-                            certResolver: 'letsencrypt',
-                        },
-                    },
-                }),
-            },
-        },
-        api: {
-            insecure: true,
-        },
-        ...(process.env.NODE_ENV === 'production' && {
-            certificatesResolvers: {
-                letsencrypt: {
-                    acme: {
-                        email: 'test@localhost.com',
-                        storage: '/etc/dokploy/traefik/dynamic/acme.json',
-                        httpChallenge: {
-                            entryPoint: 'web',
-                        },
-                    },
-                },
-            },
-        }),
-    };
 
-    const yamlStr = stringify(configObject);
-
-    return yamlStr;
-}; */
 
 /* export const getDefaultServerTraefikConfig = () => {
     const configObject: MainTraefikConfig = {
@@ -345,32 +277,3 @@ export const TRAEFIK_VERSION = process.env.TRAEFIK_VERSION || '3.6.7'; */
     return yamlStr;
 }; */
 
-/* export const createDefaultTraefikConfig = () => {
-    const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths();
-    const mainConfig = path.join(MAIN_TRAEFIK_PATH, 'traefik.yml');
-    const acmeJsonPath = path.join(DYNAMIC_TRAEFIK_PATH, 'acme.json');
-
-    if (existsSync(acmeJsonPath)) {
-        chmodSync(acmeJsonPath, '600');
-    }
-
-    // Create the traefik directory first
-    mkdirSync(MAIN_TRAEFIK_PATH, { recursive: true });
-
-    // Check if traefik.yml exists and handle the case where it might be a directory
-    if (existsSync(mainConfig)) {
-        const stats = statSync(mainConfig);
-        if (stats.isDirectory()) {
-            // If traefik.yml is a directory, remove it
-            console.log('Found traefik.yml as directory, removing it...');
-            rmSync(mainConfig, { recursive: true, force: true });
-        } else if (stats.isFile()) {
-            console.log('Main config already exists');
-            return;
-        }
-    }
-
-    const yamlStr = getDefaultTraefikConfig();
-    writeFileSync(mainConfig, yamlStr, 'utf8');
-    console.log('Traefik config created successfully');
-}; */

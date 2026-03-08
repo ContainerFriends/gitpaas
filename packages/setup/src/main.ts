@@ -5,6 +5,7 @@ import { promisify } from 'node:util';
 const execAsync = promisify(exec);
 
 import { setupDirectories } from './steps/config-paths';
+import { initializeNetwork } from './steps/initialize-network';
 import { initializeSwarm } from './steps/initialize-swarm';
 import { createDefaultMiddlewares } from './steps/traefik-setup';
 
@@ -13,17 +14,17 @@ import { createDefaultMiddlewares } from './steps/traefik-setup';
         setupDirectories();
         createDefaultMiddlewares();
         await initializeSwarm();
-        /* await initializeNetwork();
+        await initializeNetwork();
         createDefaultTraefikConfig();
-        createDefaultServerTraefikConfig();
+        /* createDefaultServerTraefikConfig();
         await execAsync(`docker pull traefik:v${TRAEFIK_VERSION}`);
         await initializeStandaloneTraefik();
         await initializeRedis();
         await initializePostgres(); */
 
-        console.log('GitPaaS setup completed');
+        console.log('✅ GitPaaS setup completed');
         exit(0);
     } catch (error) {
-        console.error('Error in GitPaaS setup', error);
+        console.error('❌ Error in GitPaaS setup', error);
     }
 })();

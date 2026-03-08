@@ -24,13 +24,13 @@ export const initializeSwarm = async (): Promise<void> => {
     const swarmInitialized = await dockerSwarmInitialized();
 
     if (swarmInitialized) {
-        console.log('Swarm is already initilized');
+        console.log('✅ Swarm is already initilized');
     } else {
         await docker.swarmInit({
             AdvertiseAddr: '127.0.0.1',
             ListenAddr: '0.0.0.0',
         });
 
-        console.log('Swarm was initilized');
+        console.log('✅ Swarm was initilized');
     }
 };

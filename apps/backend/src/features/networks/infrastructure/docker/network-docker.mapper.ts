@@ -1,29 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { DockerNetwork } from '../../domain/models/network.models';
-import { NetworkResponseDto } from '../../domain/dtos/network.dtos';
+import { Network } from '../../domain/models/network.models';
 
 /**
  * Maps Docker API response to domain model
  *
  * @param dockerNetwork Docker API network response
- * @returns DockerNetwork domain model
+ *
+ * @returns Network domain model
  */
-export function mapDockerNetworkToDomain(dockerNetwork: any): DockerNetwork {
+export function mapDockerNetworkToDomain(dockerNetwork: any): Network {
     return {
         id: dockerNetwork.Id,
         name: dockerNetwork.Name,
-    };
-}
-
-/**
- * Maps domain model to response DTO
- *
- * @param network Domain model
- * @returns NetworkResponseDto
- */
-export function mapDomainToDto(network: DockerNetwork): NetworkResponseDto {
-    return {
-        id: network.id,
-        name: network.name,
     };
 }

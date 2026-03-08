@@ -16,7 +16,11 @@
     "type-check": "turbo run type-check",
     "clean": "turbo run clean"
   },
+  "dependencies": {
+    "dockerode": "4.0.9"
+  },
   "devDependencies": {
+    "@types/dockerode": "4.0.1",
     "@types/node": "25.3.5",
     "turbo": "2.8.14",
     "tsx": "4.21.0",

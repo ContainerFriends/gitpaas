@@ -25,7 +25,7 @@ const mainNav = [
     { title: 'Servers', url: '/servers', icon: Server },
 ];
 
-const resourceNav = [
+const platformNav = [
     { title: 'Databases', url: '/databases', icon: Database },
     { title: 'Logs', url: '/logs', icon: Terminal },
     { title: 'Certificates', url: '/certificates', icon: Shield },
@@ -82,11 +82,11 @@ export function LayoutSidebar(): ReactNode {
 
                 <SidebarGroup>
                     <SidebarGroupLabel className="text-[11px] uppercase tracking-wider text-muted-foreground/60 font-medium mb-1">
-                        Resources
+                        Platform
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {resourceNav.map((item) => (
+                            {platformNav.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild>
                                         <NavLink

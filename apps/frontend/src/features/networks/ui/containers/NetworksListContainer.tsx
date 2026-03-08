@@ -3,6 +3,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { CreateNetworkDialog } from '../components/CreateNetworkDialog';
+import { NetworkCard } from '../components/NetworkCard';
 import { useNetworks } from '../hooks/useNetworks';
 import { NetworkFormData } from '../models/network-form.models';
 
@@ -125,20 +126,10 @@ export function NetworksListContainer(): ReactNode {
                 />
             </div>
 
-            <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                    <Network className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-xl font-semibold mb-2">No networks found</p>
-                    <p className="text-muted-foreground mb-4">Create your first Docker network to get started.</p>
-                    <Button
-                        onClick={() => {
-                            setIsCreateDialogOpen(true);
-                        }}
-                    >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Network
-                    </Button>
-                </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredNetworks.map((network) => (
+                    <NetworkCard key={network.id} network={network} onDelete={handleDeleteNetwork} />
+                ))}
             </div>
 
             <CreateNetworkDialog

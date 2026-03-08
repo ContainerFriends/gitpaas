@@ -28,7 +28,7 @@ const sourceTsConfig = (config) => ({
         ...(config.languageOptions ?? {}),
         parserOptions: {
             ...(config.languageOptions?.parserOptions ?? {}),
-            project: ['tsconfig.json'],
+            project: ['tsconfig.app.json'],
 
         },
     },
@@ -44,7 +44,7 @@ const testsTsConfig = (config) => ({
         ...(config.languageOptions ?? {}),
         parserOptions: {
             ...(config.languageOptions?.parserOptions ?? {}),
-            project: ['tsconfig.app.json'],
+            project: ['tsconfig.spec.json'],
         },
     },
 });

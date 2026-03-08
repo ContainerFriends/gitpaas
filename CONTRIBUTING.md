@@ -59,7 +59,7 @@ We use Node v24.4.0 and recommend this specific version. If you have nvm install
 git clone https://github.com/ContainerFriends/gitpaas.git
 cd gitpaas
 npm install
-cp apps/backend/.env.example apps/backend/.env
+cp packages/setup/.env.example packages/setup/.env
 ```
 
 ## Requirements

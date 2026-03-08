@@ -6,7 +6,7 @@ import { docker, pullImage } from '../services/docker';
  * Initialize Redis
  */
 export const initializeRedis = async () => {
-    const imageName = 'redis:7';
+    const imageName = process.env.REDIS_IMAGE || 'redis:8.4-alpine3.22';
     const containerName = 'gitpaas-redis';
 
     const settings: CreateServiceOptions = {
@@ -45,11 +45,13 @@ export const initializeRedis = async () => {
             },
         }),
     };
+
     try {
         await pullImage(imageName);
 
         const service = docker.getService(containerName);
         const inspect = await service.inspect();
+
         await service.update({
             version: Number.parseInt(inspect.Version.Index),
             ...settings,
@@ -62,8 +64,8 @@ export const initializeRedis = async () => {
             if (error?.statusCode !== 409) {
                 throw error;
             }
-            console.log('➡️ Redis service already exists, continuing...');
+            console.log('⏩ Redis service already exists, continuing...');
         }
-        console.log('➡️ Redis not found: starting...');
+        console.log('⏩ Redis not found: starting...');
     }
 };

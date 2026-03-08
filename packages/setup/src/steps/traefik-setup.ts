@@ -98,7 +98,7 @@ export const createDefaultServerTraefikConfig = (): void => {
     }
 
     const appName = 'gitpaas';
-    const serviceURLDefault = `http://${appName}:${process.env.PORT || 3000}`;
+    const serviceURLDefault = `http://${appName}:${process.env.GITPAAS_PORT || 3000}`;
     const config: FileConfig = {
         http: {
             routers: {

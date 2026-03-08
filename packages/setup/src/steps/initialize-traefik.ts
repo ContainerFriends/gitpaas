@@ -68,14 +68,14 @@ export const initializeStandaloneTraefik = async ({ env, serverId, additionalPor
         await new Promise((resolve) => setTimeout(resolve, 3000));
         console.log('✅ Traefik image pulled');
     } catch (error) {
-        console.log('➡️ Traefik image not found: pulling...', error);
+        console.log('⏩ Traefik image not found: pulling...', error);
     }
     try {
         const container = docker.getContainer(containerName);
         await container.remove({ force: true });
         await new Promise((resolve) => setTimeout(resolve, 5000));
     } catch {
-        console.log('➡️ Traefik container not found: starting new one...');
+        console.log('⏩ Traefik container not found: starting new one...');
     }
 
     try {
@@ -84,6 +84,6 @@ export const initializeStandaloneTraefik = async ({ env, serverId, additionalPor
         await newContainer.start();
         console.log('✅ Traefik started');
     } catch (error) {
-        console.log('➡️ Traefik not found: starting...', error);
+        console.log('⏩ Traefik not found: starting...', error);
     }
 };

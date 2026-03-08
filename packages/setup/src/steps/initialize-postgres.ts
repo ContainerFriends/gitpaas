@@ -8,7 +8,7 @@ import { docker, pullImage } from '../services/docker';
  * Initialize Postgres service
  */
 export const initializePostgres = async () => {
-    const imageName = 'postgres:16';
+    const imageName = process.env.POSTGRES_IMAGE || 'postgres:18.3-alpine3.23';
     const containerName = 'gitpaas-postgres';
     const settings: CreateServiceOptions = {
         Name: containerName,
@@ -64,8 +64,8 @@ export const initializePostgres = async () => {
             if (error?.statusCode !== 409) {
                 throw error;
             }
-            console.log('➡️ Postgres service already exists, continuing...');
+            console.log('⏩ Postgres service already exists, continuing...');
         }
-        console.log('➡️ Postgres tot found: starting...');
+        console.log('⏩ Postgres not found: starting...');
     }
 };

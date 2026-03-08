@@ -5,13 +5,14 @@ import { useProjects } from '../hooks/useProjects';
 
 /**
  * Projects list container component.
- * This component displays the list of projects and handles user interactions.
  */
 export function ProjectsListContainer(): ReactNode {
     // eslint-disable-next-line object-curly-newline
     const { filteredProjects, filter, loading, error, loadProjects } = useProjects();
 
-    // Load projects when component mounts
+    /**
+     * Load projects
+     */
     useEffect(() => {
         loadProjects();
     }, [loadProjects]);
@@ -47,7 +48,6 @@ export function ProjectsListContainer(): ReactNode {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-xl font-semibold tracking-tight">Projects</h1>
-                    <p className="text-sm text-muted-foreground mt-0.5">{filteredProjects.length} projects deployed</p>
                 </div>
                 <button className="h-8 px-3 rounded-md bg-primary text-primary-foreground text-xs font-medium flex items-center gap-1.5 hover:bg-primary/90 transition-colors">
                     <Plus className="h-3.5 w-3.5" />

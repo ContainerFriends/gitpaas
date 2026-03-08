@@ -136,66 +136,63 @@ function projectsReducer(state: ProjectsState, action: ProjectsAction): Projects
 export function useProjectsState() {
     const [state, dispatch] = useReducer(projectsReducer, initialState);
 
-    const actions = {
-        /**
-         * Requests to load projects (triggers loading state).
-         */
-        loadProjectsRequest: useCallback(() => {
-            dispatch({ type: 'LOAD_PROJECTS_REQUEST' });
-        }, []),
+    /**
+     * Sets the entire list of projects.
+     */
+    const setProjects = useCallback((projects: Project[]) => {
+        dispatch({ type: 'SET_PROJECTS', payload: projects });
+    }, []);
 
-        /**
-         * Sets the entire list of projects.
-         */
-        setProjects: useCallback((projects: Project[]) => {
-            dispatch({ type: 'SET_PROJECTS', payload: projects });
-        }, []),
+    /**
+     * Adds a new project to the list.
+     */
+    const addProject = useCallback((project: Project) => {
+        dispatch({ type: 'ADD_PROJECT', payload: project });
+    }, []);
 
-        /**
-         * Adds a new project to the list.
-         */
-        addProject: useCallback((project: Project) => {
-            dispatch({ type: 'ADD_PROJECT', payload: project });
-        }, []),
+    /**
+     * Updates an existing project.
+     */
+    const updateProject = useCallback((id: string, project: Partial<Project>) => {
+        dispatch({ type: 'UPDATE_PROJECT', payload: { id, project } });
+    }, []);
 
-        /**
-         * Updates an existing project.
-         */
-        updateProject: useCallback((id: string, project: Partial<Project>) => {
-            dispatch({ type: 'UPDATE_PROJECT', payload: { id, project } });
-        }, []),
+    /**
+     * Deletes a project from the list.
+     */
+    const deleteProject = useCallback((id: string) => {
+        dispatch({ type: 'DELETE_PROJECT', payload: id });
+    }, []);
 
-        /**
-         * Deletes a project from the list.
-         */
-        deleteProject: useCallback((id: string) => {
-            dispatch({ type: 'DELETE_PROJECT', payload: id });
-        }, []),
+    /**
+     * Sets the filter for the projects list.
+     */
+    const setFilter = useCallback((filter: string) => {
+        dispatch({ type: 'SET_FILTER', payload: filter });
+    }, []);
 
-        /**
-         * Sets the filter for the projects list.
-         */
-        setFilter: useCallback((filter: string) => {
-            dispatch({ type: 'SET_FILTER', payload: filter });
-        }, []),
+    /**
+     * Sets the loading state.
+     */
+    const setLoading = useCallback((loading: boolean) => {
+        dispatch({ type: 'SET_LOADING', payload: loading });
+    }, []);
 
-        /**
-         * Sets the loading state.
-         */
-        setLoading: useCallback((loading: boolean) => {
-            dispatch({ type: 'SET_LOADING', payload: loading });
-        }, []),
-
-        /**
-         * Sets an error message.
-         */
-        setError: useCallback((error: string | null) => {
-            dispatch({ type: 'SET_ERROR', payload: error });
-        }, []),
-    };
+    /**
+     * Sets an error message.
+     */
+    const setError = useCallback((error: string | null) => {
+        dispatch({ type: 'SET_ERROR', payload: error });
+    }, []);
 
     return {
         state,
-        actions,
+        setProjects,
+        addProject,
+        updateProject,
+        deleteProject,
+        setFilter,
+        setLoading,
+        setError,
     };
 }

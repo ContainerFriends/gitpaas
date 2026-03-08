@@ -24,24 +24,24 @@ interface ProjectsProviderProps {
  * Projects provider
  */
 export function ProjectsProvider({ children }: ProjectsProviderProps): ReactNode {
-    const { state, actions } = useProjectsState();
+    const { state, setLoading, setProjects, setError } = useProjectsState();
 
     /**
      * Load projects
      */
     const loadProjects = useCallback(async () => {
-        actions.setLoading(true);
+        setLoading(true);
 
         try {
             // Simulate API call
             await new Promise((resolve) => setTimeout(resolve, 500));
 
             // In real app: const response = await projectsApi.getAll();
-            actions.setProjects(mockProjects);
+            setProjects(mockProjects);
         } catch {
-            actions.setError('Failed to load projects');
+            setError('Failed to load projects');
         }
-    }, [actions]);
+    }, [setLoading, setProjects, setError]);
 
     const contextValue: ProjectsContextValue = {
         projects: state.projects,

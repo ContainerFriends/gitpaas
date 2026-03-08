@@ -1,8 +1,8 @@
-# Project Planner
+# GitPaaS
 
 ## Project overview
 
-Project Planner is a monorepo-based application for project planning and management, integrating with GitHub for organization, repository, and issue synchronization. The application follows Clean Architecture principles with a clear separation between frontend and backend services.
+GitPaaS is a self-hosted PaaS application for managing and deploying software artifacts.
 
 ## Monorepo structure
 
@@ -13,7 +13,6 @@ apps/
 ├── backend/     # Express REST API Server (Clean Architecture)
 └── frontend/    # React Web Application (Clean Architecture)
 packages/        # Shared packages
-config/          # Centralized ESLint configuration
 iac/             # Infrastructure: Docker, Prisma, Nginx
 ```
 
@@ -23,9 +22,7 @@ iac/             # Infrastructure: Docker, Prisma, Nginx
 - **Framework**: Express.js 5.2
 - **ORM**: Prisma 7.4 (PostgreSQL)
 - **Architecture**: Clean Architecture per feature with 4 layers (domain, application, infrastructure, ui)
-- **Authentication**: Auth0 JWT (`express-oauth2-jwt-bearer`)
-- **GitHub integration**: Octokit REST client
-- **Background jobs**: Inngest for async event-driven processing
+- **Docker integration**: dockerode for Docker API communication
 - **Validation**: Joi schemas
 - **Logging**: Winston + Winston-Loki
 - **Security**: Helmet, CORS
@@ -34,12 +31,8 @@ iac/             # Infrastructure: Docker, Prisma, Nginx
 
 | Feature | Description |
 |---------|-------------|
-| **authentication** | JWT middleware (Auth0), Auth0 Management API client |
-| **organizations** | CRUD + GitHub sync of organizations |
-| **repositories** | CRUD + GitHub sync of repositories, label management |
-| **issues** | CRUD + GitHub sync of issues, status/priority management |
-| **settings** | Application settings (sync exclusions) |
-| **events** | Internal events (Inngest) and external events (GitHub webhooks) |
+| **projects** | Project management with CRUD operations |
+| **networks** | Docker network management (create, list, remove, inspect) |
 
 ## Frontend application (`apps/frontend/`)
 
@@ -49,8 +42,6 @@ iac/             # Infrastructure: Docker, Prisma, Nginx
 - **State**: React Query (TanStack Query), useReducer
 - **Forms**: React Hook Form + Zod validation
 - **UI**: Tailwind CSS 3, Radix UI primitives, shadcn/ui components, Framer Motion, Lucide icons
-- **Auth**: Auth0 React SDK
-- **DnD**: @hello-pangea/dnd (drag-and-drop)
 - **Notifications**: Sonner (toast)
 
 ### Frontend features
@@ -58,10 +49,7 @@ iac/             # Infrastructure: Docker, Prisma, Nginx
 | Feature | Description |
 |---------|-------------|
 | **dashboard** | Main dashboard UI |
-| **issues** | Issue management with full CRUD |
-| **organizations** | Organization listing and sync |
-| **repositories** | Repository listing and sync |
-| **settings** | Application settings management |
+| **projects** | Project management interface |
 
 ## Development tools
 
@@ -75,12 +63,13 @@ iac/             # Infrastructure: Docker, Prisma, Nginx
 - **npm Workspaces**: Dependency management and workspace isolation
 
 ### Infrastructure
-- **Docker**: Separate Dockerfiles for backend and frontend with docker-compose
+- **Docker Swarm**: Container orchestration
+- **Traefik**: Reverse proxy and load balancer
 - **PostgreSQL**: Primary database
-- **Nginx**: Frontend reverse proxy
-- **Prisma Migrations**: Schema-first database management in `iac/prisma/`
+- **Redis**: Caching and session storage
+- **Prisma Migrations**: Schema-first database management in `iac/database/`
+- **Automated Setup**: Infrastructure provisioning via `packages/setup/`
 
 ### Runtime environment
-- **Node.js**: 24.13.1 (managed via mise)
-- **Package Manager**: npm 11.8.0
-- **Package Manager**: npm 11.8.0
+- **Node.js**: 24.14.0 (managed via mise)
+- **Package Manager**: npm 11.9.0

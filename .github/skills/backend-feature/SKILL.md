@@ -1,20 +1,20 @@
 ---
 name: backend-feature
-description: Use when creating new backend features for Project Planner. Guides through Clean Architecture layer creation with domain models, DTOs, repository interfaces, gateway interfaces, use cases, orchestrators, Prisma/Octokit infrastructure, controllers, routes, and validation.
+description: Use when creating new backend features for GitPaaS. Guides through Clean Architecture layer creation with domain models, DTOs, repository interfaces, gateway interfaces, use cases, orchestrators, Prisma/Docker infrastructure, controllers, routes, and validation.
 ---
 
-# Project Planner — Backend feature creation guide
+# GitPaaS — Backend feature creation guide
 
-Step-by-step instructions for creating new backend features following the established Clean Architecture patterns in the Project Planner monorepo.
+Step-by-step instructions for creating new backend features following the established Clean Architecture patterns in the GitPaaS monorepo.
 
 ---
 
 ## Prerequisites
 
-- Project Planner monorepo set up and running
+- GitPaaS monorepo set up and running
 - Familiarity with the backend architecture instructions (`.github/instructions/backend-architecture.instructions.md`)
-- Prisma schema already updated with the new entity model (if DB-backed)
-- Prisma client regenerated after schema changes
+- Prisma schema already updated with the new entity model (if DB-backed feature)
+- Prisma client regenerated after schema changes (for database features)
 
 ---
 
@@ -27,19 +27,18 @@ features/{feature-name}/
 ├── domain/              ← Pure types, no dependencies
 │   ├── models/          ← Entity interfaces
 │   ├── dtos/            ← Data transfer objects
-│   ├── repositories/    ← Repository interface contracts (persistence)
-│   ├── gateways/        ← Gateway interface contracts (external APIs)
+│   ├── repositories/    ← Repository/Gateway interface contracts
 │   └── constants/       ← Feature-specific constants (optional)
 ├── application/         ← Business logic, depends only on domain
 │   ├── use-cases/       ← Single-responsibility operations
 │   └── orchestrators/   ← Coordinates multiple use cases
 ├── infrastructure/      ← Concrete implementations
-│   ├── database/        ← Prisma repository + mapper
-│   └── octokit/         ← GitHub API gateway + mapper (optional)
+│   ├── database/        ← Prisma repository + mapper (for DB features)
+│   └── docker/          ← Docker API gateway + mapper (for Docker features)
 └── ui/                  ← HTTP layer
     ├── controllers/     ← Express request handlers
     ├── routes/          ← Express router definitions
-    └── validation/      ← Joi validation schemas (optional)
+    └── validators/      ← Joi validation schemas
 ```
 
 **Dependency flow:** Domain ← Application ← Infrastructure ← UI
@@ -121,37 +120,31 @@ export interface Upsert{Entity}Dto {
 
 **Common DTO types per feature:**
 
-- `Upsert{Entity}Dto` — For sync operations (create or update)
-- `Create{Entity}Dto` — For creation only
-- `Update{Entity}Dto` — For partial updates
-- `CreateGithub{Entity}Dto` — For creating on GitHub
-- `UpdateGithub{Entity}Dto` — For updating on GitHub
+- `Create{Entity}Dto` — For creation operations
+- `Update{Entity}Dto` — For partial updates  
+- `{Entity}Dto` — For external API operations (Docker, GitHub)
 
 **Example:**
 
 ```typescript
 /**
- * Create Github issue DTO
+ * Create network DTO
  */
-export interface CreateGithubIssueDto {
-    repositoryId: string;
-    title: string;
-    body: string;
-    priority: string;
-    labels: string[];
+export interface CreateNetworkDto {
+    name: string;
 }
 ```
 
 ---
 
-### Step 3: Domain layer — Repository interfaces (persistence)
+### Step 3: Domain layer — Repository interfaces (database features)
 
-Define contracts for persistence operations that the database infrastructure must implement.
+Define contracts for database persistence operations (for features like `projects`).
 
 **File:** `domain/repositories/{entity}.repository.ts`
 
 ```typescript
-import { Upsert{Entity}Dto } from '../dtos/upsert-{entity}.dto';
+import { Create{Entity}Dto } from '../dtos/create-{entity}.dto';
 import { {Entity} } from '../models/{entity}.models';
 
 /**
@@ -166,11 +159,11 @@ export interface {Entity}Repository {
     getAll: () => Promise<{Entity}[]>;
 
     /**
-     * Upsert a {entity}
+     * Create a {entity}
      *
-     * @param upsertDto {Entity} upsert data
+     * @param createDto {Entity} create data
      */
-    upsert: (upsertDto: Upsert{Entity}Dto) => Promise<void>;
+    create: (createDto: Create{Entity}Dto) => Promise<{Entity}>;
 }
 ```
 
@@ -179,25 +172,49 @@ export interface {Entity}Repository {
 - Always use JSDoc on the interface and each method
 - Methods return `Promise<T>` — everything is async
 - Use DTOs for write parameters, domain models for return types
-- Interface names: `{Entity}Repository` (e.g., `IssuesRepository`, `RepositoriesRepository`, `OrganizationsRepository`)
+- Interface names: `{Entity}Repository` (e.g., `ProjectRepository`)
 - One file per entity: `{entity}.repository.ts`
 
 ---
 
-### Step 3b: Domain layer — Gateway interfaces (external APIs)
+### Step 3b: Domain layer — Gateway interfaces (external API features)
 
-Define contracts for external API operations that the Octokit infrastructure must implement. Only needed for features that interact with GitHub.
+Define contracts for external API operations (for features like `networks` with Docker API). Note: GitPaaS follows the convention of naming these as repositories even when they're actually gateways.
 
-**File:** `domain/gateways/{entity}-github.gateway.ts`
+**File:** `domain/repositories/{entity}.gateway.ts`
 
 ```typescript
+import { Create{Entity}Dto } from '../dtos/create-{entity}.dto';
 import { {Entity} } from '../models/{entity}.models';
 
 /**
- * {Entity} Github gateway
+ * {Entity} gateway
  */
-export interface {Entity}GithubGateway {
+export interface {Entity}Gateway {
     /**
+     * Get all {entities}
+     *
+     * @returns List of {entities}
+     */
+    getAllNetworks: () => Promise<{Entity}[]>;
+    
+    /**
+     * Create a {entity}
+     *
+     * @param createDto {Entity} create data
+     */
+    createNetwork: (createDto: Create{Entity}Dto) => Promise<{Entity}>;
+}
+```
+
+**Conventions:**
+
+- Always use JSDoc on the interface and each method
+- Methods return `Promise<T>` — everything is async
+- Use DTOs for write parameters, domain models for return types
+- Interface names: `{Entity}Gateway` (e.g., `NetworkGateway`)
+- File location: `domain/repositories/` (follows project convention)
+- One file per entity: `{entity}.gateway.ts`
      * Get all {entities} from GitHub
      *
      * @returns List of {entities}
@@ -278,30 +295,30 @@ export async function getAll{Entities}UseCase(
 }
 ```
 
-**Use case for GitHub (gateway):**
+**Use case for external API (gateway):**
 
 ```typescript
-import { {Entity}GithubGateway } from '../../domain/gateways/{entity}-github.gateway';
+import { {Entity}Gateway } from '../../domain/repositories/{entity}.gateway';
 import { {Entity} } from '../../domain/models/{entity}.models';
 
 /**
- * Get all {entities} from GitHub use case.
+ * Get all {entities} from external API use case.
  *
- * @param gateway GitHub {entity} gateway
+ * @param gateway {Entity} gateway
  *
  * @returns {Entity} list
  */
-export async function getAll{Entities}FromGithubUseCase(
-    gateway: {Entity}GithubGateway,
+export async function getAll{Entities}UseCase(
+    gateway: {Entity}Gateway,
 ): Promise<{Entity}[]> {
-    return gateway.getAll();
+    return gateway.getAllNetworks();
 }
 ```
 
 **Use case for creation with DTO mapping:**
 
 ```typescript
-import { Upsert{Entity}Dto } from '../../domain/dtos/upsert-{entity}.dto';
+import { Create{Entity}Dto } from '../../domain/dtos/create-{entity}.dto';
 import { {Entity} } from '../../domain/models/{entity}.models';
 import { {Entity}Repository } from '../../domain/repositories/{entity}.repository';
 
@@ -309,19 +326,13 @@ import { {Entity}Repository } from '../../domain/repositories/{entity}.repositor
  * Create {entity} use case.
  *
  * @param repository {Entity} repository
- * @param data {Entity} creation data
+ * @param createDto {Entity} creation data
  */
 export async function create{Entity}UseCase(
     repository: {Entity}Repository,
-    data: {Entity},
-): Promise<void> {
-    const upsertDto: Upsert{Entity}Dto = {
-        id: data.id,
-        name: data.name,
-        // ... map domain model to DTO
-    };
-
-    return repository.upsert(upsertDto);
+    createDto: Create{Entity}Dto,
+): Promise<{Entity}> {
+    return repository.create(createDto);
 }
 ```
 
@@ -370,7 +381,7 @@ export async function sync{Entities}Orchestrator(
 }
 ```
 
-**Simple orchestrator (delegation only):**
+**Simple orchestrator for database feature (delegation only):**
 
 ```typescript
 export async function get{Entities}Orchestrator(
@@ -384,24 +395,25 @@ export async function get{Entities}Orchestrator(
 
 - Orchestrators receive ALL repository/gateway interfaces they need via parameters
 - Use `Promise.all` for parallel independent operations
-- Cross-feature: import use cases from other features when needed (e.g., repos orchestrator imports org use cases)
-- Name reflects the workflow: `sync`, `get`, `create`, `update`, `changeStatus`
+- Name reflects the workflow: `get`, `create`, `update`, `delete`
 - Always async functions
-- Use `gateway` parameter name for GitHub gateway interfaces, `repository` for persistence interfaces
+- Use `gateway` parameter name for external API interfaces, `repository` for database interfaces
+- Database features: orchestrators mainly delegate to single use cases
+- External API features: orchestrators may coordinate multiple external operations
 
 ---
 
-### Step 7: Infrastructure layer — Prisma mapper
+### Step 7a: Infrastructure layer — Prisma mapper (database features)
 
-Bidirectional mapper between Prisma types and domain models.
+Bidirectional mapper between Prisma types and domain models (for features like `projects`).
 
 **File:** `infrastructure/database/{entity}-prisma.mapper.ts`
 
 ```typescript
-import { Upsert{Entity}Dto } from '../../domain/dtos/upsert-{entity}.dto';
+import { Create{Entity}Dto } from '../../domain/dtos/create-{entity}.dto';
 import { {Entity} } from '../../domain/models/{entity}.models';
 
-import { {Entity} as Prisma{Entity} } from '@core/infrastructure/prisma/generated/client';
+import { {Entity} as Prisma{Entity} } from '@core/infrastructure/prisma/client';
 
 /**
  * {Entity} Prisma data mapper
@@ -412,52 +424,65 @@ export const {entity}PrismaMapper = {
         name: prisma{Entity}.name,
         // ... map all fields from Prisma to domain
     }),
-    toPersistenceUpsert: (upsertDto: Upsert{Entity}Dto): Prisma{Entity} => ({
-        id: upsertDto.id,
-        name: upsertDto.name,
-        // ... map all fields from DTO to Prisma type
+    toPersistenceCreate: (createDto: Create{Entity}Dto): Prisma.{Entity}CreateInput => ({
+        id: createDto.id,
+        name: createDto.name,
+        // ... map all fields from DTO to Prisma create input
     }),
 };
 ```
 
-**For entities with relations, add specialized mappers:**
+### Step 7b: Infrastructure layer — Docker mapper (external API features)
+
+Bidirectional mapper between Docker API responses and domain models (for features like `networks`).
+
+**File:** `infrastructure/docker/{entity}-docker.mapper.ts`
 
 ```typescript
-export const {entity}PrismaMapper = {
-    toDomain: (prisma{Entity}: Prisma{Entity}): {Entity} => ({ /* ... */ }),
-    toDomainWithRelation: (prisma{Entity}: Prisma{Entity} & {
-        relation: PrismaRelation;
-    }): {Entity}WithRelation => ({
-        // ... map entity fields
-        relation: relationPrismaMapper.toDomain(prisma{Entity}.relation),
+import { Create{Entity}Dto } from '../../domain/dtos/create-{entity}.dto';
+import { {Entity} } from '../../domain/models/{entity}.models';
+
+/**
+ * {Entity} Docker mapper
+ */
+export const {entity}DockerMapper = {
+    /**
+     * Maps Docker API response to domain model
+     *
+     * @param dockerNetwork Docker API response
+     *
+     * @returns {Entity} domain model
+     */
+    toDomain: (dockerResponse: any): {Entity} => ({
+        id: dockerResponse.Id,
+        name: dockerResponse.Name,
+        // ... map fields from Docker API to domain
     }),
-    toPersistenceCreate: (dto: Create{Entity}Dto): Prisma.{Entity}CreateInput => ({
-        // ... use `relation: { connect: { id: dto.relationId } }` for relations
-    }),
-    toPersistenceUpdate: (dto: Update{Entity}Dto): Prisma.{Entity}UpdateInput => ({
-        // ... only updated fields
+
+    /**
+     * Maps domain DTO to Docker API options
+     *
+     * @param createDto Domain create DTO
+     *
+     * @returns Docker API options
+     */
+    toDockerCreateOptions: (createDto: Create{Entity}Dto): any => ({
+        Name: createDto.name,
+        // ... map DTO fields to Docker API format
     }),
 };
 ```
-
-**Conventions:**
-
-- Mapper is a const object (not a class)
-- Export named as `{entity}PrismaMapper`
-- Import Prisma types from `@core/infrastructure/prisma/generated/client`
-- Handle JSON fields with helper functions (e.g., `convertLabelsFromPrisma()`)
-- Handle `null` ↔ `undefined` conversions between Prisma and domain
 
 ---
 
-### Step 8: Infrastructure layer — Prisma repository
+### Step 8a: Infrastructure layer — Prisma repository (database features)
 
-Concrete implementation of the persistence repository interface.
+Concrete implementation of the repository interface for database persistence.
 
 **File:** `infrastructure/database/{entity}-prisma.repository.ts`
 
 ```typescript
-import { Upsert{Entity}Dto } from '../../domain/dtos/upsert-{entity}.dto';
+import { Create{Entity}Dto } from '../../domain/dtos/create-{entity}.dto';
 import { {Entity} } from '../../domain/models/{entity}.models';
 import { {Entity}Repository } from '../../domain/repositories/{entity}.repository';
 
@@ -475,7 +500,7 @@ export const {entity}PrismaRepository: {Entity}Repository = {
         try {
             const prisma = prismaClient.getInstance() as PrismaClient;
             const entities = await prisma.{entity}.findMany({
-                orderBy: { name: 'asc' },
+                orderBy: { createdAt: 'desc' },
             });
 
             return entities.map({entity}PrismaMapper.toDomain);
@@ -486,17 +511,17 @@ export const {entity}PrismaRepository: {Entity}Repository = {
             );
         }
     },
-    upsert: async (upsertDto: Upsert{Entity}Dto): Promise<void> => {
+    create: async (createDto: Create{Entity}Dto): Promise<{Entity}> => {
         try {
             const prisma = prismaClient.getInstance() as PrismaClient;
-            await prisma.{entity}.upsert({
-                where: { id: upsertDto.id },
-                update: {entity}PrismaMapper.toPersistenceUpsert(upsertDto),
-                create: {entity}PrismaMapper.toPersistenceUpsert(upsertDto),
+            const created{Entity} = await prisma.{entity}.create({
+                data: {entity}PrismaMapper.toPersistenceCreate(createDto),
             });
+
+            return {entity}PrismaMapper.toDomain(created{Entity});
         } catch (error: unknown) {
             throw new DatabaseError(
-                `Failed to create or update {entity}: ${(error as Error).message}`,
+                `Failed to create {entity}: ${(error as Error).message}`,
                 DatabaseErrorType.DATABASE_CONNECTION_ERROR,
             );
         }
@@ -504,7 +529,57 @@ export const {entity}PrismaRepository: {Entity}Repository = {
 };
 ```
 
-**Conventions:**
+### Step 8b: Infrastructure layer — Docker gateway (external API features)
+
+Concrete implementation of the gateway interface for Docker API communication.
+
+**File:** `infrastructure/docker/{entity}-docker.gateway.ts`
+
+```typescript
+import { Create{Entity}Dto } from '../../domain/dtos/create-{entity}.dto';
+import { {Entity} } from '../../domain/models/{entity}.models';
+import { {Entity}Gateway } from '../../domain/gateways/{entity}.gateway';
+
+import { {entity}DockerMapper } from './{entity}-docker.mapper';
+
+import { DockerError, DockerErrorType } from '@core/domain/errors/docker.error';
+import { dockerClient } from '@core/infrastructure/docker/docker.client';
+
+/**
+ * {Entity} Docker gateway
+ */
+export const {entity}DockerGateway: {Entity}Gateway = {
+    getAllNetworks: async (): Promise<{Entity}[]> => {
+        try {
+            const networks = await dockerClient.listNetworks();
+            return networks.map({entity}DockerMapper.toDomain);
+        } catch (error) {
+            throw new DockerError(
+                `Failed to get networks: ${(error as Error).message}`,
+                DockerErrorType.API_ERROR
+            );
+        }
+    },
+
+    createNetwork: async (createDto: Create{Entity}Dto): Promise<{Entity}> => {
+        try {
+            const createOptions = {entity}DockerMapper.toDockerCreateOptions(createDto);
+            const result = await dockerClient.createNetwork(createOptions);
+            const network = dockerClient.getNetwork(result.Id);
+            const networkInfo = await network.inspect();
+
+            return {entity}DockerMapper.toDomain(networkInfo);
+        } catch (error) {
+            throw new DockerError(
+                `Failed to create network: ${(error as Error).message}`,
+                DockerErrorType.API_ERROR
+            );
+        }
+    },
+};
+```
+
+**Conventions for database features (Prisma repositories):**
 
 - Repository is a const object implementing the domain interface
 - Always get Prisma client via `prismaClient.getInstance() as PrismaClient`
@@ -514,136 +589,18 @@ export const {entity}PrismaRepository: {Entity}Repository = {
 - Use `connect: { id }` for writing relation references
 - Export named as `{entity}PrismaRepository`
 
----
+**Conventions for external API features (Docker gateways):**
 
-### Step 9: Infrastructure layer — Octokit mapper
-
-For features integrating with GitHub API.
-
-**File:** `infrastructure/octokit/{entity}-octokit.mapper.ts`
-
-```typescript
-import { Octokit } from '@octokit/rest';
-import { GetResponseDataTypeFromEndpointMethod } from '@octokit/types';
-
-import { {Entity} } from '../../domain/models/{entity}.models';
-
-type OctokitInstance = Octokit;
-
-type Octokit{Entity}Data = GetResponseDataTypeFromEndpointMethod<
-    OctokitInstance['rest']['{scope}']['{method}']
->[number];
-
-/**
- * {Entity} Octokit data mapper
- */
-export const {entity}OctokitMapper = {
-    toDomain: (octokit{Entity}: Octokit{Entity}Data): {Entity} => ({
-        id: octokit{Entity}.id.toString(),  // GitHub IDs are numbers → convert to string
-        name: octokit{Entity}.login,
-        // ... map GitHub API fields to domain model
-    }),
-};
-```
-
-**Conventions:**
-
-- Use `@octokit/types` `GetResponseDataTypeFromEndpointMethod` for type-safe API response types
-- Convert numeric GitHub IDs to strings
-- Map snake_case API fields to camelCase domain fields
-- Mapper is a const object, exported as `{entity}OctokitMapper`
+- Gateway is a const object implementing the domain interface
+- Import Docker client from `@core/infrastructure/docker/docker.client`
+- Use domain-specific error types (`DockerError`)
+- Handle Docker API response transformation through mappers
+- Return domain models, never Docker API objects directly
+- Export named as `{entity}DockerGateway`
 
 ---
 
-### Step 10: Infrastructure layer — Octokit gateway
-
-Concrete implementation of the GitHub gateway interface.
-
-**File:** `infrastructure/octokit/{entity}-octokit.gateway.ts`
-
-```typescript
-import { {Entity} } from '../../domain/models/{entity}.models';
-import { {Entity}GithubGateway } from '../../domain/gateways/{entity}-github.gateway';
-
-import { {entity}OctokitMapper } from './{entity}-octokit.mapper';
-
-import { ConfigurationError } from '@core/domain/errors/configuration.error';
-import { GitHubError } from '@core/domain/errors/github.error';
-import { getOctokitInstance } from '@core/infrastructure/octokit/client.octokit';
-
-/**
- * {Entity} Octokit gateway
- */
-export const {entity}OctokitGateway: {Entity}GithubGateway = {
-    getAll: async (): Promise<{Entity}[]> => {
-        try {
-            const octokit = getOctokitInstance();
-
-            const response = await octokit.rest.{scope}.{method}({
-                per_page: 100,
-            });
-
-            return response.data.map({entity}OctokitMapper.toDomain);
-        } catch (error: unknown) {
-            // Re-throw ConfigurationError as-is (missing token, etc.)
-            if (error instanceof ConfigurationError) {
-                throw error;
-            }
-
-            const statusCode = error && typeof error === 'object' && 'status' in error
-                ? (error as { status: number }).status
-                : undefined;
-
-            throw new GitHubError(
-                'Failed to retrieve {entities} from GitHub API',
-                statusCode,
-            );
-        }
-    },
-};
-```
-
-**For paginated endpoints:**
-
-```typescript
-getAll: async (): Promise<{Entity}[]> => {
-    try {
-        const octokit = getOctokitInstance();
-        const allEntities: {Entity}[] = [];
-        let page = 1;
-        let hasMorePages = true;
-
-        while (hasMorePages) {
-            const response = await octokit.rest.{scope}.{method}({
-                per_page: 100,
-                page,
-            });
-
-            allEntities.push(...response.data.map({entity}OctokitMapper.toDomain));
-
-            hasMorePages = response.data.length === 100;
-            page++;
-        }
-
-        return allEntities;
-    } catch (error: unknown) {
-        // ... same error handling pattern
-    }
-},
-```
-
-**Conventions:**
-
-- Get Octokit via `getOctokitInstance()` singleton
-- Always re-throw `ConfigurationError` without wrapping
-- Wrap other errors in `GitHubError` with extracted status code
-- Use `per_page: 100` for list endpoints
-- Implement `while(hasMorePages)` pagination for endpoints that may exceed 100 results
-- Export named as `{entity}OctokitGateway`
-
----
-
-### Step 11: UI layer — Validation schemas
+### Step 9: UI layer — Validation schemas
 
 Joi schemas for request validation.
 
@@ -866,6 +823,7 @@ Use the appropriate domain error in infrastructure implementations:
 | `ConflictError` | `@core/domain/errors/conflict.error` | 409 | Duplicate/conflict |
 | `DatabaseError` | `@core/domain/errors/database.error` | varies | DB operations failed |
 | `GitHubError` | `@core/domain/errors/github.error` | varies | GitHub API failed |
+| `DockerError` | `@core/domain/errors/docker.error` | varies | Docker API failed |
 | `ConfigurationError` | `@core/domain/errors/configuration.error` | 500 | Missing env vars |
 | `TimeoutError` | `@core/domain/errors/timeout.error` | 408/504 | Operation timed out |
 
@@ -876,9 +834,9 @@ Use the appropriate domain error in infrastructure implementations:
 Features can import use cases from other features when needed:
 
 ```typescript
-// In repositories orchestrator — importing from organizations feature
-import { getAllOrganizationsUseCase } from
-    '@features/organizations/application/use-cases/get-all-organizations.use-case';
+// In projects orchestrator — importing from other features
+import { getAllProjectsUseCase } from
+    '@features/projects/application/use-cases/get-all-projects.use-case';
 ```
 
 **Allowed cross-feature imports:**
@@ -888,7 +846,7 @@ import { getAllOrganizationsUseCase } from
 - Domain repository interfaces from `domain/repositories/`
 - Domain gateway interfaces from `domain/gateways/`
 - Infrastructure repositories from `infrastructure/database/` (only in controllers for DI)
-- Infrastructure gateways from `infrastructure/octokit/` (only in controllers for DI)
+- Infrastructure gateways from `infrastructure/docker/` (only in controllers for DI)
 
 **Not allowed:**
 
@@ -897,34 +855,48 @@ import { getAllOrganizationsUseCase } from
 
 ---
 
-## Persistence-Only features
+## Database-Only features
 
-Not all features need GitHub integration. For persistence-only features (like Settings):
+Not all features need external API integration. For database-only features (like projects):
 
 1. Skip the `domain/gateways/` directory entirely
-2. Skip the `infrastructure/octokit/` directory entirely
+2. Skip the `infrastructure/docker/` directory entirely
 3. Only define `{Entity}Repository` in domain (no gateway interface)
-4. Orchestrators only receive the persistence repository
+4. Orchestrators only receive the database repository
 5. Controllers only inject the Prisma repository
 
 ---
 
 ## Checklist for new feature
 
-- [ ] **Prisma schema** updated in `iac/prisma/schema.prisma`
+**For database features (like projects):**
+- [ ] **Prisma schema** updated in `iac/database/schema.prisma`
 - [ ] **Migration** created via `npx prisma migrate dev`
 - [ ] **Prisma client** regenerated
 - [ ] **Domain models** defined in `domain/models/`
 - [ ] **DTOs** created for each operation in `domain/dtos/`
 - [ ] **Repository interfaces** defined in `domain/repositories/`
-- [ ] **Gateway interfaces** defined in `domain/gateways/` (if GitHub integration)
 - [ ] **Constants** added if needed in `domain/constants/`
 - [ ] **Use cases** created in `application/use-cases/`
 - [ ] **Orchestrators** created in `application/orchestrators/`
 - [ ] **Prisma mapper** implemented in `infrastructure/database/`
 - [ ] **Prisma repository** implemented in `infrastructure/database/`
-- [ ] **Octokit mapper** implemented (if GitHub integration) in `infrastructure/octokit/`
-- [ ] **Octokit gateway** implemented (if GitHub integration) in `infrastructure/octokit/`
+- [ ] **Joi validation schemas** defined in `ui/validation/` (if needed)
+- [ ] **Controllers** created in `ui/controllers/` (one per endpoint)
+- [ ] **Router** defined in `ui/routes/`
+- [ ] **Router registered** in `apps/backend/src/index.ts`
+- [ ] **JSDoc** added to all public interfaces and functions
+- [ ] **All errors** wrapped in appropriate domain error types
+
+**For external API features (like networks):**
+- [ ] **Domain models** defined in `domain/models/`
+- [ ] **DTOs** created for each operation in `domain/dtos/`
+- [ ] **Gateway interfaces** defined in `domain/gateways/`
+- [ ] **Constants** added if needed in `domain/constants/`
+- [ ] **Use cases** created in `application/use-cases/`
+- [ ] **Orchestrators** created in `application/orchestrators/`
+- [ ] **Docker mapper** implemented in `infrastructure/docker/`
+- [ ] **Docker gateway** implemented in `infrastructure/docker/`
 - [ ] **Joi validation schemas** defined in `ui/validation/` (if needed)
 - [ ] **Controllers** created in `ui/controllers/` (one per endpoint)
 - [ ] **Router** defined in `ui/routes/`
@@ -940,11 +912,11 @@ Not all features need GitHub integration. For persistence-only features (like Se
 |---------|-----|
 | Importing Prisma types directly in domain layer | Domain must be pure — only use domain interfaces/models |
 | Using raw HTTP status codes (200, 404) | Use `StatusCodes` enum from `http-status-codes` |
-| Catching errors without re-throwing as domain errors | Always wrap in `DatabaseError` / `GitHubError` in infrastructure |
+| Catching errors without re-throwing as domain errors | Always wrap in `DatabaseError` / `DockerError` in infrastructure |
 | Missing `authenticationMiddleware` on routes | Every feature route MUST include auth middleware |
 | Calling orchestrators from other orchestrators | Compose at orchestrator level using use cases instead |
 | Forgetting to register router in `index.ts` | Add `app.use()` mount after creating the router |
 | Using `undefined` instead of `null` for optional model fields | Models use `null`, DTOs can use `?:` optional syntax |
-| Not mapping between layers | Always use mappers — never pass Prisma/Octokit types to domain |
-| Confusing repositories and gateways | Repositories are for persistence (DB), gateways are for external APIs (GitHub) |
-| Using `External{Entity}Repository` naming | Use `{Entity}GithubGateway` in `domain/gateways/` instead |
+| Not mapping between layers | Always use mappers — never pass Prisma/Docker API types to domain |
+| Confusing repositories and gateways | Repositories are for persistence (DB), gateways are for external APIs (Docker) |
+| Using `External{Entity}Repository` naming | Use `{Entity}Gateway` in `domain/gateways/` instead |

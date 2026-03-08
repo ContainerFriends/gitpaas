@@ -1,6 +1,6 @@
 ---
 name: "Backend Architecture"
-description: "Clean Architecture patterns and conventions for Project Planner backend application"
+description: "Clean Architecture patterns and conventions for GitPaaS backend application"
 applyTo: "apps/backend/src/**/*.{ts,js}"
 ---
 
@@ -8,7 +8,7 @@ applyTo: "apps/backend/src/**/*.{ts,js}"
 
 ## Overview
 
-Project Planner backend implementa **Clean Architecture** con una estructura modular basada en features, integraciones externas robustas y patrones de orquestación para workflows complejos.
+GitPaaS backend implements **Clean Architecture** with a modular feature-based structure, focusing on project management and Docker integration. The application follows strict layer separation with clear dependency inversion patterns.
 
 ## Architecture layers
 
@@ -17,29 +17,46 @@ Project Planner backend implementa **Clean Architecture** con una estructura mod
 src/
 ├── core/                   # Shared infrastructure and domain concepts
 │   ├── domain/             # Common interfaces, errors, models
-│   ├── infrastructure/     # Shared services (logging, database, external APIs, Inngest)
-│   └── ui/                 # Common HTTP components (middlewares, handlers)
+│   │   ├── errors/         # Domain error classes
+│   │   ├── interfaces/     # Shared interfaces
+│   │   └── models/         # Common domain models
+│   ├── infrastructure/     # Shared services (logging, database, Docker, Prisma)
+│   │   ├── docker/         # Docker client configuration
+│   │   ├── express/        # Express configuration and middleware
+│   │   ├── loggers/        # Winston logging setup
+│   │   ├── octokit/        # GitHub client (available but unused)
+│   │   └── prisma/         # Database client and configuration
+│   └── ui/                 # Common HTTP components (middlewares, handlers, routes)
+│       ├── controllers/    # Shared controllers (health)
+│       ├── handlers/       # Error handlers
+│       ├── middlewares/    # Common middleware
+│       └── routes/         # Health check routes
 └── features/               # Business features with Clean Architecture
-    └── [entity]/
+    ├── projects/           # Project management (Database-backed)
+    │   ├── application/    # Use cases and orchestrators
+    │   ├── domain/         # Business logic and contracts
+    │   │   ├── dtos/       # Data transfer objects
+    │   │   ├── models/     # Project entity models
+    │   │   └── repositories/ # Database persistence interfaces
+    │   ├── infrastructure/ # External dependencies implementation
+    │   │   └── database/   # Prisma repositories + mappers
+    │   └── ui/             # HTTP layer and entrypoints
+    │       ├── controllers/ # Request handlers
+    │       ├── routes/      # Express route definitions
+    │       └── validation/  # Joi schemas
+    └── networks/           # Docker network management (API-backed)
         ├── application/    # Use cases and orchestrators
-        ├── domain/         # Pure business logic and contracts
-        │   ├── constants/  # Domain constants
+        ├── domain/         # Business logic and contracts
         │   ├── dtos/       # Data transfer objects
-        │   ├── events/     # Inngest event name constants
-        │   ├── gateways/   # External API interfaces (GitHub)
-        │   ├── models/     # Entity models and types
-        │   └── repositories/ # Persistence interfaces
+        │   ├── models/     # Network entity models
+        │   └── repositories/ # Gateway interfaces (named as repositories)
         ├── infrastructure/ # External dependencies implementation
-        │   ├── database/   # Prisma repositories + mappers
-        │   └── octokit/    # Octokit gateways + mappers
+        │   └── docker/     # Docker gateway + mappers
         └── ui/             # HTTP layer and entrypoints
-            ├── controllers/  # Request handlers
-            ├── events/       # Inngest function handlers (entrypoints)
-            ├── routes/       # Express route definitions
-            └── validation/   # Joi schemas
+            ├── controllers/ # Request handlers
+            ├── routes/      # Express route definitions
+            └── validators/  # Joi schemas
 ```
-
-> Not all features require every subdirectory. For example, `settings` has no gateways (no GitHub integration), `authentication` has only infrastructure and ui layers, and `events` has only ui layer.
 
 ### Dependency flow
 ```
@@ -71,19 +88,21 @@ Domain (interfaces) ← Application (use cases) ← Infrastructure (implementati
 - Example: `status: 'todo' | 'in_progress' | 'done'`
 - Rich domain models with composed relationships
 
-### Repository interfaces
+### Repository interfaces (Database persistence)
 
-- Abstract persistence dependencies (database)
+- Abstract database dependencies for entities stored in PostgreSQL
 - Located in `domain/repositories/`
-- Naming: `{Entity}Repository` (e.g., `IssuesRepository`, `RepositoriesRepository`, `OrganizationsRepository`)
+- Naming: `{Entity}Repository` (e.g., `ProjectRepository`)
 - Implemented by Prisma repositories in `infrastructure/database/`
+- Used for: `projects` feature
 
-### Gateway interfaces
+### Gateway interfaces (External API integration)
 
-- Abstract external API dependencies (GitHub)
-- Located in `domain/gateways/`
-- Naming: `{Entity}GithubGateway` (e.g., `IssuesGithubGateway`, `RepositoriesGithubGateway`, `OrganizationsGithubGateway`)
-- Implemented by Octokit gateways in `infrastructure/octokit/`
+- Abstract external API dependencies (Docker API)
+- Located in `domain/repositories/` (following project convention)
+- Naming: `{Entity}Gateway` (e.g., `NetworkGateway`)
+- Implemented by API gateways in `infrastructure/{service}/`
+- Used for: `networks` feature with Docker integration
 
 ### DTOs and Value objects
 
@@ -93,13 +112,14 @@ Domain (interfaces) ← Application (use cases) ← Infrastructure (implementati
 
 ### Domain errors
 
-Hierarchical error system:
+Hierarchical error system for different failure scenarios:
 
-- `AuthenticationError` / `AuthorizationError`
-- `DatabaseError` with specific error types
-- `GitHubError` for external API failures
-- `ConfigurationError` for setup issues
-- `NotFoundError` / `ConflictError` / `TimeoutError`
+- `AuthenticationError` / `AuthorizationError` - For future auth implementation
+- `DatabaseError` - Database connection and operation failures
+- `DockerError` - Docker API communication failures
+- `GitHubError` - GitHub API errors (infrastructure available but unused)
+- `ConfigurationError` - Application setup and config issues
+- `NotFoundError` / `ConflictError` / `BadRequestError` / `TimeoutError` - HTTP-related errors
 
 ## Infrastructure layer (External dependencies)
 
@@ -108,45 +128,26 @@ Hierarchical error system:
 - **ORM**: Prisma with PostgreSQL adapter
 - **Pattern**: singleton client with connection pooling
 - **Location**: `core/infrastructure/prisma/`
-- **Features**: type-safe operations, migrations, logging per environment
+- **Features**: type-safe operations, migrations, environment-based logging
+- **Repository implementation**: `{entity}PrismaRepository` in `infrastructure/database/`
+- **Mappers**: `{entity}-prisma.mapper.ts` for data transformation between Prisma and domain models
 
-### External API integration (GitHub Gateways)
+### Docker API integration
 
-- **GitHub**: Octokit REST API client
-- **Pattern**: Gateway pattern — implementations in `infrastructure/octokit/` implement domain gateway interfaces from `domain/gateways/`
-- **Client factory**: centralized Octokit instance in `core/infrastructure/octokit/`
-- **Naming**: `{entity}OctokitGateway` (e.g., `issuesOctokitGateway`, `repositoriesOctokitGateway`, `organizationsOctokitGateway`)
-- **Mappers**: `{entity}-octokit.mapper.ts` transform external API data to domain models
-- **Error Handling**: API-specific error wrapping with `GitHubError`
-
-### Background jobs (Inngest)
-
-- **Client**: Singleton `inngestClient` in `core/infrastructure/inngest/inngest.client.ts`
-- **Purpose**: Async event-driven processing for heavy operations (sync workflows)
-- **Event constants**: Defined in `domain/events/{feature}.events.ts` with `id` and `name` fields
-- **Event handlers**: Inngest functions in `ui/events/{action}.event.ts` (considered UI entrypoints)
-- **Registration**: All Inngest functions are registered centrally in `features/events/ui/controllers/internal-events.controller.ts` via `serve()`
-- **Dispatch**: Controllers send events via `inngestClient.send({ name: EVENT_CONSTANT.name, data: {} })`
-- **Route**: Inngest serve middleware is mounted at `/v1/events/internal`
-
-#### Event flow
-```
-1. Controller → inngestClient.send({ name: SYNC_ORGANIZATIONS_EVENT.name, data: {} })
-2. Inngest receives event → matches handler in ui/events/
-3. Handler executes orchestrator with injected dependencies
-```
-
-#### Event naming convention
-- Event names: `planner/{entity}.{action}` (e.g., `planner/organizations.sync`)
-- Event IDs: `{action}-{entity}` (e.g., `sync-organizations`)
-- Constants file: `domain/events/{entity}.events.ts`
+- **Client**: dockerode for Docker socket communication
+- **Pattern**: Gateway pattern — implementations in `infrastructure/docker/` implement domain gateway interfaces
+- **Client factory**: centralized Docker client in `core/infrastructure/docker/docker.client.ts`
+- **Naming**: `{entity}DockerGateway` (e.g., `networkDockerGateway`)
+- **Mappers**: `{entity}-docker.mapper.ts` transform Docker API data to domain models
+- **Error Handling**: API-specific error wrapping with `DockerError`
 
 ### Logging system
 
 - **Library**: Winston with structured logging
 - **Features**: multiple transports (Console + optional Loki)
-- **Levels**: debug, Info, Warn, Error with environment-based filtering
+- **Levels**: debug, info, warn, error with environment-based filtering
 - **Format**: colored console output with timestamps and metadata
+- **Usage**: controllers use `appLogger` for error logging and request tracking
 
 ## UI layer (HTTP interface)
 
@@ -158,75 +159,87 @@ Security (Helmet) → CORS → JSON Parsing → Routes → Error Handling
 
 ### Route organization
 
-- Feature-based routing: `/v1/organizations`, `/v1/repositories`, `/v1/issues`
+- Feature-based routing: `/v1/projects`, `/v1/networks`
 - Health check endpoint: `/health`
-- Versioned APIs with configurable API version
-
-### Middleware pipeline
-
-- **Authentication**: Auth0 JWT validation
-- **Validation**: Joi schema validation with factory pattern
-- **Error Handling**: centralized error mapping to HTTP responses
-- **Logging**: request/response logging with structured data
+- Versioned APIs with configurable API version via environment variables
 
 ### Controller pattern
 
-- Thin controllers that delegate to orchestrators/use-cases
-- Controllers that trigger background jobs dispatch Inngest events instead of calling orchestrators directly
+- Thin controllers that delegate to orchestrators
 - Consistent error handling with centralized error handler
 - HTTP status code mapping from domain errors
+- Structured logging for request tracking and debugging
+- Dependency injection of repositories/gateways into orchestrators
 
 ## Configuration management
 
 ### Environment variables
 
-- **Required**: PORT, HOST, ENVIRONMENT, API_VERSION, CORS_ORIGIN, AUTH0_ISSUER, AUTH0_AUDIENCE
-- **Optional**: DATABASE_URL, GITHUB_PERSONAL_ACCESS_TOKEN, LOG_LEVEL, LOKI_URL
+- **Required**: PORT, HOST, NODE_ENV, API_VERSION, CORS_ORIGIN, REQUEST_TIMEOUT, DATABASE_URL
+- **Optional**: LOG_LEVEL, LOKI_URL
 - **Validation**: startup validation ensures required variables are present
+- **No authentication**: Auth0 variables removed (future implementation)
 
 ### Security configuration
 
 - **CORS**: configurable origins with validation
 - **Helmet**: security headers for production
 - **Rate Limiting**: JSON body size limits (10mb)
-- **Authentication**: Auth0 integration for JWT validation
+- **Future authentication**: Auth0 integration planned but not implemented
 
 ## Integration patterns
 
-### GitHub API integration
+### Docker API integration
 
-- Repository synchronization and issue management
-- Pagination handling for large datasets
-- Label-based issue categorization (status/, priority/ prefixes)
-- Rate limiting awareness and error handling
+- Network management operations (create, list, remove, inspect)
+- Container connection/disconnection to networks
+- Network pruning operations
+- Error handling for Docker daemon communication
+- Mapping between Docker API responses and domain models
 
 ### Database patterns
 
 - Repository pattern: Prisma implementations fulfill domain repository interfaces
-- Naming: `{entity}PrismaRepository` in `infrastructure/database/` (e.g., `issuesPrismaRepository`)
+- Naming: `{entity}PrismaRepository` in `infrastructure/database/` (e.g., `projectPrismaRepository`)
 - Prisma mappers (`{entity}-prisma.mapper.ts`) for data transformation
-- Transaction support for complex operations
 - Connection management with graceful shutdown
+- Transaction support for complex operations
 
 ### Gateway patterns
 
-- Gateway pattern: Octokit implementations fulfill domain gateway interfaces
-- Naming: `{entity}OctokitGateway` in `infrastructure/octokit/` (e.g., `issuesOctokitGateway`)
-- Octokit mappers (`{entity}-octokit.mapper.ts`) for external data transformation
-- Centralized error handling with `GitHubError` and `ConfigurationError`
+- Gateway pattern: implementations fulfill domain gateway interfaces for external APIs
+- Naming: `{entity}DockerGateway` in `infrastructure/docker/` (e.g., `networkDockerGateway`)
+- API mappers (`{entity}-docker.mapper.ts`) for external data transformation
+- Centralized error handling with domain-specific errors (`DockerError`)
+- Unified object-based structure with methods (not individual functions)
 
 ## Deployment architecture
 
 ### Application lifecycle
 
-- Environment validation on startup
+- Environment validation on startup (required variables check)
 - Graceful shutdown with resource cleanup
-- Health check endpoint for monitoring
-- Structured logging for observability
+- Health check endpoint (`/health`) for monitoring
+- Structured logging for observability and debugging
 
 ### Error recovery
 
 - Database connection retry logic
-- External API fallback strategies
+- Docker API fallback strategies
 - Request timeout handling
 - Resource cleanup on shutdown signals (SIGTERM, SIGINT)
+
+## Current implementation status
+
+### Implemented features
+
+- **Projects**: Full CRUD with PostgreSQL persistence via Prisma
+- **Networks**: Docker network management via dockerode
+- **Core infrastructure**: Logging, error handling, Express setup
+
+### Available but unused
+
+- **GitHub integration**: Octokit client configured but no features use it
+- **Authentication**: Error classes exist but no Auth0 implementation
+
+The architecture is designed for extensibility, with clear separation between database-backed features (repositories) and external API features (gateways).

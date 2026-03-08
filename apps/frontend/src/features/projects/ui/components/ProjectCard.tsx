@@ -3,6 +3,7 @@ import { ReactNode } from 'react';
 
 import { Project } from '../../domain/models/projects.models';
 
+import { Button } from '@shared/components/button';
 import { Card, CardFooter, CardHeader } from '@shared/components/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@shared/components/dropdown-menu';
 
@@ -32,14 +33,9 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps): Re
                     <h3 className="font-semibold">{project.name}</h3>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <button
-                                className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                }}
-                            >
+                            <Button variant="ghost" size="icon">
                                 <MoreVertical className="h-4 w-4" />
-                            </button>
+                            </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-24">
                             <DropdownMenuItem

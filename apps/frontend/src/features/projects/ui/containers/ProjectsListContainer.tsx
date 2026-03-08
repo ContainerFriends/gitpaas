@@ -1,9 +1,11 @@
-import { Plus, Search } from 'lucide-react';
+import { Layers, Plus, Search } from 'lucide-react';
 import { ReactNode, useEffect } from 'react';
 
 import { Project } from '../../domain/models/projects.models';
 import { ProjectCard } from '../components/ProjectCard';
 import { useProjects } from '../hooks/useProjects';
+
+import { Button } from '@shared/components/button';
 
 /**
  * Projects list container component.
@@ -55,16 +57,39 @@ export function ProjectsListContainer(): ReactNode {
         );
     }
 
+    if (filteredProjects.length === 0) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-semibold tracking-tight">Projects</h1>
+                    </div>
+                    <Button size="sm">
+                        <Plus />
+                        New project
+                    </Button>
+                </div>
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="rounded-full bg-muted p-3 mb-4">
+                        <Layers className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">No projects found</h3>
+                    <p className="text-sm text-muted-foreground mb-4 max-w-sm">Get started by creating your first project to organize your work.</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-xl font-semibold tracking-tight">Projects</h1>
                 </div>
-                <button className="h-8 px-3 rounded-md bg-primary text-primary-foreground text-xs font-medium flex items-center gap-1.5 hover:bg-primary/90 transition-colors">
-                    <Plus className="h-3.5 w-3.5" />
-                    New Project
-                </button>
+                <Button size="sm">
+                    <Plus />
+                    New project
+                </Button>
             </div>
 
             <div className="relative w-full max-w-sm">

@@ -1,8 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { PrismaClient } from '@prisma/client';
-
+import { PrismaClient } from './.prisma/client';
 import { dbUrl } from './configs/database';
 
 const prisma = new PrismaClient({
@@ -17,7 +16,7 @@ const prisma = new PrismaClient({
  * Ejecuta archivos de migración SQL desde la carpeta de migraciones
  */
 async function runMigrations(): Promise<void> {
-    const migrationsPath = join(process.cwd(), process.env.MIGRATIONS_DIR || 'migrations');
+    const migrationsPath = join(process.cwd(), '../../../iac/database/migrations');
 
     let migrationFiles: string[];
 

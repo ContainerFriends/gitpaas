@@ -1,44 +1,33 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/components/dialog';
 import { ReactNode } from 'react';
 
-import { ServiceFormSchema } from '../schemas/service.schemas';
-import { ServiceForm } from './ServiceForm';
+import { ServiceFormData } from '../models/service-form.models';
+
+import { CreateServiceForm } from './CreateServiceForm';
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/components/dialog';
 
 interface CreateServiceDialogProps {
     open: boolean;
+    isLoading?: boolean;
     onOpenChange: (open: boolean) => void;
-    onSubmit: (data: ServiceFormSchema) => void;
-    isSubmitting?: boolean;
+    onSubmit: (data: ServiceFormData) => void;
 }
 
 /**
- * Create Service Dialog component
+ * Create service dialog component
  */
-export function CreateServiceDialog({ 
-    open, 
-    onOpenChange, 
-    onSubmit, 
-    isSubmitting = false 
-}: CreateServiceDialogProps): ReactNode {
+export function CreateServiceDialog({ open, onOpenChange, onSubmit, isLoading = false }: CreateServiceDialogProps): ReactNode {
     const handleCancel = (): void => {
         onOpenChange(false);
-    };
-
-    const handleSubmit = (data: ServiceFormSchema): void => {
-        onSubmit(data);
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Create New Service</DialogTitle>
+                    <DialogTitle>Create new service</DialogTitle>
                 </DialogHeader>
-                <ServiceForm 
-                    onSubmit={handleSubmit} 
-                    isSubmitting={isSubmitting} 
-                    onCancel={handleCancel}
-                />
+                <CreateServiceForm onSubmit={onSubmit} onCancel={handleCancel} isLoading={isLoading} />
             </DialogContent>
         </Dialog>
     );

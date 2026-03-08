@@ -1,52 +1,35 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/components/dialog';
 import { ReactNode } from 'react';
 
-import { Service } from '../../domain/models/service.models';
-import { ServiceFormSchema } from '../schemas/service.schemas';
-import { ServiceForm } from './ServiceForm';
+import { ServiceFormData } from '../models/service-form.models';
+
+import { EditServiceForm } from './EditServiceForm';
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/components/dialog';
 
 interface EditServiceDialogProps {
     open: boolean;
+    initialData: ServiceFormData;
+    isLoading?: boolean;
     onOpenChange: (open: boolean) => void;
-    service: Service | null;
-    onSubmit: (data: ServiceFormSchema) => void;
-    isSubmitting?: boolean;
+    onSubmit: (data: ServiceFormData) => void;
 }
 
 /**
- * Edit Service Dialog component
+ * Edit service dialog component
  */
-export function EditServiceDialog({ 
-    open, 
-    onOpenChange, 
-    service, 
-    onSubmit, 
-    isSubmitting = false 
-}: EditServiceDialogProps): ReactNode {
+// eslint-disable-next-line object-curly-newline
+export function EditServiceDialog({ open, onOpenChange, onSubmit, initialData, isLoading = false }: EditServiceDialogProps): ReactNode {
     const handleCancel = (): void => {
         onOpenChange(false);
     };
-
-    const handleSubmit = (data: ServiceFormSchema): void => {
-        onSubmit(data);
-    };
-
-    if (!service) {
-        return null;
-    }
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Edit Service</DialogTitle>
+                    <DialogTitle>Edit service</DialogTitle>
                 </DialogHeader>
-                <ServiceForm 
-                    service={service}
-                    onSubmit={handleSubmit} 
-                    isSubmitting={isSubmitting} 
-                    onCancel={handleCancel}
-                />
+                <EditServiceForm initialData={initialData} onSubmit={onSubmit} isLoading={isLoading} onCancel={handleCancel} />
             </DialogContent>
         </Dialog>
     );

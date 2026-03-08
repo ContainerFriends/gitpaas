@@ -18,13 +18,11 @@ export function ServicesPage(): ReactNode {
 
     return (
         <AppLayout>
-            <div className="container mx-auto px-4 py-8">
-                <ProjectsProvider>
-                    <ServicesProvider>
-                        <ServicesContainer projectId={projectId} />
-                    </ServicesProvider>
-                </ProjectsProvider>
-            </div>
+            <ProjectsProvider>
+                <ServicesProvider>
+                    <ServicesContainer projectId={projectId} />
+                </ServicesProvider>
+            </ProjectsProvider>
         </AppLayout>
     );
 }

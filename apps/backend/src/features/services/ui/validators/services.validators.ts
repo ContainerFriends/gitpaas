@@ -29,14 +29,6 @@ export const createServiceSchema = Joi.object({
         'string.empty': 'Service name cannot be empty',
         'string.max': 'Service name must not exceed 100 characters',
     }),
-    repositoryUrl: Joi.string().uri().required().messages({
-        'any.required': 'Repository URL is required',
-        'string.empty': 'Repository URL cannot be empty',
-        'string.uri': 'Repository URL must be a valid URL',
-    }),
-    branch: Joi.string().optional().default('main').messages({
-        'string.empty': 'Branch cannot be empty if provided',
-    }),
     projectId: Joi.string().required().messages({
         'any.required': 'Project ID is required',
         'string.empty': 'Project ID cannot be empty',

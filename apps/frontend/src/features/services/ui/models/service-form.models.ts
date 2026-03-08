@@ -1,26 +1,5 @@
-/**
- * Service form data model
- */
-export interface ServiceFormData {
-    name: string;
-    repositoryUrl: string;
-    branch?: string;
-}
+import { z } from 'zod';
 
-/**
- * Create service form data
- */
-export interface CreateServiceFormData extends ServiceFormData {
-    name: string;
-    repositoryUrl: string;
-    branch?: string;
-}
+import { serviceFormSchema } from '../schemas/service.schemas';
 
-/**
- * Update service form data
- */
-export interface UpdateServiceFormData {
-    name?: string;
-    repositoryUrl?: string;
-    branch?: string;
-}
+export type ServiceFormData = z.infer<typeof serviceFormSchema>;

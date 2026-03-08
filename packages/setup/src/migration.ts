@@ -8,7 +8,6 @@ import { Pool } from 'pg';
 import { PrismaClient } from './.prisma/client';
 import { dbUrl } from './configs/database';
 
-// Setup Prisma with PostgreSQL adapter (required in Prisma 7)
 const pool = new Pool({
     connectionString: dbUrl,
 });
@@ -17,46 +16,42 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 /**
- * Ejecuta archivos de migración SQL desde la carpeta de migraciones
+ * Run migrations
  */
 async function runMigrations(): Promise<void> {
-    const migrationsPath = join(process.cwd(), process.env.MIGRATIONS_DIR || '../../../iac/database/migrations');
-
-    let migrationFiles: string[];
-
     try {
-        migrationFiles = readdirSync(migrationsPath).filter((file) => file.endsWith('.sql'));
-    } catch {
-        console.log('❌ No migrations folder found or no SQL files to run');
-        return;
-    }
+        const migrationsPath = join(process.cwd(), process.env.MIGRATIONS_DIR || '../../../iac/database/migrations');
 
-    if (migrationFiles.length === 0) {
-        console.log('❌ No SQL migration files found');
-        return;
-    }
+        let migrationFiles: string[];
 
-    migrationFiles.sort();
+        try {
+            migrationFiles = readdirSync(migrationsPath).filter((file) => file.endsWith('.sql'));
+        } catch {
+            console.log('❌ No migrations folder found or no SQL files to run');
+            return;
+        }
 
-    for (const file of migrationFiles) {
-        const filePath = join(migrationsPath, file);
-        const sql = readFileSync(filePath, 'utf-8');
+        if (migrationFiles.length === 0) {
+            console.log('❌ No SQL migration files found');
+            return;
+        }
 
-        await prisma.$executeRawUnsafe(sql);
+        migrationFiles.sort();
+
+        for (const file of migrationFiles) {
+            const filePath = join(migrationsPath, file);
+            const sql = readFileSync(filePath, 'utf-8');
+
+            await prisma.$executeRawUnsafe(sql);
+        }
+
+        console.log('✅ Migration process complete');
+    } catch (error: any) {
+        console.error('❌ Migration process failed:', error);
+        process.exit(1);
+    } finally {
+        await prisma.$disconnect();
     }
 }
 
-/**
- * Run migrations
- */
-await runMigrations()
-    .then(() => {
-        console.log('✅ Migration process complete');
-    })
-    .catch((error: any) => {
-        console.error('❌ Migration process failed:', error);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+await runMigrations();

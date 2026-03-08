@@ -1,22 +1,26 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
+
+// eslint-disable-next-line import/no-relative-packages
 import { PrismaClient } from './.prisma/client';
 import { dbUrl } from './configs/database';
 
-const prisma = new PrismaClient({
-    datasources: {
-        db: {
-            url: dbUrl,
-        },
-    },
+// Setup Prisma with PostgreSQL adapter (required in Prisma 7)
+const pool = new Pool({
+    connectionString: dbUrl,
 });
+
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 /**
  * Ejecuta archivos de migración SQL desde la carpeta de migraciones
  */
 async function runMigrations(): Promise<void> {
-    const migrationsPath = join(process.cwd(), '../../../iac/database/migrations');
+    const migrationsPath = join(process.cwd(), process.env.MIGRATIONS_DIR || '../../../iac/database/migrations');
 
     let migrationFiles: string[];
 

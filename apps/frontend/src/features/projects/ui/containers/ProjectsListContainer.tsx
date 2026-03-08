@@ -1,9 +1,11 @@
 import { Layers, Plus, Search } from 'lucide-react';
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 import { Project } from '../../domain/models/projects.models';
+import { CreateProjectDialog } from '../components/CreateProjectDialog';
 import { ProjectCard } from '../components/ProjectCard';
 import { useProjects } from '../hooks/useProjects';
+import { ProjectFormData } from '../models/project-form.models';
 
 import { Button } from '@shared/components/button';
 
@@ -13,6 +15,8 @@ import { Button } from '@shared/components/button';
 export function ProjectsListContainer(): ReactNode {
     // eslint-disable-next-line object-curly-newline
     const { filteredProjects, filter, loading, error, loadProjects } = useProjects();
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
 
     /**
      * Load projects
@@ -29,6 +33,31 @@ export function ProjectsListContainer(): ReactNode {
     const handleDeleteProject = (project: Project) => {
         console.log('Delete project:', project);
         // TODO: Implement delete functionality
+    };
+
+    /**
+     * Handle create project form submission
+     */
+    const handleCreateProject = async (data: ProjectFormData) => {
+        setIsCreating(true);
+        try {
+            console.log('Creating project:', data);
+            // TODO: Implement project creation
+            // await createProject(data);
+            // await loadProjects();
+            setIsCreateDialogOpen(false);
+        } catch (error) {
+            console.error('Failed to create project:', error);
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
+    /**
+     * Handle open create project dialog
+     */
+    const handleOpenCreateDialog = () => {
+        setIsCreateDialogOpen(true);
     };
 
     if (loading) {
@@ -64,7 +93,7 @@ export function ProjectsListContainer(): ReactNode {
                     <div>
                         <h1 className="text-xl font-semibold tracking-tight">Projects</h1>
                     </div>
-                    <Button size="sm">
+                    <Button size="sm" onClick={handleOpenCreateDialog}>
                         <Plus />
                         New project
                     </Button>
@@ -75,7 +104,18 @@ export function ProjectsListContainer(): ReactNode {
                     </div>
                     <h3 className="text-lg font-medium mb-2">No projects found</h3>
                     <p className="text-sm text-muted-foreground mb-4 max-w-sm">Get started by creating your first project to organize your work.</p>
+                    <Button onClick={handleOpenCreateDialog}>
+                        <Plus />
+                        Create your first project
+                    </Button>
                 </div>
+
+                <CreateProjectDialog
+                    open={isCreateDialogOpen}
+                    onOpenChange={setIsCreateDialogOpen}
+                    onSubmit={handleCreateProject}
+                    isLoading={isCreating}
+                />
             </div>
         );
     }
@@ -86,7 +126,7 @@ export function ProjectsListContainer(): ReactNode {
                 <div>
                     <h1 className="text-xl font-semibold tracking-tight">Projects</h1>
                 </div>
-                <Button size="sm">
+                <Button size="sm" onClick={handleOpenCreateDialog}>
                     <Plus />
                     New project
                 </Button>
@@ -107,6 +147,13 @@ export function ProjectsListContainer(): ReactNode {
                     <ProjectCard key={project.id} project={project} onEdit={handleEditProject} onDelete={handleDeleteProject} />
                 ))}
             </div>
+
+            <CreateProjectDialog
+                open={isCreateDialogOpen}
+                onOpenChange={setIsCreateDialogOpen}
+                onSubmit={handleCreateProject}
+                isLoading={isCreating}
+            />
         </div>
     );
 }

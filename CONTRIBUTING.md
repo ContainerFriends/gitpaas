@@ -81,13 +81,13 @@ Run this script
 npm run server:script
 ```
 
-Now run the development server.
+Now run the applications.
 
 ```bash
 npm run dev
 ```
 
-Go to http://localhost:3000 to see the development server
+Go to http://localhost:3000 to see the frontend
 
 > [!NOTE]
 > This project uses Biome. If your editor is configured to use another formatter such as Prettier, it's recommended to either change it to use Biome or turn it off.

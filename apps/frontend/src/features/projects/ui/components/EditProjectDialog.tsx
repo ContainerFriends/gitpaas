@@ -2,24 +2,23 @@ import { ReactNode } from 'react';
 
 import { ProjectFormData } from '../models/project-form.models';
 
-import { CreateProjectForm } from './CreateProjectForm';
+import { EditProjectForm } from './EditProjectForm';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/components/dialog';
 
-interface CreateProjectDialogProps {
+interface EditProjectDialogProps {
     open: boolean;
+    initialData: ProjectFormData;
     isLoading?: boolean;
     onOpenChange: (open: boolean) => void;
     onSubmit: (data: ProjectFormData) => void;
 }
 
 /**
- * Create project dialog component
+ * Edit project dialog component
  */
-export function CreateProjectDialog({ open, onOpenChange, onSubmit, isLoading = false }: CreateProjectDialogProps): ReactNode {
-    /**
-     * Handle cancel create project dialog
-     */
+// eslint-disable-next-line object-curly-newline
+export function EditProjectDialog({ open, onOpenChange, onSubmit, initialData, isLoading = false }: EditProjectDialogProps): ReactNode {
     const handleCancel = () => {
         onOpenChange(false);
     };
@@ -28,9 +27,9 @@ export function CreateProjectDialog({ open, onOpenChange, onSubmit, isLoading = 
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Create new project</DialogTitle>
+                    <DialogTitle>Edit project</DialogTitle>
                 </DialogHeader>
-                <CreateProjectForm onSubmit={onSubmit} onCancel={handleCancel} isLoading={isLoading} />
+                <EditProjectForm initialData={initialData} onSubmit={onSubmit} onCancel={handleCancel} isLoading={isLoading} />
             </DialogContent>
         </Dialog>
     );

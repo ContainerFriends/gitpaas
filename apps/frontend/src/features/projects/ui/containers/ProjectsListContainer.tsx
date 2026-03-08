@@ -1,8 +1,10 @@
 import { Layers, Plus, Search } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 import { Project } from '../../domain/models/projects.models';
 import { CreateProjectDialog } from '../components/CreateProjectDialog';
+import { EditProjectDialog } from '../components/EditProjectDialog';
 import { ProjectCard } from '../components/ProjectCard';
 import { useProjects } from '../hooks/useProjects';
 import { ProjectFormData } from '../models/project-form.models';
@@ -13,11 +15,12 @@ import { Button } from '@shared/components/button';
  * Projects list container component.
  */
 export function ProjectsListContainer(): ReactNode {
-    // eslint-disable-next-line object-curly-newline
-    const { filteredProjects, filter, loading, error, loadProjects, createProject } = useProjects();
+    // eslint-disable-next-line max-len, object-curly-newline, prettier/prettier
+    const { filteredProjects, selectedProject, loadingProject, filter, loading, error, loadProjects, createProject, getProjectById, updateProject } = useProjects();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
-
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     /**
      * Load projects
      */
@@ -25,9 +28,16 @@ export function ProjectsListContainer(): ReactNode {
         loadProjects();
     }, [loadProjects]);
 
-    const handleEditProject = (project: Project) => {
-        console.log('Edit project:', project);
-        // TODO: Implement edit functionality
+    /**
+     * Handle edit project action
+     */
+    const handleEditProject = async (projectId: string) => {
+        try {
+            await getProjectById(projectId);
+            setIsEditDialogOpen(true);
+        } catch {
+            toast.error('Failed to load project:');
+        }
     };
 
     const handleDeleteProject = (project: Project) => {
@@ -45,9 +55,27 @@ export function ProjectsListContainer(): ReactNode {
             await loadProjects();
             setIsCreateDialogOpen(false);
         } catch {
-            console.error('Failed to create project');
+            toast.error('Failed to create project');
         } finally {
             setIsCreating(false);
+        }
+    };
+
+    /**
+     * Handle update project form submission
+     */
+    const handleUpdateProject = async (data: ProjectFormData) => {
+        if (!selectedProject) return;
+
+        setIsEditing(true);
+        try {
+            await updateProject(selectedProject.id, data);
+            await loadProjects();
+            setIsEditDialogOpen(false);
+        } catch {
+            toast.error('Failed to update project');
+        } finally {
+            setIsEditing(false);
         }
     };
 
@@ -114,6 +142,16 @@ export function ProjectsListContainer(): ReactNode {
                     onSubmit={handleCreateProject}
                     isLoading={isCreating}
                 />
+
+                {selectedProject && (
+                    <EditProjectDialog
+                        open={isEditDialogOpen}
+                        onOpenChange={setIsEditDialogOpen}
+                        onSubmit={handleUpdateProject}
+                        initialData={{ name: selectedProject.name }}
+                        isLoading={isEditing || loadingProject}
+                    />
+                )}
             </div>
         );
     }
@@ -152,6 +190,16 @@ export function ProjectsListContainer(): ReactNode {
                 onSubmit={handleCreateProject}
                 isLoading={isCreating}
             />
+
+            {selectedProject && (
+                <EditProjectDialog
+                    open={isEditDialogOpen}
+                    onOpenChange={setIsEditDialogOpen}
+                    onSubmit={handleUpdateProject}
+                    initialData={{ name: selectedProject.name }}
+                    isLoading={isEditing || loadingProject}
+                />
+            )}
         </div>
     );
 }

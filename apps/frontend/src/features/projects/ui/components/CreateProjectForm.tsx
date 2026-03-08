@@ -18,7 +18,7 @@ interface ProjectFormProps {
 /**
  * Project creation form component
  */
-export function ProjectForm({ onSubmit, onCancel, isLoading = false }: ProjectFormProps): ReactNode {
+export function CreateProjectForm({ onSubmit, onCancel, isLoading = false }: ProjectFormProps): ReactNode {
     const {
         register,
         handleSubmit,

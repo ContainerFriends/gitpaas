@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 interface ProjectCardProps {
     project: Project;
-    onEdit?: (project: Project) => void;
+    onEdit?: (projectId: string) => void;
     onDelete?: (project: Project) => void;
 }
 
@@ -40,7 +40,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps): Re
                         <DropdownMenuContent align="end" className="w-24">
                             <DropdownMenuItem
                                 onClick={() => {
-                                    onEdit?.(project);
+                                    onEdit?.(project.id);
                                 }}
                             >
                                 Edit

@@ -20,7 +20,7 @@ const prisma = new PrismaClient({ adapter });
  */
 async function runMigrations(): Promise<void> {
     try {
-        const migrationsPath = join(process.cwd(), process.env.MIGRATIONS_DIR || '../../../iac/database/migrations');
+        const migrationsPath = join(process.cwd(), process.env.MIGRATIONS_DIR || '../../iac/database/migrations');
 
         let migrationFiles: string[];
 

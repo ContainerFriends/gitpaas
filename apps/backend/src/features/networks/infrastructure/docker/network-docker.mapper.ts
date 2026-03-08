@@ -1,15 +1,19 @@
+import { CreateNetworkDto } from '../../domain/dtos/create-network.dtos';
 import { Network } from '../../domain/models/network.models';
 
 /**
- * Maps Docker API response to domain model
- *
- * @param dockerNetwork Docker API network response
- *
- * @returns Network domain model
+ * Network Docker mapper
  */
-export function mapDockerNetworkToDomain(dockerNetwork: any): Network {
-    return {
-        id: dockerNetwork.Id,
-        name: dockerNetwork.Name,
-    };
-}
+export const networkDockerMapper = {
+    toDomain: (dockerNetwork: any): Network => {
+        return {
+            id: dockerNetwork.Id,
+            name: dockerNetwork.Name,
+        };
+    },
+    toDockerCreateOptions: (createDto: CreateNetworkDto): any => {
+        return {
+            Name: createDto.name,
+        };
+    },
+};

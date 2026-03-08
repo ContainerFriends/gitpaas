@@ -1,5 +1,5 @@
 import { Plus, Search, MoreVertical } from 'lucide-react';
-import { ReactNode, ChangeEvent } from 'react';
+import { ReactNode, useEffect } from 'react';
 
 import { useProjects } from '../hooks/useProjects';
 
@@ -9,11 +9,12 @@ import { useProjects } from '../hooks/useProjects';
  */
 export function ProjectsListContainer(): ReactNode {
     // eslint-disable-next-line object-curly-newline
-    const { filteredProjects, filter, loading, error, actions } = useProjects();
+    const { filteredProjects, filter, loading, error, loadProjects } = useProjects();
 
-    const handleFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
-        actions.setFilter(event.target.value);
-    };
+    // Load projects when component mounts
+    useEffect(() => {
+        loadProjects();
+    }, [loadProjects]);
 
     if (loading) {
         return (
@@ -60,7 +61,6 @@ export function ProjectsListContainer(): ReactNode {
                     type="text"
                     placeholder="Filter projects..."
                     value={filter}
-                    onChange={handleFilterChange}
                     className="h-8 w-full rounded-md border border-border bg-muted/50 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
                 />
             </div>

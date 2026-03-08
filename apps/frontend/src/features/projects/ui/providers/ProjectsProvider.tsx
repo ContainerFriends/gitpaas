@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useCallback } from 'react';
 
 import { Project } from '../../domain/models/projects.models';
 import { ProjectsContext, ProjectsContextValue } from '../context/ProjectsContext';
@@ -6,38 +6,14 @@ import { useProjectsState } from '../hooks/useProjectsState';
 
 // Mock data - in a real app this would come from an API
 const mockProjects: Project[] = [
-    {
-        id: '1',
-        name: 'frontend-app',
-    },
-    {
-        id: '2',
-        name: 'api-gateway',
-    },
-    {
-        id: '3',
-        name: 'landing-page',
-    },
-    {
-        id: '4',
-        name: 'worker-service',
-    },
-    {
-        id: '5',
-        name: 'docs-site',
-    },
-    {
-        id: '6',
-        name: 'admin-panel',
-    },
-    {
-        id: '7',
-        name: 'auth-service',
-    },
-    {
-        id: '8',
-        name: 'cdn-proxy',
-    },
+    { id: '1', name: 'frontend-app' },
+    { id: '2', name: 'api-gateway' },
+    { id: '3', name: 'landing-page' },
+    { id: '4', name: 'worker-service' },
+    { id: '5', name: 'docs-site' },
+    { id: '6', name: 'admin-panel' },
+    { id: '7', name: 'auth-service' },
+    { id: '8', name: 'cdn-proxy' },
 ];
 
 interface ProjectsProviderProps {
@@ -50,10 +26,21 @@ interface ProjectsProviderProps {
 export function ProjectsProvider({ children }: ProjectsProviderProps): ReactNode {
     const { state, actions } = useProjectsState();
 
-    // Initialize projects on mount
-    useEffect(() => {
-        // In a real application, this would fetch from an API
-        actions.setProjects(mockProjects);
+    /**
+     * Load projects
+     */
+    const loadProjects = useCallback(async () => {
+        actions.setLoading(true);
+
+        try {
+            // Simulate API call
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            // In real app: const response = await projectsApi.getAll();
+            actions.setProjects(mockProjects);
+        } catch {
+            actions.setError('Failed to load projects');
+        }
     }, [actions]);
 
     const contextValue: ProjectsContextValue = {
@@ -62,7 +49,7 @@ export function ProjectsProvider({ children }: ProjectsProviderProps): ReactNode
         loading: state.loading,
         error: state.error,
         filteredProjects: state.filteredProjects,
-        actions,
+        loadProjects,
     };
 
     return <ProjectsContext.Provider value={contextValue}>{children}</ProjectsContext.Provider>;

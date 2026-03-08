@@ -6,6 +6,7 @@ import { Project } from '../../domain/models/projects.models';
  * Actions for the projects reducer.
  */
 type ProjectsAction =
+    | { type: 'LOAD_PROJECTS_REQUEST' }
     | { type: 'SET_PROJECTS'; payload: Project[] }
     | { type: 'ADD_PROJECT'; payload: Project }
     | { type: 'UPDATE_PROJECT'; payload: { id: string; project: Partial<Project> } }
@@ -43,13 +44,7 @@ function filterProjects(projects: Project[], filter: string): Project[] {
     if (!filter.trim()) return projects;
 
     const searchTerm = filter.toLowerCase();
-    return projects.filter(
-        (project) =>
-            project.name.toLowerCase().includes(searchTerm) ||
-            project.type.toLowerCase().includes(searchTerm) ||
-            project.domain.toLowerCase().includes(searchTerm) ||
-            project.branch.toLowerCase().includes(searchTerm),
-    );
+    return projects.filter((project) => project.name.toLowerCase().includes(searchTerm));
 }
 
 /**
@@ -57,6 +52,13 @@ function filterProjects(projects: Project[], filter: string): Project[] {
  */
 function projectsReducer(state: ProjectsState, action: ProjectsAction): ProjectsState {
     switch (action.type) {
+        case 'LOAD_PROJECTS_REQUEST':
+            return {
+                ...state,
+                loading: true,
+                error: null,
+            };
+
         case 'SET_PROJECTS': {
             const filteredProjects = filterProjects(action.payload, state.filter);
             return {
@@ -80,7 +82,8 @@ function projectsReducer(state: ProjectsState, action: ProjectsAction): Projects
 
         case 'UPDATE_PROJECT': {
             const updatedProjects = state.projects.map((project) =>
-                project.id === action.payload.id ? { ...project, ...action.payload.project } : project);
+                project.id === action.payload.id ? { ...project, ...action.payload.project } : project,
+            );
             const filteredProjects = filterProjects(updatedProjects, state.filter);
             return {
                 ...state,
@@ -128,12 +131,19 @@ function projectsReducer(state: ProjectsState, action: ProjectsAction): Projects
 
 /**
  * Custom hook for managing projects state.
- * This hook encapsulates all the business logic for project management.
+ * This hook encapsulates the reducer and action creators.
  */
 export function useProjectsState() {
     const [state, dispatch] = useReducer(projectsReducer, initialState);
 
     const actions = {
+        /**
+         * Requests to load projects (triggers loading state).
+         */
+        loadProjectsRequest: useCallback(() => {
+            dispatch({ type: 'LOAD_PROJECTS_REQUEST' });
+        }, []),
+
         /**
          * Sets the entire list of projects.
          */

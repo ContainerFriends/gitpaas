@@ -56,8 +56,8 @@ Before you start, please make the clone based on the `canary` branch, since the 
 We use Node v24.4.0 and recommend this specific version. If you have nvm installed, you can run `nvm install 24.4.0 && nvm use` in the root directory.
 
 ```bash
-git clone https://github.com/dokploy/dokploy.git
-cd dokploy
+git clone https://github.com/ContainerFriends/gitpaas.git
+cd gitpaas
 npm install
 cp apps/backend/.env.example apps/backend/.env
 ```

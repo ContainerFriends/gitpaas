@@ -6,8 +6,7 @@
   "type": "module",
   "scripts": {
     "lint": "eslint .",
-    "setup": "tsx -r dotenv/config main.ts && sleep 5 && pnpm run migration:run",
-    "migration:run": "tsx -r dotenv/config migration.ts"
+    "setup": "tsx -r dotenv/config src/main.ts"
   },
   "dependencies": {
     "bl": "4.1.0",

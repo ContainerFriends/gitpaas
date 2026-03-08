@@ -1,14 +1,11 @@
-import { chmodSync, existsSync, mkdirSync } from 'node:fs';
+import { chmodSync } from 'node:fs';
 
-import { paths } from './constants';
+import { paths } from '../configs/paths';
+import { createDirectoryIfNotExist } from '../utils/create-directory';
 
-const createDirectoryIfNotExist = (dirPath: string) => {
-    if (!existsSync(dirPath)) {
-        mkdirSync(dirPath, { recursive: true });
-        console.log(`Directory created: ${dirPath}`);
-    }
-};
-
+/**
+ * Setup application directories
+ */
 export const setupDirectories = () => {
     // eslint-disable-next-line max-len, prettier/prettier, object-curly-newline
     const { APPLICATIONS_PATH, BASE_PATH, CERTIFICATES_PATH, DYNAMIC_TRAEFIK_PATH, LOGS_PATH, MAIN_TRAEFIK_PATH, MONITORING_PATH, SSH_PATH, SCHEDULES_PATH, VOLUME_BACKUPS_PATH } = paths();
@@ -28,6 +25,7 @@ export const setupDirectories = () => {
     for (const dir of directories) {
         try {
             createDirectoryIfNotExist(dir);
+
             if (dir === SSH_PATH) {
                 chmodSync(SSH_PATH, '700');
             }

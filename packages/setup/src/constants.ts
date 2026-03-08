@@ -1,5 +1,4 @@
 /* eslint-disable pii/no-phone-number */
-import path from 'node:path';
 
 import Docker from 'dockerode';
 
@@ -24,26 +23,3 @@ export const docker = new Docker({
 // When not set, use the legacy default so 2FA remains working for users who
 // enabled it before BETTER_AUTH_SECRET was introduced .
 export const BETTER_AUTH_SECRET = process.env.BETTER_AUTH_SECRET || 'better-auth-secret-123456789';
-
-export const paths = (isServer = false) => {
-    const BASE_PATH = isServer || process.env.NODE_ENV === 'production' ? '/etc/gitpaas' : path.join(process.cwd(), '.docker');
-    const MAIN_TRAEFIK_PATH = `${BASE_PATH}/traefik`;
-    const DYNAMIC_TRAEFIK_PATH = `${MAIN_TRAEFIK_PATH}/dynamic`;
-
-    return {
-        BASE_PATH,
-        MAIN_TRAEFIK_PATH,
-        DYNAMIC_TRAEFIK_PATH,
-        LOGS_PATH: `${BASE_PATH}/logs`,
-        APPLICATIONS_PATH: `${BASE_PATH}/applications`,
-        COMPOSE_PATH: `${BASE_PATH}/compose`,
-        SSH_PATH: `${BASE_PATH}/ssh`,
-        CERTIFICATES_PATH: `${DYNAMIC_TRAEFIK_PATH}/certificates`,
-        MONITORING_PATH: `${BASE_PATH}/monitoring`,
-        REGISTRY_PATH: `${BASE_PATH}/registry`,
-        SCHEDULES_PATH: `${BASE_PATH}/schedules`,
-        VOLUME_BACKUPS_PATH: `${BASE_PATH}/volume-backups`,
-        VOLUME_BACKUP_LOCK_PATH: `${BASE_PATH}/volume-backup-lock`,
-        PATCH_REPOS_PATH: `${BASE_PATH}/patch-repos`,
-    };
-};

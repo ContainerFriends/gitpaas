@@ -31,3 +31,17 @@ model Service {
 
   @@map("services")
 }
+
+enum GitProviderType {
+  github
+}
+
+model GitProvider {
+  id        String          @id
+  name      String
+  type      GitProviderType @default(github)
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+
+  @@map("git_providers")
+}

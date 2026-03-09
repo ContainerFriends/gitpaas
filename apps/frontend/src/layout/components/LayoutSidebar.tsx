@@ -107,7 +107,7 @@ export function LayoutSidebar(): ReactNode {
 
                 <SidebarGroup>
                     <SidebarGroupLabel className="text-[11px] uppercase tracking-wider text-muted-foreground/60 font-medium mb-1">
-                        System
+                        Settings
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>

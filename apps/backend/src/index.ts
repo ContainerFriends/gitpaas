@@ -11,6 +11,7 @@ import { setupGracefulShutdown } from '@core/infrastructure/express/graceful-shu
 import { helmetConfig } from '@core/infrastructure/express/helmet.express';
 import { appLogger } from '@core/infrastructure/loggers/winston.logger';
 import { healthRouter } from '@core/ui/routes/health.routes';
+import { gitProviderRouter } from '@features/git-providers/ui/routes/git-provider.routes';
 import { networkRouter } from '@features/networks/ui/routes/network.routes';
 import { projectRouter } from '@features/projects/ui/routes/project.routes';
 import { servicesRouter } from '@features/services/ui/routes/services.routes';
@@ -40,6 +41,7 @@ app.use(`/health`, healthRouter);
 app.use(`/${expressConfig.apiVersion}/projects`, projectRouter);
 app.use(`/${expressConfig.apiVersion}/networks`, networkRouter);
 app.use(`/${expressConfig.apiVersion}/services`, servicesRouter);
+app.use(`/${expressConfig.apiVersion}/git-providers`, gitProviderRouter);
 
 //
 

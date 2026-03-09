@@ -140,7 +140,7 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-semibold tracking-tight">Services</h1>
+                        <h1 className="text-xl font-semibold tracking-tight">{selectedProject.name}</h1>
                     </div>
                 </div>
                 <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -169,7 +169,7 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-xl font-semibold tracking-tight">Services</h1>
+                    <h1 className="text-xl font-semibold tracking-tight">{selectedProject.name}</h1>
                 </div>
                 <Button size="sm" onClick={handleOpenCreateDialog}>
                     <Plus />

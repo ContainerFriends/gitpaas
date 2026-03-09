@@ -1,6 +1,7 @@
 import { createContext } from 'react';
 
 import { Service } from '../../domain/models/service.models';
+import { ServiceFormData } from '../models/service-form.models';
 
 /**
  * Services context model
@@ -17,8 +18,8 @@ export interface ServicesContextValue {
     projectId: string | null;
     loadServicesByProjectId: (projectId: string) => Promise<void>;
     getServiceById: (id: string) => Promise<Service | null>;
-    createService: (data: { name: string; repositoryUrl: string; branch?: string }) => Promise<Service>;
-    updateService: (id: string, data: { name?: string; repositoryUrl?: string; branch?: string }) => Promise<Service>;
+    createService: (data: ServiceFormData) => Promise<Service>;
+    updateService: (id: string, data: ServiceFormData) => Promise<Service>;
     deleteService: (id: string) => Promise<void>;
     setFilter: (filter: string) => void;
 }

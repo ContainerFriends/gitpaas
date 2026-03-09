@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 
 import { GitProviderType } from '../../domain/models/git-provider.models';
-import { GitProviderFormData } from '../models/git-provider-form.models';
+import { GithubGitProviderFormData, GitProviderFormData } from '../models/git-provider-form.models';
 
 import { CreateGithubProviderForm } from './CreateGithubProviderForm';
 
@@ -28,13 +28,19 @@ export function CreateGitProviderDialog({ open, providerType, onOpenChange, onSu
         onOpenChange(false);
     };
 
+    const handleSubmit = (data: GithubGitProviderFormData) => {
+        const providerData = { ...data, type: 'github' };
+
+        onSubmit(providerData);
+    };
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Create {PROVIDER_LABELS[providerType]} provider</DialogTitle>
                 </DialogHeader>
-                {providerType === 'github' && <CreateGithubProviderForm onSubmit={onSubmit} onCancel={handleCancel} isLoading={isLoading} />}
+                {providerType === 'github' && <CreateGithubProviderForm onSubmit={handleSubmit} onCancel={handleCancel} isLoading={isLoading} />}
             </DialogContent>
         </Dialog>
     );

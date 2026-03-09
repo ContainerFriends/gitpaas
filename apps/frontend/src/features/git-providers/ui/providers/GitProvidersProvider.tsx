@@ -10,6 +10,7 @@ import { GitProvider, GitProviderType } from '../../domain/models/git-provider.m
 import { gitProvidersApiRepository } from '../../infrastructure/api/git-providers-api.repository';
 import { GitProvidersContext, GitProvidersContextValue } from '../context/GitProvidersContext';
 import { useGitProvidersState } from '../hooks/useGitProvidersState';
+import { GitProviderFormData } from '../models/git-provider-form.models';
 
 interface GitProvidersProviderProps {
     children: ReactNode;
@@ -69,21 +70,16 @@ export function GitProvidersProvider({ children }: GitProvidersProviderProps): R
     );
 
     const createGitProvider = useCallback(
-        async (data: { name: string; type: string }): Promise<GitProvider> => {
+        async (data: GitProviderFormData): Promise<GitProvider> => {
             try {
                 setSubmittingGitProvider(true);
                 setError(null);
                 const token = await getMockToken();
-                const newGitProvider = await createGitProviderUseCase(gitProvidersApiRepository(token), {
-                    name: data.name,
-                    type: data.type as GitProviderType,
-                });
+                const newGitProvider = await createGitProviderUseCase(gitProvidersApiRepository(token), data);
                 addGitProvider(newGitProvider);
-                toast.success('Git provider created successfully');
                 return newGitProvider;
             } catch (error) {
                 setError('Failed to create git provider');
-                toast.error('Failed to create git provider');
                 throw error;
             } finally {
                 setSubmittingGitProvider(false);
@@ -127,10 +123,8 @@ export function GitProvidersProvider({ children }: GitProvidersProviderProps): R
                 const token = await getMockToken();
                 await removeGitProviderUseCase(gitProvidersApiRepository(token), id);
                 deleteGitProvider(id);
-                toast.success('Git provider removed successfully');
             } catch (error) {
                 setError('Failed to remove git provider');
-                toast.error('Failed to remove git provider');
                 throw error;
             } finally {
                 setSubmittingGitProvider(false);

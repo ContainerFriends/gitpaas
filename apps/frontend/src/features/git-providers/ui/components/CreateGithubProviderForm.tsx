@@ -2,15 +2,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { GitProviderFormData } from '../models/git-provider-form.models';
-import { gitProviderFormSchema } from '../schemas/git-provider-form.schema';
+import { GithubGitProviderFormData } from '../models/git-provider-form.models';
+import { githubGitProviderFormSchema } from '../schemas/github-git-provider-form.schema';
 
 import { Button } from '@shared/components/button';
 import { Input } from '@shared/components/input';
 import { Label } from '@shared/components/label';
 
 interface CreateGithubProviderFormProps {
-    onSubmit: (data: GitProviderFormData) => void;
+    onSubmit: (data: GithubGitProviderFormData) => void;
     onCancel: () => void;
     isLoading?: boolean;
 }
@@ -23,8 +23,8 @@ export function CreateGithubProviderForm({ onSubmit, onCancel, isLoading = false
         register,
         handleSubmit,
         formState: { errors, isValid },
-    } = useForm<GitProviderFormData>({
-        resolver: zodResolver(gitProviderFormSchema),
+    } = useForm<GithubGitProviderFormData>({
+        resolver: zodResolver(githubGitProviderFormSchema),
         mode: 'onChange',
     });
 

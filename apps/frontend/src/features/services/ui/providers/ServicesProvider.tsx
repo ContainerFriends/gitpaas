@@ -93,7 +93,7 @@ export function ServicesProvider({ children }: ServicesProviderProps): ReactNode
                 setSubmittingService(true);
                 setError(null);
                 const token = await getMockToken();
-                const newService = await createServiceUseCase(servicesApiRepository(token), data);
+                const newService = await createServiceUseCase(servicesApiRepository(token), { ...data, projectId: state.projectId });
                 addService(newService);
                 toast.success('Service created successfully');
                 return newService;
@@ -105,7 +105,7 @@ export function ServicesProvider({ children }: ServicesProviderProps): ReactNode
                 setSubmittingService(false);
             }
         },
-        [getMockToken, setSubmittingService, setError, addService],
+        [getMockToken, setSubmittingService, setError, addService, state.projectId],
     );
 
     /**

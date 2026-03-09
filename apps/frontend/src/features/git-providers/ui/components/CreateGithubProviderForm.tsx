@@ -9,13 +9,16 @@ import { Button } from '@shared/components/button';
 import { Input } from '@shared/components/input';
 import { Label } from '@shared/components/label';
 
-interface GitProviderFormProps {
+interface CreateGithubProviderFormProps {
     onSubmit: (data: GitProviderFormData) => void;
     onCancel: () => void;
     isLoading?: boolean;
 }
 
-export function CreateGitProviderForm({ onSubmit, onCancel, isLoading = false }: GitProviderFormProps): ReactNode {
+/**
+ * Create GitHub provider form component
+ */
+export function CreateGithubProviderForm({ onSubmit, onCancel, isLoading = false }: CreateGithubProviderFormProps): ReactNode {
     const {
         register,
         handleSubmit,
@@ -28,8 +31,8 @@ export function CreateGitProviderForm({ onSubmit, onCancel, isLoading = false }:
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="text-sm text-muted-foreground">
-                To integrate your GitHub account with our services, you&apos;ll need to create and install a GitHub app. This process is
-                straightforward and only takes a few minutes. Click the button below to get started.
+                To connect your GitHub account to GitPaaS, you need to create and install a new GitHub App. This will give you visibility control at
+                all times.
             </div>
             <div className="space-y-2">
                 <Label htmlFor="git-provider-name">Name</Label>

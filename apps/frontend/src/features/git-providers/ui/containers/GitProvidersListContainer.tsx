@@ -1,19 +1,23 @@
 import { GitBranch, Plus, Search } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
+import { FaGithub } from 'react-icons/fa6';
 import { toast } from 'sonner';
 
+import { GitProviderType } from '../../domain/models/git-provider.models';
 import { CreateGitProviderDialog } from '../components/CreateGitProviderDialog';
 import { GitProvidersTable } from '../components/GitProvidersTable';
 import { useGitProviders } from '../hooks/useGitProviders';
 import { GitProviderFormData } from '../models/git-provider-form.models';
 
 import { Button } from '@shared/components/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@shared/components/dropdown-menu';
 
 export function GitProvidersListContainer(): ReactNode {
     // eslint-disable-next-line object-curly-newline
     const { filteredGitProviders, loading, error, loadGitProviders, createGitProvider, removeGitProvider } = useGitProviders();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
+    const [selectedProviderType, setSelectedProviderType] = useState<GitProviderType>('github');
 
     useEffect(() => {
         loadGitProviders();
@@ -31,7 +35,7 @@ export function GitProvidersListContainer(): ReactNode {
     const handleCreateGitProvider = async (data: GitProviderFormData) => {
         setIsCreating(true);
         try {
-            await createGitProvider(data);
+            await createGitProvider({ ...data, type: selectedProviderType });
             setIsCreateDialogOpen(false);
             toast.success('Git provider created successfully');
         } catch {
@@ -41,7 +45,11 @@ export function GitProvidersListContainer(): ReactNode {
         }
     };
 
-    const handleOpenCreateDialog = () => {
+    /**
+     * Handle provider type selection from the create dropdown
+     */
+    const handleSelectProviderType = (type: GitProviderType) => {
+        setSelectedProviderType(type);
         setIsCreateDialogOpen(true);
     };
 
@@ -78,10 +86,25 @@ export function GitProvidersListContainer(): ReactNode {
                     <div>
                         <h1 className="text-xl font-semibold tracking-tight">Git providers</h1>
                     </div>
-                    <Button size="sm" onClick={handleOpenCreateDialog}>
-                        <Plus />
-                        Create Git provider
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button size="sm">
+                                <Plus />
+                                Create Git provider
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-[var(--radix-dropdown-menu-trigger-width)]">
+                            <DropdownMenuItem
+                                className="gap-2"
+                                onClick={() => {
+                                    handleSelectProviderType('github');
+                                }}
+                            >
+                                <FaGithub className="h-4 w-4" />
+                                GitHub
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <div className="rounded-full bg-muted p-3 mb-4">
@@ -94,6 +117,7 @@ export function GitProvidersListContainer(): ReactNode {
                 </div>
                 <CreateGitProviderDialog
                     open={isCreateDialogOpen}
+                    providerType={selectedProviderType}
                     onOpenChange={setIsCreateDialogOpen}
                     onSubmit={handleCreateGitProvider}
                     isLoading={isCreating}
@@ -108,10 +132,25 @@ export function GitProvidersListContainer(): ReactNode {
                 <div>
                     <h1 className="text-xl font-semibold tracking-tight">Git providers</h1>
                 </div>
-                <Button size="sm" onClick={handleOpenCreateDialog}>
-                    <Plus />
-                    Create Git provider
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button size="sm">
+                            <Plus />
+                            Create Git provider
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-[var(--radix-dropdown-menu-trigger-width)]">
+                        <DropdownMenuItem
+                            className="gap-2"
+                            onClick={() => {
+                                handleSelectProviderType('github');
+                            }}
+                        >
+                            <FaGithub className="h-4 w-4" />
+                            GitHub
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
 
             <div className="relative w-full max-w-sm">
@@ -127,6 +166,7 @@ export function GitProvidersListContainer(): ReactNode {
 
             <CreateGitProviderDialog
                 open={isCreateDialogOpen}
+                providerType={selectedProviderType}
                 onOpenChange={setIsCreateDialogOpen}
                 onSubmit={handleCreateGitProvider}
                 isLoading={isCreating}

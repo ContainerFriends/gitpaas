@@ -126,10 +126,6 @@ export function ProjectsListContainer(): ReactNode {
                     <div>
                         <h1 className="text-xl font-semibold tracking-tight">Projects</h1>
                     </div>
-                    <Button size="sm" onClick={handleOpenCreateDialog}>
-                        <Plus />
-                        New project
-                    </Button>
                 </div>
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <div className="rounded-full bg-muted p-3 mb-4">

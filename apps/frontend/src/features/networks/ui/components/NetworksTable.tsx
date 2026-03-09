@@ -17,10 +17,10 @@ interface NetworksTableProps {
  */
 export function NetworksTable({ networks, onDelete }: NetworksTableProps): ReactNode {
     return (
-        <Card>
+        <Card className="cursor-default hover:border-border">
             <Table>
                 <TableHeader>
-                    <TableRow>
+                    <TableRow className="hover:bg-transparent">
                         <TableHead>Name</TableHead>
                         <TableHead>ID</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -28,18 +28,17 @@ export function NetworksTable({ networks, onDelete }: NetworksTableProps): React
                 </TableHeader>
                 <TableBody>
                     {networks.map((network) => (
-                        <TableRow key={network.id}>
+                        <TableRow key={network.id} className="hover:bg-transparent">
                             <TableCell className="font-medium">{network.name}</TableCell>
                             <TableCell className="text-muted-foreground font-mono text-sm">{network.id}</TableCell>
                             <TableCell className="text-right">
                                 {onDelete && (
                                     <Button
-                                        variant="outline"
+                                        variant="destructive"
                                         size="icon"
                                         onClick={() => {
                                             onDelete(network);
                                         }}
-                                        className="text-destructive hover:text-destructive"
                                     >
                                         <Trash2 />
                                     </Button>

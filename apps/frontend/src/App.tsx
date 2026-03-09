@@ -7,6 +7,7 @@ import { DashboardPage } from '@pages/DashboardPage';
 import { NetworksPage } from '@pages/NetworksPage';
 import { NotFoundPage } from '@pages/NotFoundPage';
 import { ProjectsPage } from '@pages/ProjectsPage';
+import { ServiceDetailPage } from '@pages/ServiceDetailPage';
 import { ServicesPage } from '@pages/ServicesPage';
 import { Toaster } from '@shared/components/sonner';
 import { TooltipProvider } from '@shared/components/tooltip';
@@ -23,6 +24,7 @@ export function App(): ReactNode {
                             <Route path="/" element={<DashboardPage />} />
                             <Route path="/projects" element={<ProjectsPage />} />
                             <Route path="/projects/:projectId/services" element={<ServicesPage />} />
+                            <Route path="/projects/:projectId/services/:serviceId" element={<ServiceDetailPage />} />
                             <Route path="/networks" element={<NetworksPage />} />
                             <Route path="*" element={<NotFoundPage />} />
                         </Routes>

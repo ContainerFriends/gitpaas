@@ -10,7 +10,7 @@ import { Service } from '../../domain/models/service.models';
 import { servicesApiRepository } from '../../infrastructure/api/services-api.repository';
 import { ServicesContext, ServicesContextValue } from '../context/ServicesContext';
 import { useServicesState } from '../hooks/useServicesState';
-import { ServiceFormData } from '../models/service-form.models';
+import { ServiceFormData, ServiceDetailFormData } from '../models/service-form.models';
 
 interface ServicesProviderProps {
     children: ReactNode;
@@ -112,7 +112,7 @@ export function ServicesProvider({ children }: ServicesProviderProps): ReactNode
      * Update an existing service
      */
     const updateServiceHandler = useCallback(
-        async (id: string, data: ServiceFormData): Promise<Service> => {
+        async (id: string, data: ServiceFormData | ServiceDetailFormData): Promise<Service> => {
             try {
                 setSubmittingService(true);
                 setError(null);

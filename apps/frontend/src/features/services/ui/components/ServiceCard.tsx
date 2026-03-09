@@ -1,5 +1,6 @@
-import { Calendar, MoreVertical } from 'lucide-react';
+import { Calendar, MoreVertical, Settings } from 'lucide-react';
 import { ReactNode, MouseEvent } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import { Service } from '../../domain/models/service.models';
 
@@ -17,6 +18,9 @@ interface ServiceCardProps {
  * Service card component
  */
 export function ServiceCard({ service, onEdit, onDelete }: ServiceCardProps): ReactNode {
+    const navigate = useNavigate();
+    const { projectId } = useParams<{ projectId: string }>();
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', {
@@ -30,8 +34,21 @@ export function ServiceCard({ service, onEdit, onDelete }: ServiceCardProps): Re
         e.stopPropagation();
     };
 
+    const handleCardClick = () => {
+        if (projectId) {
+            navigate(`/projects/${projectId}/services/${service.id}`);
+        }
+    };
+
+    const handleViewDetail = (e: MouseEvent) => {
+        e.stopPropagation();
+        if (projectId) {
+            navigate(`/projects/${projectId}/services/${service.id}`);
+        }
+    };
+
     return (
-        <Card className="min-h-[150px] flex flex-col cursor-pointer transition-shadow hover:shadow-md">
+        <Card className="min-h-[150px] flex flex-col cursor-pointer transition-shadow hover:shadow-md" onClick={handleCardClick}>
             <CardHeader className="flex-grow">
                 <div className="flex items-start justify-between">
                     <h3 className="font-semibold">{service.name}</h3>
@@ -41,7 +58,11 @@ export function ServiceCard({ service, onEdit, onDelete }: ServiceCardProps): Re
                                 <MoreVertical className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-24">
+                        <DropdownMenuContent align="end" className="w-32">
+                            <DropdownMenuItem onClick={handleViewDetail}>
+                                <Settings className="h-4 w-4 mr-2" />
+                                Configure
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={(e) => {
                                     e.stopPropagation();

@@ -9,6 +9,8 @@ import { useServices } from '../hooks/useServices';
 import { ServiceDetailFormData } from '../models/service-form.models';
 import { serviceDetailFormSchema } from '../schemas/service.schemas';
 
+import { useProjects } from '@features/projects/ui/hooks/useProjects';
+import { useBreadcrumbMetadata } from '@layout/contexts/BreadcrumbContext';
 import { Button } from '@shared/components/button';
 import { Card, CardContent, CardHeader } from '@shared/components/card';
 import { Input } from '@shared/components/input';
@@ -24,8 +26,15 @@ interface ServiceDetailContainerProps {
  */
 export function ServiceDetailContainer({ serviceId, projectId }: ServiceDetailContainerProps): ReactNode {
     const navigate = useNavigate();
+    const { selectedProject, getProjectById } = useProjects();
     const { selectedService, loadingService, getServiceById, updateService } = useServices();
     const [isSaving, setIsSaving] = useState(false);
+
+    /**
+     * Register project and service names in breadcrumbs
+     */
+    useBreadcrumbMetadata(projectId, selectedProject?.name);
+    useBreadcrumbMetadata(serviceId, selectedService?.name);
 
     const form = useForm<ServiceDetailFormData>({
         resolver: zodResolver(serviceDetailFormSchema),
@@ -44,11 +53,12 @@ export function ServiceDetailContainer({ serviceId, projectId }: ServiceDetailCo
     } = form;
 
     /**
-     * Load service by ID
+     * Load project and service by ID
      */
     useEffect(() => {
+        getProjectById(projectId);
         getServiceById(serviceId);
-    }, [getServiceById, serviceId]);
+    }, [getProjectById, getServiceById, projectId, serviceId]);
 
     /**
      * Update form when service is loaded
@@ -137,9 +147,7 @@ export function ServiceDetailContainer({ serviceId, projectId }: ServiceDetailCo
             {/* Deploy */}
             <Card className="cursor-default hover:border-border">
                 <CardHeader>Deploy</CardHeader>
-                <CardContent>
-                    Aqui botones
-                </CardContent>
+                <CardContent>Aqui botones</CardContent>
             </Card>
 
             {/* Provider */}

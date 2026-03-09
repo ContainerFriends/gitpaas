@@ -9,6 +9,7 @@ import { useServices } from '../hooks/useServices';
 import { ServiceFormData } from '../models/service-form.models';
 
 import { useProjects } from '@features/projects/ui/hooks/useProjects';
+import { useBreadcrumbMetadata } from '@layout/contexts/BreadcrumbContext';
 import { Button } from '@shared/components/button';
 
 interface ServicesContainerProps {
@@ -26,6 +27,11 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
     const [isCreating, setIsCreating] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+
+    /**
+     * Register project name in breadcrumbs when project is loaded
+     */
+    useBreadcrumbMetadata(projectId, selectedProject?.name);
 
     /**
      * Load project

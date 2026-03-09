@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 
+import { useBreadcrumbContext } from '../contexts/BreadcrumbContext';
+
 export interface BreadcrumbItem {
     label: string;
     path: string;
@@ -13,12 +15,13 @@ export interface BreadcrumbItem {
 export function useBreadcrumbs(): BreadcrumbItem[] {
     const location = useLocation();
     const params = useParams();
+    const { metadata } = useBreadcrumbContext();
 
     return useMemo(() => {
         const breadcrumbs: BreadcrumbItem[] = [];
         const segments = location.pathname.split('/').filter(Boolean);
 
-        // Always start with Dashboard (home)
+        // Always start with Dashboard
         if (location.pathname !== '/') {
             breadcrumbs.push({
                 label: 'Dashboard',
@@ -37,43 +40,23 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
             // Handle specific routes
             switch (segment) {
                 case 'projects':
-                    label = 'Proyectos';
+                    label = 'Projects';
                     break;
                 case 'services':
-                    label = 'Servicios';
+                    label = 'Services';
                     break;
                 case 'networks':
-                    label = 'Redes';
-                    break;
-                case 'deployments':
-                    label = 'Despliegues';
-                    break;
-                case 'servers':
-                    label = 'Servidores';
-                    break;
-                case 'databases':
-                    label = 'Base de Datos';
-                    break;
-                case 'logs':
-                    label = 'Registros';
-                    break;
-                case 'certificates':
-                    label = 'Certificados';
-                    break;
-                case 'notifications':
-                    label = 'Notificaciones';
-                    break;
-                case 'settings':
-                    label = 'Configuración';
+                    label = 'Networks';
                     break;
                 default:
-                    // Handle dynamic segments (IDs)
-                    if (params.projectId && segment === params.projectId) {
-                        label = `Proyecto ${segment}`;
+                    // Handle dynamic segments
+                    if (metadata[segment]) {
+                        label = metadata[segment];
+                    } else if (params.projectId && segment === params.projectId) {
+                        label = `Project ${segment}`;
                     } else if (params.serviceId && segment === params.serviceId) {
-                        label = `Servicio ${segment}`;
+                        label = `Service ${segment}`;
                     } else {
-                        // Capitalize first letter for other segments
                         label = segment.charAt(0).toUpperCase() + segment.slice(1);
                     }
             }
@@ -95,5 +78,5 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
         }
 
         return breadcrumbs;
-    }, [location.pathname, params]);
+    }, [location.pathname, params, metadata]);
 }

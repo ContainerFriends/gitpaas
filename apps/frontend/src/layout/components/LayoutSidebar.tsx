@@ -33,6 +33,7 @@ const platformNav = [
 ];
 
 const settingsNav = [
+    { title: 'Git providers', url: '/git-providers', icon: GitBranch },
     { title: 'Notifications', url: '/notifications', icon: Bell },
     { title: 'Settings', url: '/settings', icon: Settings },
 ];

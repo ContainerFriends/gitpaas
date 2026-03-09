@@ -2,11 +2,10 @@ import { Layers, Plus, Search } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { Service } from '../../domain/models/service.models';
 import { CreateServiceDialog } from '../components/CreateServiceDialog';
-import { EditServiceDialog } from '../components/EditServiceDialog';
-import { ServicesList } from '../components/ServicesList';
+import { ServiceCard } from '../components/ServiceCard';
 import { useServices } from '../hooks/useServices';
+import { ServiceFormData } from '../models/service-form.models';
 
 import { useProjects } from '@features/projects/ui/hooks/useProjects';
 import { Button } from '@shared/components/button';
@@ -20,22 +19,10 @@ interface ServicesContainerProps {
  */
 export function ServicesContainer({ projectId }: ServicesContainerProps): ReactNode {
     const { selectedProject, getProjectById } = useProjects();
-    const {
-        filteredServices,
-        filter,
-        loading,
-        error,
-        submittingService,
-        loadServicesByProjectId,
-        createService,
-        updateService,
-        deleteService,
-        setFilter,
-    } = useServices();
-
+    // eslint-disable-next-line object-curly-newline
+    const { filteredServices, filter, loading, error, loadServicesByProjectId, createService, updateService, deleteService } = useServices();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [selectedService, setSelectedService] = useState<Service | null>(null);
+    const [isCreating, setIsCreating] = useState(false);
 
     /**
      * Load project
@@ -49,58 +36,48 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
      */
     useEffect(() => {
         if (selectedProject?.id === projectId) {
-            loadServicesByProjectId(projectId).catch(console.error);
+            loadServicesByProjectId(projectId);
         }
     }, [selectedProject, projectId, loadServicesByProjectId]);
 
-    const handleCreateService = (): void => {
-        setCreateDialogOpen(true);
+    /**
+     * Handle edit service action
+     */
+    const handleEditService = async (serviceId: string) => {
+        try {
+            /* await getProjectById(projectId);
+            setIsEditDialogOpen(true); */
+        } catch {
+            toast.error('Failed to edit service');
+        }
     };
 
-    const handleCreateSubmit = async (data: ServiceFormSchema): Promise<void> => {
+    /**
+     * Handle delete service action
+     */
+    const handleDeleteService = async (serviceId: string) => {
+        try {
+            /* await deleteProject(projectId);
+            await loadProjects();
+            toast.success('Project deleted successfully'); */
+        } catch {
+            toast.error('Failed to delete service');
+        }
+    };
+
+    /**
+     * Handle create service form submission
+     */
+    const handleCreateService = async (data: ServiceFormData) => {
+        setIsCreating(true);
         try {
             await createService(data);
-            setCreateDialogOpen(false);
+            await loadServicesByProjectId(projectId);
+            setIsCreateDialogOpen(false);
         } catch {
-            toast.error('Failed to create service:');
-        }
-    };
-
-    const handleEditService = (service: Service): void => {
-        setSelectedService(service);
-        setEditDialogOpen(true);
-    };
-
-    const handleEditSubmit = async (data: ServiceFormSchema): Promise<void> => {
-        if (!selectedService) return;
-
-        try {
-            await updateService(selectedService.id, data);
-            setEditDialogOpen(false);
-            setSelectedService(null);
-        } catch (error) {
-            console.error('Failed to update service:', error);
-        }
-    };
-
-    const handleDeleteService = async (serviceId: string): Promise<void> => {
-        if (window.confirm('Are you sure you want to delete this service?')) {
-            try {
-                await deleteService(serviceId);
-            } catch (error) {
-                console.error('Failed to delete service:', error);
-            }
-        }
-    };
-
-    const handleViewRepository = (repositoryUrl: string): void => {
-        window.open(repositoryUrl, '_blank', 'noopener,noreferrer');
-    };
-
-    const handleEditDialogClose = (open: boolean): void => {
-        setEditDialogOpen(open);
-        if (!open) {
-            setSelectedService(null);
+            toast.error('Failed to create service');
+        } finally {
+            setIsCreating(false);
         }
     };
 
@@ -137,14 +114,6 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
         );
     }
 
-    if (!selectedProject) {
-        return (
-            <div className="space-y-4">
-                <div className="text-center py-8">No project selected</div>
-            </div>
-        );
-    }
-
     if (filteredServices.length === 0) {
         return (
             <div className="space-y-6">
@@ -152,10 +121,6 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
                     <div>
                         <h1 className="text-xl font-semibold tracking-tight">Services</h1>
                     </div>
-                    <Button size="sm" onClick={handleOpenCreateDialog}>
-                        <Plus />
-                        New service
-                    </Button>
                 </div>
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <div className="rounded-full bg-muted p-3 mb-4">
@@ -172,8 +137,8 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
                 <CreateServiceDialog
                     open={isCreateDialogOpen}
                     onOpenChange={setIsCreateDialogOpen}
-                    onSubmit={handleCreateSubmit}
-                    isSubmitting={submittingService}
+                    onSubmit={handleCreateService}
+                    isLoading={isCreating}
                 />
             </div>
         );
@@ -201,27 +166,26 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
                 />
             </div>
 
-            <ServicesList
-                services={filteredServices}
-                onEdit={handleEditService}
-                onDelete={handleDeleteService}
-                onViewRepository={handleViewRepository}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredServices.map((service) => (
+                    <ServiceCard key={service.id} service={service} onEdit={handleEditService} onDelete={handleDeleteService} />
+                ))}
+            </div>
 
             <CreateServiceDialog
                 open={isCreateDialogOpen}
                 onOpenChange={setIsCreateDialogOpen}
-                onSubmit={handleCreateSubmit}
-                isSubmitting={submittingService}
+                onSubmit={handleCreateService}
+                isLoading={isCreating}
             />
 
-            <EditServiceDialog
+            {/* <EditServiceDialog
                 open={editDialogOpen}
                 onOpenChange={handleEditDialogClose}
                 service={selectedService}
                 onSubmit={handleEditSubmit}
                 isSubmitting={submittingService}
-            />
+            /> */}
         </div>
     );
 }

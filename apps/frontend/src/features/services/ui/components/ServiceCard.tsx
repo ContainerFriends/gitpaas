@@ -1,88 +1,72 @@
-import { Button } from '@shared/components/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@shared/components/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@shared/components/dropdown-menu';
-import { Badge } from '@shared/components/badge';
-import { ExternalLink, GitBranch, MoreVertical, Trash } from 'lucide-react';
-import { ReactNode } from 'react';
+import { Calendar, MoreVertical } from 'lucide-react';
+import { ReactNode, MouseEvent } from 'react';
 
 import { Service } from '../../domain/models/service.models';
 
+import { Button } from '@shared/components/button';
+import { Card, CardFooter, CardHeader } from '@shared/components/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@shared/components/dropdown-menu';
+
 interface ServiceCardProps {
     service: Service;
-    onEdit?: (service: Service) => void;
+    onEdit?: (serviceId: string) => void;
     onDelete?: (serviceId: string) => void;
-    onViewRepository?: (repositoryUrl: string) => void;
 }
 
 /**
- * Service Card component
+ * Service card component
  */
-export function ServiceCard({ service, onEdit, onDelete, onViewRepository }: ServiceCardProps): ReactNode {
+export function ServiceCard({ service, onEdit, onDelete }: ServiceCardProps): ReactNode {
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    };
+
+    const handleDropdownClick = (e: MouseEvent) => {
+        e.stopPropagation();
+    };
+
     return (
-        <Card className="w-full transition-shadow duration-200 hover:shadow-md">
-            <CardHeader className="pb-3">
+        <Card className="min-h-[150px] flex flex-col cursor-pointer transition-shadow hover:shadow-md">
+            <CardHeader className="flex-grow">
                 <div className="flex items-start justify-between">
-                    <CardTitle className="text-base font-semibold text-gray-900 truncate pr-2">
-                        {service.name}
-                    </CardTitle>
+                    <h3 className="font-semibold">{service.name}</h3>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="ghost" size="icon" onClick={handleDropdownClick}>
                                 <MoreVertical className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            {onEdit && (
-                                <DropdownMenuItem onClick={() => onEdit(service)}>
-                                    Edit
-                                </DropdownMenuItem>
-                            )}
-                            {onViewRepository && (
-                                <DropdownMenuItem onClick={() => onViewRepository(service.repositoryUrl)}>
-                                    <ExternalLink className="mr-2 h-4 w-4" />
-                                    View Repository
-                                </DropdownMenuItem>
-                            )}
-                            {onDelete && (
-                                <DropdownMenuItem 
-                                    onClick={() => onDelete(service.id)}
-                                    className="text-destructive focus:text-destructive"
-                                >
-                                    <Trash className="mr-2 h-4 w-4" />
-                                    Delete
-                                </DropdownMenuItem>
-                            )}
+                        <DropdownMenuContent align="end" className="w-24">
+                            <DropdownMenuItem
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onEdit?.(service.id);
+                                }}
+                            >
+                                Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete?.(service.id);
+                                }}
+                                className="text-destructive focus:text-destructive"
+                            >
+                                Delete
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
             </CardHeader>
-            <CardContent className="py-3">
-                <div className="space-y-2">
-                    <div className="flex items-center text-sm text-gray-600">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        <a 
-                            href={service.repositoryUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="hover:underline truncate"
-                        >
-                            {service.repositoryUrl}
-                        </a>
-                    </div>
-                    {service.branch && (
-                        <div className="flex items-center">
-                            <GitBranch className="w-4 h-4 mr-2 text-gray-400" />
-                            <Badge variant="secondary" className="text-xs">
-                                {service.branch}
-                            </Badge>
-                        </div>
-                    )}
-                </div>
-            </CardContent>
-            <CardFooter className="pt-3">
-                <div className="flex justify-between items-center w-full text-xs text-gray-500">
-                    <span>Created: {new Date(service.createdAt).toLocaleDateString()}</span>
-                    <span>Updated: {new Date(service.updatedAt).toLocaleDateString()}</span>
+            <CardFooter>
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    <span>Created {formatDate(service.createdAt)}</span>
                 </div>
             </CardFooter>
         </Card>

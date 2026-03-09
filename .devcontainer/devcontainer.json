@@ -24,7 +24,8 @@
                 "redhat.vscode-yaml",
                 "sibiraj-s.vscode-scss-formatter",
                 "aeschli.vscode-css-formatter",
-                "bradlc.vscode-tailwindcss"
+                "bradlc.vscode-tailwindcss",
+                "Prisma.prisma"
             ]
         }
     },

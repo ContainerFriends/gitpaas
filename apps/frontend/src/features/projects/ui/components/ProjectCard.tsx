@@ -19,7 +19,7 @@ interface ProjectCardProps {
  */
 export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps): ReactNode {
     const navigate = useNavigate();
-    
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', {
@@ -34,14 +34,11 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps): Re
     };
 
     const handleDropdownClick = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent card click
+        e.stopPropagation();
     };
 
     return (
-        <Card 
-            className="min-h-[150px] flex flex-col cursor-pointer transition-shadow hover:shadow-md" 
-            onClick={handleCardClick}
-        >
+        <Card className="min-h-[150px] flex flex-col cursor-pointer transition-shadow hover:shadow-md" onClick={handleCardClick}>
             <CardHeader className="flex-grow">
                 <div className="flex items-start justify-between">
                     <h3 className="font-semibold">{project.name}</h3>

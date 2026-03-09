@@ -29,7 +29,6 @@ export const servicesApiRepository = (token: string): ServicesRepository => ({
 
         return data.map(servicesApiMapper.toDomain);
     },
-
     getById: async (id: string): Promise<Service | null> => {
         const response = await fetch(`${API_BASE_URL}/services/${id}`, {
             method: 'GET',
@@ -49,7 +48,6 @@ export const servicesApiRepository = (token: string): ServicesRepository => ({
 
         return servicesApiMapper.toDomain(data);
     },
-
     create: async (createDto: CreateServiceDto): Promise<Service> => {
         const response = await fetch(`${API_BASE_URL}/services`, {
             method: 'POST',
@@ -66,7 +64,6 @@ export const servicesApiRepository = (token: string): ServicesRepository => ({
 
         return servicesApiMapper.toDomain(data);
     },
-
     update: async (id: string, updateDto: UpdateServiceDto): Promise<Service> => {
         const response = await fetch(`${API_BASE_URL}/services/${id}`, {
             method: 'PATCH',
@@ -83,7 +80,6 @@ export const servicesApiRepository = (token: string): ServicesRepository => ({
 
         return servicesApiMapper.toDomain(data);
     },
-
     delete: async (id: string): Promise<void> => {
         const response = await fetch(`${API_BASE_URL}/services/${id}`, {
             method: 'DELETE',

@@ -10,6 +10,7 @@ import { ServiceDetailFormData } from '../models/service-form.models';
 import { serviceDetailFormSchema } from '../schemas/service.schemas';
 
 import { Button } from '@shared/components/button';
+import { Card, CardContent, CardHeader } from '@shared/components/card';
 import { Input } from '@shared/components/input';
 import { Label } from '@shared/components/label';
 
@@ -133,50 +134,58 @@ export function ServiceDetailContainer({ serviceId, projectId }: ServiceDetailCo
                 </Link>
             </div>
 
-            <div className="max-w-2xl">
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid gap-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Service Name</Label>
-                            <Input id="name" placeholder="Enter service name" {...register('name')} />
-                            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
-                        </div>
+            {/* Deploy */}
+            <Card className="cursor-default hover:border-border">
+                <CardHeader>Deploy</CardHeader>
+                <CardContent>
+                    Aqui botones
+                </CardContent>
+            </Card>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="repositoryUrl">Repository URL</Label>
-                            <div className="relative">
-                                <LinkIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    id="repositoryUrl"
-                                    placeholder="https://github.com/owner/repo"
-                                    className="pl-9"
-                                    {...register('repositoryUrl')}
-                                />
+            {/* Provider */}
+            <Card className="cursor-default hover:border-border">
+                <CardHeader>Provider</CardHeader>
+                <CardContent>
+                    <div className="max-w-2xl">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                            <div className="grid gap-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="repositoryUrl">Repository URL</Label>
+                                    <div className="relative">
+                                        <LinkIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            id="repositoryUrl"
+                                            placeholder="https://github.com/owner/repo"
+                                            className="pl-9"
+                                            {...register('repositoryUrl')}
+                                        />
+                                    </div>
+                                    {errors.repositoryUrl && <p className="text-sm text-destructive">{errors.repositoryUrl.message}</p>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="branch">Branch</Label>
+                                    <div className="relative">
+                                        <GitBranch className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input id="branch" placeholder="main" className="pl-9" {...register('branch')} />
+                                    </div>
+                                    {errors.branch && <p className="text-sm text-destructive">{errors.branch.message}</p>}
+                                </div>
                             </div>
-                            {errors.repositoryUrl && <p className="text-sm text-destructive">{errors.repositoryUrl.message}</p>}
-                        </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="branch">Branch</Label>
-                            <div className="relative">
-                                <GitBranch className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input id="branch" placeholder="main" className="pl-9" {...register('branch')} />
+                            <div className="flex items-center justify-end gap-3 pt-6 border-t">
+                                <Button type="button" variant="outline" onClick={handleBack}>
+                                    Cancel
+                                </Button>
+                                <Button type="submit" disabled={!isDirty || isSaving}>
+                                    <Save />
+                                    {isSaving ? 'Saving...' : 'Save Changes'}
+                                </Button>
                             </div>
-                            {errors.branch && <p className="text-sm text-destructive">{errors.branch.message}</p>}
-                        </div>
+                        </form>
                     </div>
-
-                    <div className="flex items-center justify-end gap-3 pt-6 border-t">
-                        <Button type="button" variant="outline" onClick={handleBack}>
-                            Cancel
-                        </Button>
-                        <Button type="submit" disabled={!isDirty || isSaving}>
-                            <Save />
-                            {isSaving ? 'Saving...' : 'Save Changes'}
-                        </Button>
-                    </div>
-                </form>
-            </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }

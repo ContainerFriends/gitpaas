@@ -19,9 +19,9 @@ interface ServicesContainerProps {
  * Services Container component
  */
 export function ServicesContainer({ projectId }: ServicesContainerProps): ReactNode {
-    const { selectedProject, getProjectById } = useProjects();
+    const { selectedProject, loadingProject, getProjectById } = useProjects();
     // eslint-disable-next-line object-curly-newline, max-len, prettier/prettier
-    const { filteredServices, selectedService, loadingService, filter, loading, error, loadServicesByProjectId, getServiceById, createService, updateService, deleteService } = useServices();
+    const { filteredServices, selectedService, loadingService, filter, error, loadServicesByProjectId, getServiceById, createService, updateService, deleteService } = useServices();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -109,7 +109,10 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
         setIsCreateDialogOpen(true);
     };
 
-    if (loading) {
+    /**
+     * Loading resources template
+     */
+    if (loadingService || loadingProject) {
         return (
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -122,6 +125,9 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
         );
     }
 
+    /**
+     * Error template
+     */
     if (error) {
         return (
             <div className="space-y-6">
@@ -135,7 +141,26 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
         );
     }
 
-    if (filteredServices.length === 0) {
+    /**
+     * No project found template
+     */
+    if (!selectedProject) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-semibold tracking-tight">Services</h1>
+                        <p className="text-sm text-muted-foreground mt-0.5">Project not found</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    /**
+     * No services found template
+     */
+    if (selectedProject && filteredServices.length === 0) {
         return (
             <div className="space-y-6">
                 <div className="flex items-center justify-between">

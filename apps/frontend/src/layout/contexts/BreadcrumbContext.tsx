@@ -25,8 +25,7 @@ export function BreadcrumbProvider({ children }: { children: ReactNode }): React
 
     const clearMetadata = useCallback((key: string) => {
         setMetadataState((prev) => {
-            const newMetadata = { ...prev };
-            delete newMetadata[key];
+            const { [key]: _, ...newMetadata } = prev;
             return newMetadata;
         });
     }, []);

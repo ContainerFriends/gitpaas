@@ -3,10 +3,81 @@ import { useLocation, useParams } from 'react-router-dom';
 
 import { useBreadcrumbContext } from '../contexts/BreadcrumbContext';
 
-export interface BreadcrumbItem {
+interface BreadcrumbItem {
     label: string;
     path: string;
     isLast?: boolean;
+}
+
+// Static route labels mapping
+const STATIC_LABELS: Record<string, string> = {
+    projects: 'Projects',
+    services: 'Services',
+    networks: 'Networks',
+    deployments: 'Deployments',
+    servers: 'Servers',
+    databases: 'Databases',
+    logs: 'Logs',
+    certificates: 'Certificates',
+    notifications: 'Notifications',
+    settings: 'Settings',
+};
+
+/**
+ * Check if a breadcrumb should be skipped
+ */
+function shouldSkipBreadcrumb(segment: string, index: number, segments: string[], params: Record<string, string | undefined>): boolean {
+    // Skip "services" when it's directly after a project ID
+    if (segment === 'services') {
+        const previousSegment = segments[index - 1];
+        return Boolean(params.projectId && previousSegment === params.projectId);
+    }
+    return false;
+}
+
+/**
+ * Get the label for a segment
+ */
+function getSegmentLabel(segment: string, metadata: Record<string, string>, params: Record<string, string | undefined>): string {
+    // Static routes
+    if (STATIC_LABELS[segment]) {
+        return STATIC_LABELS[segment];
+    }
+
+    // Dynamic segments with metadata
+    if (metadata[segment]) {
+        return metadata[segment];
+    }
+
+    // Fallback labels for known params
+    if (params.projectId && segment === params.projectId) {
+        return `Project ${segment}`;
+    }
+    if (params.serviceId && segment === params.serviceId) {
+        return `Service ${segment}`;
+    }
+
+    // Default: capitalize first letter
+    return segment.charAt(0).toUpperCase() + segment.slice(1);
+}
+
+/**
+ * Get the correct link path for a segment
+ */
+function getSegmentPath(segment: string, currentPath: string, index: number, segments: string[], params: Record<string, string | undefined>): string {
+    // For project IDs, check if we should link to services page
+    const isProjectId = params.projectId && segment === params.projectId;
+    if (isProjectId) {
+        const hasServicesAfter = segments.slice(index + 1).includes('services');
+        const servicesIsLast = segments[segments.length - 1] === 'services';
+
+        // If services comes after but isn't the last segment, link to services
+        if (hasServicesAfter && !servicesIsLast) {
+            return `${currentPath}/services`;
+        }
+    }
+
+    return currentPath;
 }
 
 /**
@@ -21,97 +92,47 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
         const breadcrumbs: BreadcrumbItem[] = [];
         const segments = location.pathname.split('/').filter(Boolean);
 
-        // Always start with Dashboard
+        // Add Dashboard as first breadcrumb (except when on home)
         if (location.pathname !== '/') {
             breadcrumbs.push({
                 label: 'Dashboard',
                 path: '/',
+                isLast: false,
             });
         }
 
-        // Build breadcrumbs based on path segments
+        // Process each segment
         let currentPath = '';
         segments.forEach((segment, index) => {
             currentPath += `/${segment}`;
-            const isLast = index === segments.length - 1;
 
-            let label = segment;
-            let linkPath = currentPath;
-            let shouldAddBreadcrumb = true;
-
-            // Handle specific routes
-            switch (segment) {
-                case 'projects':
-                    label = 'Projects';
-                    break;
-                case 'services':
-                    // Skip "services" breadcrumb if it's directly after a project ID
-                    // This covers both /projects/{id}/services and /projects/{id}/services/{serviceId}
-                    const previousSegment = segments[index - 1];
-                    if (params.projectId && previousSegment === params.projectId) {
-                        shouldAddBreadcrumb = false;
-                    } else {
-                        label = 'Services';
-                    }
-                    break;
-                case 'networks':
-                    label = 'Networks';
-                    break;
-                default:
-                    // Handle dynamic segments
-                    if (metadata[segment]) {
-                        label = metadata[segment];
-
-                        // Special case: if this is a project ID and we have services in the path,
-                        // but services is the last segment, keep the link to current path (no /services)
-                        if (params.projectId && segment === params.projectId) {
-                            const hasServicesAfter = segments.slice(index + 1).includes('services');
-                            const servicesIsLast = segments[segments.length - 1] === 'services';
-                            if (hasServicesAfter && !servicesIsLast) {
-                                linkPath = `${currentPath}/services`;
-                            }
-                        }
-                    } else if (params.projectId && segment === params.projectId) {
-                        label = `Project ${segment}`;
-
-                        // Special case: if we have services in the path,
-                        // but services is the last segment, keep the link to current path (no /services)
-                        const hasServicesAfter = segments.slice(index + 1).includes('services');
-                        const servicesIsLast = segments[segments.length - 1] === 'services';
-                        if (hasServicesAfter && !servicesIsLast) {
-                            linkPath = `${currentPath}/services`;
-                        }
-                    } else if (params.serviceId && segment === params.serviceId) {
-                        label = `Service ${segment}`;
-                    } else {
-                        label = segment.charAt(0).toUpperCase() + segment.slice(1);
-                    }
+            // Skip breadcrumbs that should be hidden
+            if (shouldSkipBreadcrumb(segment, index, segments, params)) {
+                return;
             }
 
-            // Only add breadcrumb if shouldAddBreadcrumb is true
-            if (shouldAddBreadcrumb) {
-                breadcrumbs.push({
-                    label,
-                    path: linkPath,
-                    isLast,
-                });
-            }
+            const label = getSegmentLabel(segment, metadata, params);
+            const linkPath = getSegmentPath(segment, currentPath, index, segments, params);
+
+            breadcrumbs.push({
+                label,
+                path: linkPath,
+                isLast: false, // Will be corrected below
+            });
         });
 
-        // Fix isLast property: ensure the last breadcrumb in the array is marked as last
-        if (breadcrumbs.length > 0) {
-            breadcrumbs.forEach((breadcrumb, index) => {
-                breadcrumb.isLast = index === breadcrumbs.length - 1;
-            });
-        }
-
-        // If we're on the home page
+        // Handle home page case
         if (breadcrumbs.length === 0) {
             breadcrumbs.push({
                 label: 'Dashboard',
                 path: '/',
                 isLast: true,
             });
+        }
+
+        // Mark the last breadcrumb as last
+        if (breadcrumbs.length > 0) {
+            breadcrumbs[breadcrumbs.length - 1].isLast = true;
         }
 
         return breadcrumbs;

@@ -23,23 +23,18 @@ export function CreateGitProviderForm({ onSubmit, onCancel, isLoading = false }:
     } = useForm<GitProviderFormData>({
         resolver: zodResolver(gitProviderFormSchema),
         mode: 'onChange',
-        defaultValues: {
-            type: 'github',
-        },
     });
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+                To integrate your GitHub account with our services, you&apos;ll need to create and install a GitHub app. This process is
+                straightforward and only takes a few minutes. Click the button below to get started.
+            </div>
             <div className="space-y-2">
                 <Label htmlFor="git-provider-name">Name</Label>
-                <Input id="git-provider-name" placeholder="Enter git provider name..." disabled={isLoading} {...register('name')} />
+                <Input id="git-provider-name" placeholder="Enter name for the provider..." disabled={isLoading} {...register('name')} />
                 {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="git-provider-type">Type</Label>
-                <Input id="git-provider-type" value="github" disabled readOnly {...register('type')} />
-                {errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
             </div>
 
             <div className="flex justify-end gap-3 pt-4">

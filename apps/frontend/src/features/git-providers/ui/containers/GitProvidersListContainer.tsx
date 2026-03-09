@@ -24,7 +24,7 @@ export function GitProvidersListContainer(): ReactNode {
             await removeGitProvider(gitProvider.id);
             toast.success('Git provider removed successfully');
         } catch {
-            toast.error('Failed to remove git provider');
+            toast.error('Failed to remove Git provider');
         }
     };
 
@@ -35,7 +35,7 @@ export function GitProvidersListContainer(): ReactNode {
             setIsCreateDialogOpen(false);
             toast.success('Git provider created successfully');
         } catch {
-            toast.error('Failed to create git provider');
+            toast.error('Failed to create Git provider');
         } finally {
             setIsCreating(false);
         }
@@ -51,7 +51,7 @@ export function GitProvidersListContainer(): ReactNode {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-xl font-semibold tracking-tight">Git providers</h1>
-                        <p className="text-sm text-muted-foreground mt-0.5">Loading git providers...</p>
+                        <p className="text-sm text-muted-foreground mt-0.5">Loading Git providers...</p>
                     </div>
                 </div>
             </div>
@@ -80,16 +80,16 @@ export function GitProvidersListContainer(): ReactNode {
                     </div>
                     <Button size="sm" onClick={handleOpenCreateDialog}>
                         <Plus />
-                        Create git provider
+                        Create Git provider
                     </Button>
                 </div>
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <div className="rounded-full bg-muted p-3 mb-4">
                         <GitBranch className="h-6 w-6 text-muted-foreground" />
                     </div>
-                    <h3 className="text-lg font-medium mb-2">No git providers found</h3>
+                    <h3 className="text-lg font-medium mb-2">No Git providers found</h3>
                     <p className="text-sm text-muted-foreground mb-4 max-w-sm">
-                        Get started by adding your first git provider to connect your repositories.
+                        Get started by adding your first Git provider to connect your repositories.
                     </p>
                 </div>
                 <CreateGitProviderDialog
@@ -110,7 +110,7 @@ export function GitProvidersListContainer(): ReactNode {
                 </div>
                 <Button size="sm" onClick={handleOpenCreateDialog}>
                     <Plus />
-                    Create git provider
+                    Create Git provider
                 </Button>
             </div>
 

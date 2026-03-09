@@ -22,7 +22,7 @@ export function CreateGitProviderDialog({ open, onOpenChange, onSubmit, isLoadin
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Create new git provider</DialogTitle>
+                    <DialogTitle>Create new Git provider</DialogTitle>
                 </DialogHeader>
                 <CreateGitProviderForm onSubmit={onSubmit} onCancel={handleCancel} isLoading={isLoading} />
             </DialogContent>

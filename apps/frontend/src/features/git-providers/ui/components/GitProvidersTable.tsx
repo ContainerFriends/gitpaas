@@ -21,7 +21,6 @@ export function GitProvidersTable({ gitProviders, onDelete }: GitProvidersTableP
                     <TableRow className="hover:bg-transparent">
                         <TableHead>Name</TableHead>
                         <TableHead>Type</TableHead>
-                        <TableHead>ID</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -32,7 +31,6 @@ export function GitProvidersTable({ gitProviders, onDelete }: GitProvidersTableP
                             <TableCell>
                                 <Badge variant="secondary">{gitProvider.type}</Badge>
                             </TableCell>
-                            <TableCell className="text-muted-foreground font-mono text-sm">{gitProvider.id}</TableCell>
                             <TableCell className="text-right">
                                 {onDelete && (
                                     <Button

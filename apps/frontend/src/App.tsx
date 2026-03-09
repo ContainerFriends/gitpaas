@@ -3,6 +3,7 @@ import { ThemeProvider } from 'next-themes';
 import { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
+import { ContainersPage } from '@pages/ContainersPage';
 import { DashboardPage } from '@pages/DashboardPage';
 import { GitProvidersPage } from '@pages/GitProvidersPage';
 import { NetworksPage } from '@pages/NetworksPage';
@@ -27,6 +28,7 @@ export function App(): ReactNode {
                             <Route path="/projects/:projectId/services" element={<ServicesPage />} />
                             <Route path="/projects/:projectId/services/:serviceId" element={<ServiceDetailPage />} />
                             <Route path="/networks" element={<NetworksPage />} />
+                            <Route path="/containers" element={<ContainersPage />} />
                             <Route path="/git-providers" element={<GitProvidersPage />} />
                             <Route path="*" element={<NotFoundPage />} />
                         </Routes>

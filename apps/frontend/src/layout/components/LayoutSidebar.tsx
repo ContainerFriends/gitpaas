@@ -1,5 +1,5 @@
 // eslint-disable-next-line object-curly-newline
-import { LayoutDashboard, Layers, Globe, Server, Database, Terminal, Settings, Bell, Shield, GitBranch, Network } from 'lucide-react';
+import { LayoutDashboard, Layers, Globe, Server, Database, Terminal, Settings, Bell, Shield, GitBranch, Network, Box } from 'lucide-react';
 import { ReactNode } from 'react';
 
 import { NavLink } from './NavLink';
@@ -27,6 +27,7 @@ const mainNav = [
 
 const platformNav = [
     { title: 'Networks', url: '/networks', icon: Network },
+    { title: 'Containers', url: '/containers', icon: Box },
     { title: 'Databases', url: '/databases', icon: Database },
     { title: 'Logs', url: '/logs', icon: Terminal },
     { title: 'Certificates', url: '/certificates', icon: Shield },

@@ -14,6 +14,7 @@ const STATIC_LABELS: Record<string, string> = {
     projects: 'Projects',
     services: 'Services',
     networks: 'Networks',
+    containers: 'Containers',
     deployments: 'Deployments',
     servers: 'Servers',
     databases: 'Databases',

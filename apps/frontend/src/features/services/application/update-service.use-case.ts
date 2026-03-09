@@ -7,14 +7,16 @@ import { ServicesRepository } from '../domain/repositories/services.repository';
  *
  * @param repository Services repository
  * @param id Service ID
- * @param updateDto Service update data
+ * @param data Service update data
  *
  * @return Updated service
  */
-export async function updateServiceUseCase(
-    repository: ServicesRepository,
-    id: string,
-    updateDto: UpdateServiceDto,
-): Promise<Service> {
+export async function updateServiceUseCase(repository: ServicesRepository, id: string, data: any): Promise<Service> {
+    const updateDto: UpdateServiceDto = {
+        name: data.name,
+        repositoryUrl: data.repositoryUrl,
+        branch: data.branch,
+    };
+
     return repository.update(id, updateDto);
 }

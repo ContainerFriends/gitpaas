@@ -10,6 +10,7 @@ import { Service } from '../../domain/models/service.models';
 import { servicesApiRepository } from '../../infrastructure/api/services-api.repository';
 import { ServicesContext, ServicesContextValue } from '../context/ServicesContext';
 import { useServicesState } from '../hooks/useServicesState';
+import { ServiceFormData } from '../models/service-form.models';
 
 interface ServicesProviderProps {
     children: ReactNode;
@@ -42,21 +43,24 @@ export function ServicesProvider({ children }: ServicesProviderProps): ReactNode
     /**
      * Load services by project ID
      */
-    const loadServicesByProjectId = useCallback(async (projectId: string): Promise<void> => {
-        try {
-            setLoading(true);
-            setError(null);
-            setProjectId(projectId);
-            const token = await getMockToken();
-            const services = await getServicesByProjectIdUseCase(servicesApiRepository(token), projectId);
-            setServices(services);
-        } catch (error) {
-            setError('Failed to load services');
-            throw error;
-        } finally {
-            setLoading(false);
-        }
-    }, [getMockToken, setLoading, setError, setProjectId, setServices]);
+    const loadServicesByProjectId = useCallback(
+        async (projectId: string): Promise<void> => {
+            try {
+                setLoading(true);
+                setError(null);
+                setProjectId(projectId);
+                const token = await getMockToken();
+                const services = await getServicesByProjectIdUseCase(servicesApiRepository(token), projectId);
+                setServices(services);
+            } catch (error) {
+                setError('Failed to load services');
+                throw error;
+            } finally {
+                setLoading(false);
+            }
+        },
+        [getMockToken, setLoading, setError, setProjectId, setServices],
+    );
 
     /**
      * Get service by ID
@@ -84,17 +88,12 @@ export function ServicesProvider({ children }: ServicesProviderProps): ReactNode
      * Create a new service
      */
     const createService = useCallback(
-        async (data: { name: string; repositoryUrl: string; branch?: string }): Promise<Service> => {
-            if (!state.projectId) {
-                throw new Error('No project ID set');
-            }
-
+        async (data: ServiceFormData): Promise<Service> => {
             try {
                 setSubmittingService(true);
                 setError(null);
                 const token = await getMockToken();
-                const createDto = { ...data, projectId: state.projectId };
-                const newService = await createServiceUseCase(servicesApiRepository(token), createDto);
+                const newService = await createServiceUseCase(servicesApiRepository(token), data);
                 addService(newService);
                 toast.success('Service created successfully');
                 return newService;
@@ -106,14 +105,14 @@ export function ServicesProvider({ children }: ServicesProviderProps): ReactNode
                 setSubmittingService(false);
             }
         },
-        [getMockToken, setSubmittingService, setError, addService, state.projectId],
+        [getMockToken, setSubmittingService, setError, addService],
     );
 
     /**
      * Update an existing service
      */
     const updateServiceHandler = useCallback(
-        async (id: string, data: { name?: string; repositoryUrl?: string; branch?: string }): Promise<Service> => {
+        async (id: string, data: ServiceFormData): Promise<Service> => {
             try {
                 setSubmittingService(true);
                 setError(null);

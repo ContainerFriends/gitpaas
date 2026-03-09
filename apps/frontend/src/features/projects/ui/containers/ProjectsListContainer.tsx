@@ -20,6 +20,7 @@ export function ProjectsListContainer(): ReactNode {
     const [isCreating, setIsCreating] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+
     /**
      * Load projects
      */

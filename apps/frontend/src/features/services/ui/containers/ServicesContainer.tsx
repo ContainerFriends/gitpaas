@@ -3,6 +3,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { CreateServiceDialog } from '../components/CreateServiceDialog';
+import { EditServiceDialog } from '../components/EditServiceDialog';
 import { ServiceCard } from '../components/ServiceCard';
 import { useServices } from '../hooks/useServices';
 import { ServiceFormData } from '../models/service-form.models';
@@ -19,10 +20,12 @@ interface ServicesContainerProps {
  */
 export function ServicesContainer({ projectId }: ServicesContainerProps): ReactNode {
     const { selectedProject, getProjectById } = useProjects();
-    // eslint-disable-next-line object-curly-newline
-    const { filteredServices, filter, loading, error, loadServicesByProjectId, createService, updateService, deleteService } = useServices();
+    // eslint-disable-next-line object-curly-newline, max-len, prettier/prettier
+    const { filteredServices, selectedService, loadingService, filter, loading, error, loadServicesByProjectId, getServiceById, createService, updateService, deleteService } = useServices();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
     /**
      * Load project
@@ -45,8 +48,8 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
      */
     const handleEditService = async (serviceId: string) => {
         try {
-            /* await getProjectById(projectId);
-            setIsEditDialogOpen(true); */
+            await getServiceById(serviceId);
+            setIsEditDialogOpen(true);
         } catch {
             toast.error('Failed to edit service');
         }
@@ -57,9 +60,9 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
      */
     const handleDeleteService = async (serviceId: string) => {
         try {
-            /* await deleteProject(projectId);
-            await loadProjects();
-            toast.success('Project deleted successfully'); */
+            await deleteService(serviceId);
+            await loadServicesByProjectId(projectId);
+            toast.success('Service deleted successfully');
         } catch {
             toast.error('Failed to delete service');
         }
@@ -78,6 +81,24 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
             toast.error('Failed to create service');
         } finally {
             setIsCreating(false);
+        }
+    };
+
+    /**
+     * Handle update service form submission
+     */
+    const handleUpdateService = async (data: ServiceFormData) => {
+        if (!selectedProject) return;
+
+        setIsEditing(true);
+        try {
+            await updateService(selectedService.id, data);
+            await loadServicesByProjectId(projectId);
+            setIsEditDialogOpen(false);
+        } catch {
+            toast.error('Failed to update service');
+        } finally {
+            setIsEditing(false);
         }
     };
 
@@ -179,13 +200,15 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
                 isLoading={isCreating}
             />
 
-            {/* <EditServiceDialog
-                open={editDialogOpen}
-                onOpenChange={handleEditDialogClose}
-                service={selectedService}
-                onSubmit={handleEditSubmit}
-                isSubmitting={submittingService}
-            /> */}
+            {selectedService && (
+                <EditServiceDialog
+                    open={isEditDialogOpen}
+                    onOpenChange={setIsEditDialogOpen}
+                    onSubmit={handleUpdateService}
+                    initialData={{ name: selectedService.name }}
+                    isLoading={isEditing || loadingService}
+                />
+            )}
         </div>
     );
 }

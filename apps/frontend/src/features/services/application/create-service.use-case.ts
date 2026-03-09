@@ -8,11 +8,11 @@ import { ServicesRepository } from '../domain/repositories/services.repository';
  * Create service use case.
  *
  * @param repository Services repository
- * @param createDto Service creation data
+ * @param data Service creation data
  *
  * @return Created service
  */
-export async function createServiceUseCase(repository: ServicesRepository, data: CreateServiceDto): Promise<Service> {
+export async function createServiceUseCase(repository: ServicesRepository, data: any): Promise<Service> {
     const createDto: CreateServiceDto = {
         id: uuidv4(),
         name: data.name,

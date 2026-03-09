@@ -32,6 +32,9 @@ export function GitProvidersListContainer(): ReactNode {
         }
     };
 
+    /**
+     * Handle create Git provider form submission
+     */
     const handleCreateGitProvider = async (data: GitProviderFormData) => {
         setIsCreating(true);
         try {

@@ -73,3 +73,7 @@ iac/             # Infrastructure: Docker, Prisma, Nginx
 ### Runtime environment
 - **Node.js**: 24.14.0 (managed via mise)
 - **Package Manager**: npm 11.9.0
+
+## General instructions
+
+- Never run ESLint; this is the developer's responsibility.

@@ -7,4 +7,8 @@ export interface CreateGitProviderDto {
     id: string;
     name: string;
     type: GitProviderType;
+    externalId: string;
+    slug: string;
+    traceId: string;
+    status: 'pending' | 'active' | 'error';
 }

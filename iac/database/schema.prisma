@@ -36,12 +36,22 @@ enum GitProviderType {
   github
 }
 
+enum GitProviderStatus {
+  pending
+  active
+  error
+}
+
 model GitProvider {
-  id        String          @id
-  name      String
-  type      GitProviderType @default(github)
-  createdAt DateTime        @default(now()) @map("created_at")
-  updatedAt DateTime        @updatedAt @map("updated_at")
+  id         String            @id
+  name       String
+  type       GitProviderType   @default(github)
+  status     GitProviderStatus @default(pending)
+  externalId String            @map("external_id")
+  slug       String
+  traceId    String            @unique @map("trace_id")
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
 
   @@map("git_providers")
 }

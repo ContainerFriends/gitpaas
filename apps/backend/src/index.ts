@@ -12,6 +12,7 @@ import { helmetConfig } from '@core/infrastructure/express/helmet.express';
 import { appLogger } from '@core/infrastructure/loggers/winston.logger';
 import { healthRouter } from '@core/ui/routes/health.routes';
 import { containerRouter } from '@features/containers/ui/routes/container.routes';
+import { eventsRouter } from '@features/events/ui/routes/events.routes';
 import { gitProviderRouter } from '@features/git-providers/ui/routes/git-provider.routes';
 import { networkRouter } from '@features/networks/ui/routes/network.routes';
 import { projectRouter } from '@features/projects/ui/routes/project.routes';
@@ -44,6 +45,7 @@ app.use(`/${expressConfig.apiVersion}/networks`, networkRouter);
 app.use(`/${expressConfig.apiVersion}/containers`, containerRouter);
 app.use(`/${expressConfig.apiVersion}/services`, servicesRouter);
 app.use(`/${expressConfig.apiVersion}/git-providers`, gitProviderRouter);
+app.use(`/${expressConfig.apiVersion}/events`, eventsRouter);
 
 //
 

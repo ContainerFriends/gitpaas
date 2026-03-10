@@ -8,5 +8,8 @@ dist
 # Environment files
 .env
 
-# Turb
-.turbo/
+# Turbo
+.turbo
+
+# Development resources
+tunnel.sh

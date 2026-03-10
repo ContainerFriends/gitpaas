@@ -23,6 +23,15 @@ export interface GitProviderRepository {
     getById: (id: string) => Promise<GitProvider | null>;
 
     /**
+     * Get git provider by trace ID
+     *
+     * @param traceId Git provider trace ID
+     *
+     * @returns Git provider or null if not found
+     */
+    getByTraceId: (id: string) => Promise<GitProvider | null>;
+
+    /**
      * Create a git provider
      *
      * @param createDto Git provider creation data

@@ -15,6 +15,10 @@ export async function createGitProviderUseCase(repository: GitProviderRepository
         id: data.id,
         name: data.name,
         type: data.type,
+        externalId: data.externalId,
+        slug: data.slug,
+        traceId: data.traceId,
+        status: 'pending',
     };
 
     return repository.create(createDto);

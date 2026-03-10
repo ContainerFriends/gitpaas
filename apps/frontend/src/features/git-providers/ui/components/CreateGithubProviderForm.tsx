@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { v4 as uuidv4 } from 'uuid';
 
 import { GithubGitProviderFormData } from '../models/git-provider-form.models';
 import { githubGitProviderFormSchema } from '../schemas/github-git-provider-form.schema';
@@ -36,8 +37,56 @@ export function CreateGithubProviderForm({ onSubmit, onCancel, isLoading = false
 
     const isOrganization = watch('isOrganization');
 
+    // Ejemplo de función en React
+    const handleCreateApp = (data: GithubGitProviderFormData) => {
+        const traceId = uuidv4();
+        const manifest = {
+            name: `GitPaaS-${Date.now()}`,
+            url: 'https://gitpaas.dev',
+            hook_attributes: {
+                url: 'https://api-development.gitpaas.dev/webhooks/github',
+            },
+            redirect_url: `https://api-development.gitpaas.dev/v1/events/github-installation?traceId=${traceId}`,
+            setup_url: `https://api-development.gitpaas.dev/v1/events/github-postinstallation?traceId=${traceId}`,
+            public: false,
+            default_permissions: {
+                contents: 'read',
+                metadata: 'read',
+                pull_requests: 'read',
+            },
+            default_events: ['push', 'pull_request'],
+        };
+
+        // Prepare state data to be sent to GitHub
+        const stateData = {
+            id: uuidv4(),
+            name: data.name,
+            ...(data.isOrganization && data.organizationName ? { organization: data.organizationName } : {}),
+        };
+
+        const state = btoa(JSON.stringify(stateData));
+
+        // Crear un form dinámico y enviarlo
+        const form = document.createElement('form');
+        const baseUrl = data.isOrganization
+            ? `https://github.com/organizations/${data.organizationName}/settings/apps/new`
+            : `https://github.com/settings/apps/new`;
+
+        form.method = 'POST';
+        form.action = `${baseUrl}?state=${state}`;
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'manifest';
+        input.value = JSON.stringify(manifest);
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    };
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(handleCreateApp)} className="space-y-4">
             <div className="text-sm text-muted-foreground">
                 To connect your GitHub account to GitPaaS, you need to create and install a new GitHub App. This will give you visibility control at
                 all times.

@@ -5,6 +5,10 @@ import { GitProviderType } from '../models/git-provider.models';
  */
 export interface UpdateGitProviderDto {
     id: string;
-    name?: string;
-    type?: GitProviderType;
+    name: string;
+    type: GitProviderType;
+    externalId: string;
+    slug: string;
+    traceId: string;
+    status: 'pending' | 'active' | 'error';
 }

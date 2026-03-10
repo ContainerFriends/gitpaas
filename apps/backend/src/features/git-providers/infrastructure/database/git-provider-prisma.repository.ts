@@ -43,6 +43,21 @@ export const gitProviderPrismaRepository: GitProviderRepository = {
             );
         }
     },
+    getByTraceId: async (traceId: string): Promise<GitProvider | null> => {
+        try {
+            const prisma = prismaClient.getInstance() as PrismaClient;
+            const gitProvider = await prisma.gitProvider.findUnique({
+                where: { traceId },
+            });
+
+            return gitProvider ? gitProviderPrismaMapper.toDomain(gitProvider) : null;
+        } catch (error: unknown) {
+            throw new DatabaseError(
+                `Failed to retrieve git provider from database: ${(error as Error).message}`,
+                DatabaseErrorType.DATABASE_CONNECTION_ERROR,
+            );
+        }
+    },
     create: async (createDto: CreateGitProviderDto): Promise<GitProvider> => {
         try {
             const prisma = prismaClient.getInstance() as PrismaClient;

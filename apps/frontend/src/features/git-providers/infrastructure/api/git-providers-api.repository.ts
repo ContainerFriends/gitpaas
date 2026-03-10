@@ -1,4 +1,3 @@
-import { CreateGitProviderDto } from '../../domain/dtos/create-git-provider.dto';
 import { UpdateGitProviderDto } from '../../domain/dtos/update-git-provider.dto';
 import { GitProvider } from '../../domain/models/git-provider.models';
 import { GitProvidersRepository } from '../../domain/repositories/git-providers.repository';
@@ -38,20 +37,6 @@ export const gitProvidersApiRepository = (token: string): GitProvidersRepository
         }
 
         await handleHttpError(response, 'fetch git provider');
-        const data: ApiGitProvider = await response.json();
-        return gitProvidersApiMapper.toDomain(data);
-    },
-    create: async (createDto: CreateGitProviderDto): Promise<GitProvider> => {
-        const response = await fetch(`${API_BASE_URL}/git-providers`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ ...createDto }),
-        });
-
-        await handleHttpError(response, 'create git provider');
         const data: ApiGitProvider = await response.json();
         return gitProvidersApiMapper.toDomain(data);
     },

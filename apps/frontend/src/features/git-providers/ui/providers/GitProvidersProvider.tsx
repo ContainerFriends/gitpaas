@@ -1,7 +1,7 @@
 import { ReactNode, useCallback } from 'react';
 import { toast } from 'sonner';
+import { v4 as uuidv4 } from 'uuid';
 
-import { createGitProviderUseCase } from '../../application/create-git-provider.use-case';
 import { getGitProviderByIdUseCase } from '../../application/get-git-provider-by-id.use-case';
 import { getGitProvidersUseCase } from '../../application/get-git-providers.use-case';
 import { removeGitProviderUseCase } from '../../application/remove-git-provider.use-case';
@@ -20,7 +20,6 @@ export function GitProvidersProvider({ children }: GitProvidersProviderProps): R
     const {
         state,
         setGitProviders,
-        addGitProvider,
         updateGitProvider: updateGitProviderState,
         deleteGitProvider,
         setSelectedGitProvider,
@@ -69,24 +68,52 @@ export function GitProvidersProvider({ children }: GitProvidersProviderProps): R
         [getMockToken, setLoadingGitProvider, setError, setSelectedGitProvider],
     );
 
-    const createGitProvider = useCallback(
-        async (data: GitProviderFormData): Promise<GitProvider> => {
-            try {
-                setSubmittingGitProvider(true);
-                setError(null);
-                const token = await getMockToken();
-                const newGitProvider = await createGitProviderUseCase(gitProvidersApiRepository(token), data);
-                addGitProvider(newGitProvider);
-                return newGitProvider;
-            } catch (error) {
-                setError('Failed to create git provider');
-                throw error;
-            } finally {
-                setSubmittingGitProvider(false);
-            }
-        },
-        [getMockToken, setSubmittingGitProvider, setError, addGitProvider],
-    );
+    const createGitProvider = useCallback((data: GitProviderFormData): void => {
+        const traceId = uuidv4();
+        const manifest = {
+            name: `GitPaaS-${Date.now()}`,
+            url: 'https://gitpaas.dev',
+            hook_attributes: {
+                url: 'https://api-development.gitpaas.dev/webhooks/github',
+            },
+            redirect_url: `https://api-development.gitpaas.dev/v1/events/github-installation?traceId=${traceId}`,
+            setup_url: `https://api-development.gitpaas.dev/v1/events/github-postinstallation?traceId=${traceId}`,
+            public: false,
+            default_permissions: {
+                contents: 'read',
+                metadata: 'read',
+                pull_requests: 'read',
+            },
+            default_events: ['push', 'pull_request'],
+        };
+
+        // Prepare state data to be sent to GitHub
+        const stateData = {
+            id: uuidv4(),
+            name: data.name,
+            ...(data.isOrganization && data.organizationName ? { organization: data.organizationName } : {}),
+        };
+
+        const parsedState = btoa(JSON.stringify(stateData));
+
+        // Crear un form dinámico y enviarlo
+        const form = document.createElement('form');
+        const baseUrl = data.isOrganization
+            ? `https://github.com/organizations/${data.organizationName}/settings/apps/new`
+            : `https://github.com/settings/apps/new`;
+
+        form.method = 'POST';
+        form.action = `${baseUrl}?state=${parsedState}`;
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'manifest';
+        input.value = JSON.stringify(manifest);
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }, []);
 
     const updateGitProvider = useCallback(
         async (data: { id: string; name?: string; type?: string }): Promise<GitProvider | null> => {

@@ -28,6 +28,7 @@ export async function installGithubAppOrchestrator(
         externalId: appConfig.id.toString(),
         slug: appConfig.slug,
         traceId,
+        privateKey: appConfig.pem,
     });
 
     return appConfig;

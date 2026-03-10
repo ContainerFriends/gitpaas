@@ -50,6 +50,7 @@ model GitProvider {
   externalId String            @map("external_id")
   slug       String
   traceId    String            @unique @map("trace_id")
+  privateKey String            @map("private_key")
   createdAt  DateTime          @default(now()) @map("created_at")
   updatedAt  DateTime          @updatedAt @map("updated_at")
 

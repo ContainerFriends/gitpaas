@@ -11,4 +11,5 @@ export interface UpdateGitProviderDto {
     slug: string;
     traceId: string;
     status: 'pending' | 'active' | 'error';
+    privateKey: string;
 }

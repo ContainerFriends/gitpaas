@@ -28,6 +28,7 @@ export const installGithubAppController: RequestHandler<unknown, unknown, unknow
             traceId,
             decodedState,
         );
+
         const installUrl = `https://github.com/apps/${appConfig.slug}/installations/new`;
 
         res.redirect(installUrl);

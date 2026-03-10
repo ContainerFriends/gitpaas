@@ -31,6 +31,7 @@ export const gitProviderPrismaMapper = {
         slug: createDto.slug,
         traceId: createDto.traceId,
         status: createDto.status as PrismaGitProviderStatus,
+        privateKey: createDto.privateKey,
         createdAt: new Date(),
         updatedAt: new Date(),
     }),
@@ -61,6 +62,10 @@ export const gitProviderPrismaMapper = {
 
         if (updateDto.status !== undefined) {
             updateData.status = updateDto.status as PrismaGitProviderStatus;
+        }
+
+        if (updateDto.privateKey !== undefined) {
+            updateData.privateKey = updateDto.privateKey;
         }
 
         return updateData;

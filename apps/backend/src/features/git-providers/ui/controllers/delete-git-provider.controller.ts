@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { deleteGitProviderOrchestrator } from '../../application/orchestrators/delete-git-provider.orchestrator';
 import { gitProviderPrismaRepository } from '../../infrastructure/database/git-provider-prisma.repository';
+import { gitProviderGithubOctokitGateway } from '../../infrastructure/octokit/git-provider-octokit.gateway';
 
 import { appLogger } from '@core/infrastructure/loggers/winston.logger';
 import { handleError } from '@core/ui/handlers/error.handler';
@@ -16,7 +17,7 @@ import { handleError } from '@core/ui/handlers/error.handler';
 export const deleteGitProviderController: RequestHandler<{ gitProviderId: string }> = async (req, res) => {
     try {
         const { gitProviderId } = req.params;
-        const result = await deleteGitProviderOrchestrator(gitProviderPrismaRepository, gitProviderId);
+        const result = await deleteGitProviderOrchestrator(gitProviderPrismaRepository, gitProviderGithubOctokitGateway, gitProviderId);
 
         if (!result) {
             res.status(StatusCodes.NOT_FOUND).send({ message: 'Git provider not found' });

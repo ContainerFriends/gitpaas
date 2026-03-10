@@ -18,6 +18,7 @@ export interface GitProvider {
     externalId: string;
     slug: string;
     traceId: string;
+    privateKey: string;
     status: GitProviderStatus;
     createdAt: Date;
     updatedAt: Date;

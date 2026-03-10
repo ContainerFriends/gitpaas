@@ -9,7 +9,7 @@ import { updateGitProviderUseCase } from '../use-cases/update-git-provider.use-c
  * @param traceId Trace ID for logging and correlation
  * @param installationId GitHub App installation ID
  */
-export async function finishInstallGithubAppOrchestrator(repository: GitProviderRepository, traceId: string, installationId: string): Promise<void> {
+export async function finishInstallGithubAppOrchestrator(repository: GitProviderRepository, traceId: string): Promise<void> {
     const gitProvider = await getGitProviderByTraceIdUseCase(repository, traceId);
 
     if (gitProvider) {
@@ -17,7 +17,7 @@ export async function finishInstallGithubAppOrchestrator(repository: GitProvider
             id: gitProvider.id,
             name: gitProvider.name,
             type: gitProvider.type,
-            externalId: installationId,
+            externalId: gitProvider.externalId,
             slug: gitProvider.slug,
             traceId,
             status: 'active',

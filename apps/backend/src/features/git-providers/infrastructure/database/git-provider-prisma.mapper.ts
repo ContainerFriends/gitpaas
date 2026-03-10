@@ -19,6 +19,7 @@ export const gitProviderPrismaMapper = {
         externalId: prismaGitProvider.externalId,
         slug: prismaGitProvider.slug,
         traceId: prismaGitProvider.traceId,
+        privateKey: prismaGitProvider.privateKey,
         status: prismaGitProvider.status,
         createdAt: prismaGitProvider.createdAt,
         updatedAt: prismaGitProvider.updatedAt,

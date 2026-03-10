@@ -12,17 +12,15 @@ import { gitProviderPrismaRepository } from '@features/git-providers/infrastruct
  * @param req Request
  * @param res Response
  */
-export const postInstallGithubAppController: RequestHandler<
-    unknown,
-    unknown,
-    unknown,
-    { traceId: string; installation_id: string; setup_action: string }
-> = async (req, res) => {
+export const postInstallGithubAppController: RequestHandler<unknown, unknown, unknown, { traceId: string; setup_action: string }> = async (
+    req,
+    res,
+) => {
     try {
-        const { traceId, installation_id, setup_action } = req.query;
+        const { traceId, setup_action } = req.query;
 
         if (setup_action === 'install') {
-            await finishInstallGithubAppOrchestrator(gitProviderPrismaRepository, traceId, installation_id);
+            await finishInstallGithubAppOrchestrator(gitProviderPrismaRepository, traceId);
         }
 
         res.redirect(`${process.env.FRONTEND_URL}/git-providers`);

@@ -12,4 +12,12 @@ export interface GitProviderGithubGateway {
      * @returns GitHub App configuration with credentials
      */
     convertAppManifestCode: (code: string) => Promise<GitHubAppConfig>;
+
+    /**
+     * Delete all installations of a GitHub App
+     *
+     * @param appId GitHub App ID
+     * @param privateKey GitHub App private key
+     */
+    deleteInstallations: (appId: string, privateKey: string) => Promise<void>;
 }

@@ -3,9 +3,10 @@ import { Octokit } from '@octokit/rest';
 import { ConfigurationError } from '@core/domain/errors/configuration.error';
 
 let octokitInstance: Octokit | null = null;
+let octokitUnauthenticatedInstance: Octokit | null = null;
 
 /**
- * Get Octokit client instance
+ * Get authenticated Octokit client instance
  */
 export const getOctokitInstance = (): Octokit => {
     if (octokitInstance) return octokitInstance;
@@ -19,4 +20,15 @@ export const getOctokitInstance = (): Octokit => {
     octokitInstance = new Octokit({ auth: token });
 
     return octokitInstance;
+};
+
+/**
+ * Get unauthenticated Octokit client instance
+ */
+export const getOctokitUnauthenticatedInstance = (): Octokit => {
+    if (octokitUnauthenticatedInstance) return octokitUnauthenticatedInstance;
+
+    octokitUnauthenticatedInstance = new Octokit();
+
+    return octokitUnauthenticatedInstance;
 };

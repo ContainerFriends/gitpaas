@@ -13,7 +13,7 @@ import { handleError } from '@core/ui/handlers/error.handler';
  * @param req Request
  * @param res Response
  */
-export const deleteProjectController: RequestHandler = async (req, res) => {
+export const deleteProjectController: RequestHandler<{ projectId: string }> = async (req, res) => {
     try {
         const { projectId } = req.params;
         const result = await deleteProjectOrchestrator(projectPrismaRepository, projectId);

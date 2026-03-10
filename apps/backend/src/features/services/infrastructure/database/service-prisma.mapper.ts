@@ -11,8 +11,8 @@ export const servicePrismaMapper = {
     toDomain: (prismaService: PrismaService): Service => ({
         id: prismaService.id,
         name: prismaService.name,
-        repositoryId: prismaService.repositoryId,
-        branch: prismaService.branch,
+        repositoryId: prismaService.repositoryId || '',
+        branch: prismaService.branch || '',
         projectId: prismaService.projectId,
         createdAt: prismaService.createdAt.toISOString(),
         updatedAt: prismaService.updatedAt.toISOString(),

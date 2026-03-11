@@ -258,8 +258,9 @@ install_gitpaas() {
         release_tag_env="-e RELEASE_TAG=$VERSION_TAG"
     fi
 
-    BACKEND_IMAGE="gitpaas/backend:${VERSION_TAG}"
-    FRONTEND_IMAGE="gitpaas/frontend:${VERSION_TAG}"
+    GHCR_OWNER="${GHCR_OWNER:-gitpaas}"
+    BACKEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-backend:${VERSION_TAG}"
+    FRONTEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-frontend:${VERSION_TAG}"
 
     # Backend service: API on port 4000
     # Traefik routes /api/* requests to this service
@@ -351,8 +352,9 @@ install_gitpaas() {
 update_gitpaas() {
     # Detect version tag
     VERSION_TAG=$(detect_version)
-    BACKEND_IMAGE="gitpaas/backend:${VERSION_TAG}"
-    FRONTEND_IMAGE="gitpaas/frontend:${VERSION_TAG}"
+    GHCR_OWNER="${GHCR_OWNER:-gitpaas}"
+    BACKEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-backend:${VERSION_TAG}"
+    FRONTEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-frontend:${VERSION_TAG}"
     
     echo "Updating GitPaaS to version: ${VERSION_TAG}"
     

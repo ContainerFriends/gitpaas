@@ -78,12 +78,12 @@ generate_random_password() {
     echo "$password"
 }
 
-install_dokploy() {
+install_gitpaas() {
     # Detect version tag
     VERSION_TAG=$(detect_version)
     DOCKER_IMAGE="dokploy/dokploy:${VERSION_TAG}"
     
-    echo "Installing Dokploy version: ${VERSION_TAG}"
+    echo "Installing GitPaaS version: ${VERSION_TAG}"
     if [ "$(id -u)" != "0" ]; then
         echo "This script must be run as root" >&2
         exit 1
@@ -116,7 +116,7 @@ install_dokploy() {
     # check if something is running on port 3000
     if ss -tulnp | grep ':3000 ' >/dev/null; then
         echo "Error: something is already running on port 3000" >&2
-        echo "Dokploy requires port 3000 to be available. Please stop any service using this port." >&2
+        echo "GitPaaS requires port 3000 to be available. Please stop any service using this port." >&2
         exit 1
     fi
 
@@ -221,40 +221,40 @@ install_dokploy() {
 
     echo "Swarm initialized"
 
-    docker network rm -f dokploy-network 2>/dev/null
-    docker network create --driver overlay --attachable dokploy-network
+    docker network rm -f gitpaas-network 2>/dev/null
+    docker network create --driver overlay --attachable gitpaas-network
 
     echo "Network created"
 
-    mkdir -p /etc/dokploy
+    mkdir -p /etc/gitpaas
 
-    chmod 777 /etc/dokploy
+    chmod 777 /etc/gitpaas
 
     # Generate secure random password for Postgres
     POSTGRES_PASSWORD=$(generate_random_password)
     
     # Store password as Docker Secret (encrypted and secure)
-    echo "$POSTGRES_PASSWORD" | docker secret create dokploy_postgres_password - 2>/dev/null || true
+    echo "$POSTGRES_PASSWORD" | docker secret create gitpaas_postgres_password - 2>/dev/null || true
     
     echo "Generated secure database credentials (stored in Docker Secrets)"
 
     docker service create \
-    --name dokploy-postgres \
+    --name gitpaas-postgres \
     --constraint 'node.role==manager' \
-    --network dokploy-network \
-    --env POSTGRES_USER=dokploy \
-    --env POSTGRES_DB=dokploy \
-    --secret source=dokploy_postgres_password,target=/run/secrets/postgres_password \
+    --network gitpaas-network \
+    --env POSTGRES_USER=gitpaas \
+    --env POSTGRES_DB=gitpaas \
+    --secret source=gitpaas_postgres_password,target=/run/secrets/postgres_password \
     --env POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password \
-    --mount type=volume,source=dokploy-postgres,target=/var/lib/postgresql/data \
+    --mount type=volume,source=gitpaas-postgres,target=/var/lib/postgresql/data \
     $endpoint_mode \
     postgres:16
 
     docker service create \
-    --name dokploy-redis \
+    --name gitpaas-redis \
     --constraint 'node.role==manager' \
-    --network dokploy-network \
-    --mount type=volume,source=dokploy-redis,target=/data \
+    --network gitpaas-network \
+    --mount type=volume,source=gitpaas-redis,target=/data \
     $endpoint_mode \
     redis:7
 
@@ -270,13 +270,13 @@ install_dokploy() {
     fi
     
     docker service create \
-      --name dokploy \
+      --name gitpaas \
       --replicas 1 \
-      --network dokploy-network \
+      --network gitpaas-network \
       --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
-      --mount type=bind,source=/etc/dokploy,target=/etc/dokploy \
-      --mount type=volume,source=dokploy,target=/root/.docker \
-      --secret source=dokploy_postgres_password,target=/run/secrets/postgres_password \
+      --mount type=bind,source=/etc/gitpaas,target=/etc/gitpaas \
+      --mount type=volume,source=gitpaas,target=/root/.docker \
+      --secret source=gitpaas_postgres_password,target=/run/secrets/postgres_password \
       --publish published=3000,target=3000,mode=host \
       --update-parallelism 1 \
       --update-order stop-first \
@@ -290,31 +290,17 @@ install_dokploy() {
     sleep 4
 
     docker run -d \
-        --name dokploy-traefik \
+        --name gitpaas-traefik \
         --restart always \
-        -v /etc/dokploy/traefik/traefik.yml:/etc/traefik/traefik.yml \
-        -v /etc/dokploy/traefik/dynamic:/etc/dokploy/traefik/dynamic \
+        -v /etc/gitpaas/traefik/traefik.yml:/etc/traefik/traefik.yml \
+        -v /etc/gitpaas/traefik/dynamic:/etc/gitpaas/traefik/dynamic \
         -v /var/run/docker.sock:/var/run/docker.sock:ro \
         -p 80:80/tcp \
         -p 443:443/tcp \
         -p 443:443/udp \
         traefik:v3.6.7
     
-    docker network connect dokploy-network dokploy-traefik
-
-
-    # Optional: Use docker service create instead of docker run
-    #   docker service create \
-    #     --name dokploy-traefik \
-    #     --constraint 'node.role==manager' \
-    #     --network dokploy-network \
-    #     --mount type=bind,source=/etc/dokploy/traefik/traefik.yml,target=/etc/traefik/traefik.yml \
-    #     --mount type=bind,source=/etc/dokploy/traefik/dynamic,target=/etc/dokploy/traefik/dynamic \
-    #     --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
-    #     --publish mode=host,published=443,target=443 \
-    #     --publish mode=host,published=80,target=80 \
-    #     --publish mode=host,published=443,target=443,protocol=udp \
-    #     traefik:v3.6.7
+    docker network connect gitpaas-network gitpaas-traefik
 
     GREEN="\033[0;32m"
     YELLOW="\033[1;33m"
@@ -335,7 +321,7 @@ install_dokploy() {
     public_ip="${ADVERTISE_ADDR:-$(get_ip)}"
     formatted_addr=$(format_ip_for_url "$public_ip")
     echo ""
-    printf "${GREEN}Congratulations, Dokploy is installed!${NC}\n"
+    printf "${GREEN}Congratulations, GitPaaS is installed!${NC}\n"
     printf "${BLUE}Wait 15 seconds for the server to start${NC}\n"
     printf "${YELLOW}Please go to http://${formatted_addr}:3000${NC}\n\n"
 }
@@ -360,5 +346,5 @@ update_dokploy() {
 if [ "$1" = "update" ]; then
     update_dokploy
 else
-    install_dokploy
+    install_gitpaas
 fi

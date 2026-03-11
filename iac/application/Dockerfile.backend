@@ -1,0 +1,50 @@
+# syntax=docker/dockerfile:1
+FROM node:24.14.0-alpine3.23 AS base
+
+#############
+# Build stage
+#############
+FROM base AS build
+
+RUN apk update && apk upgrade --no-cache
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+# 1. Instalamos dependencias (ajustamos el path de caché para Alpine/npm)
+RUN --mount=type=cache,id=npm,target=/root/.npm npm install --frozen-lockfile
+
+# 2. Construimos el backend
+ENV NODE_ENV=production
+RUN npm run build --workspace=@gitpaas/backend
+
+# 3. EXTRACCIÓN Y LIMPIEZA
+# Ejecutamos 'npm prune' para eliminar dependencias de desarrollo (devDependencies)
+# Esto hará que tu imagen final sea mucho más pequeña y segura.
+RUN npm prune --production --workspace=@gitpaas/backend
+RUN mkdir -p /prod/backend
+RUN cp -R /usr/src/app/apps/backend/dist /prod/backend/dist
+RUN cp /usr/src/app/apps/backend/package.json /prod/backend/package.json
+# Copiamos los node_modules ya limpios
+RUN cp -R /usr/src/app/node_modules /prod/backend/node_modules
+
+###########
+# Run stage
+###########
+FROM base AS gitpaas-backend
+
+USER node
+
+WORKDIR /app
+
+# Set production
+ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+
+# Copy only the necessary files
+COPY --from=build --chown=node:node /prod/backend .
+
+EXPOSE 3000
+
+CMD ["node", "dist/index.js"]

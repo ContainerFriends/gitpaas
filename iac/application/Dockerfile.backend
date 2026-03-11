@@ -12,21 +12,24 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-# 1. Instalamos dependencias (ajustamos el path de caché para Alpine/npm)
+# Install dependencies with caching
 RUN --mount=type=cache,id=npm,target=/root/.npm npm install --frozen-lockfile
 
-# 2. Construimos el backend
+# Build Prisma client
+RUN cd packages/setup && npx prisma generate --config=./prisma.config.ts
+
+# Build application
 ENV NODE_ENV=production
 RUN npm run build --workspace=@gitpaas/backend
 
-# 3. EXTRACCIÓN Y LIMPIEZA
-# Ejecutamos 'npm prune' para eliminar dependencias de desarrollo (devDependencies)
-# Esto hará que tu imagen final sea mucho más pequeña y segura.
+# Prune devDependencies
 RUN npm prune --production --workspace=@gitpaas/backend
+
+# Prepare production files
 RUN mkdir -p /prod/backend
 RUN cp -R /usr/src/app/apps/backend/dist /prod/backend/dist
 RUN cp /usr/src/app/apps/backend/package.json /prod/backend/package.json
-# Copiamos los node_modules ya limpios
+RUN cp /usr/src/app/apps/backend/.env.example /prod/backend/.env
 RUN cp -R /usr/src/app/node_modules /prod/backend/node_modules
 
 ###########
@@ -45,6 +48,6 @@ ENV HOSTNAME=0.0.0.0
 # Copy only the necessary files
 COPY --from=build --chown=node:node /prod/backend .
 
-EXPOSE 3000
+EXPOSE 4000
 
-CMD ["node", "dist/index.js"]
+ CMD ["node", "dist/index.js"]

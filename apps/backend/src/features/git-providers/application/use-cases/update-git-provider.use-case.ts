@@ -19,6 +19,7 @@ export async function updateGitProviderUseCase(repository: GitProviderRepository
         slug: data.slug,
         traceId: data.traceId,
         status: data.status,
+        privateKey: data.privateKey,
     };
 
     return repository.update(updateDto);

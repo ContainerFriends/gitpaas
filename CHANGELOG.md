@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/ContainerFriends/gitpaas/compare/v1.1.0...v1.1.1) (2026-03-11)
+
+
+### Bug Fixes
+
+* add DATABASE_URL dummy variable ([70682e5](https://github.com/ContainerFriends/gitpaas/commit/70682e5b65908a67704359494bd1fb927077afe7))
+
 # [1.1.0](https://github.com/ContainerFriends/gitpaas/compare/v1.0.0...v1.1.0) (2026-03-11)
 
 

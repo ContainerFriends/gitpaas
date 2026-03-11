@@ -16,7 +16,7 @@ COPY . .
 RUN --mount=type=cache,id=npm,target=/root/.npm npm install --frozen-lockfile
 
 # Build Prisma client
-RUN cd packages/setup && npx prisma generate --config=./prisma.config.ts
+RUN cd packages/setup && DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate --config=./prisma.config.ts
 
 # Build application
 ENV NODE_ENV=production

@@ -12,7 +12,7 @@ detect_version() {
         
         # Try to get latest release from GitHub by following redirects
         version=$(curl -fsSL -o /dev/null -w '%{url_effective}\n' \
-            https://github.com/dokploy/dokploy/releases/latest 2>/dev/null | \
+            https://github.com/ContainerFriends/gitpaas/releases/latest 2>/dev/null | \
             sed 's#.*/tag/##')
         
         # Fallback to latest tag if detection fails

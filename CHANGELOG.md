@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/ContainerFriends/gitpaas/compare/v1.0.0...v1.1.0) (2026-03-11)
+
+
+### Features
+
+* add install script ([f05910d](https://github.com/ContainerFriends/gitpaas/commit/f05910d9fd1778f4d89ecb7bbc0ec52f81cfa7bf))
+
 # 1.0.0 (2026-03-11)
 
 

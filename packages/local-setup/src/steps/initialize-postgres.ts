@@ -3,6 +3,36 @@
 import type { CreateServiceOptions } from 'dockerode';
 
 import { docker, pullImage } from '../services/docker';
+import { execAsync } from '../utils/exec-async';
+
+/**
+ * Wait for PostgreSQL to be ready
+ */
+export async function waitForPostgres(maxAttempts = 30): Promise<void> {
+    console.log('⏳ Waiting for PostgreSQL to be ready...');
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            // Get the actual container name for the PostgreSQL service
+            const { stdout: containerName } = await execAsync(
+                "docker ps --filter 'label=com.docker.swarm.service.name=gitpaas-postgres' --format '{{.Names}}' | head -n1",
+            );
+
+            if (!containerName.trim()) {
+                throw new Error('PostgreSQL container not found');
+            }
+
+            await execAsync(`docker exec ${containerName.trim()} pg_isready -h localhost -p 5432 -U postgres`);
+            console.log('✅ PostgreSQL is ready');
+            return;
+        } catch {
+            console.log(`⏳ Attempt ${attempt}/${maxAttempts}: PostgreSQL not ready yet, waiting...`);
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+    }
+
+    throw new Error('PostgreSQL failed to become ready within the expected time');
+}
 
 /**
  * Initialize Postgres service

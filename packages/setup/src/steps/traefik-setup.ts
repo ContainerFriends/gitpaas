@@ -30,8 +30,11 @@ export const getDefaultMiddlewares = (): string => {
 
 /**
  * Create default Traefik middlewares
+ *
+ * This includes middlewares for HTTPS redirection and other common use cases.
+ * Checks if the middlewares configuration already exists, and if not, it creates it with the default settings.
  */
-export const createDefaultMiddlewares = (): void => {
+export const createTraefikDefaultMiddlewares = (): void => {
     const { DYNAMIC_TRAEFIK_PATH } = paths();
     const middlewaresPath = join(DYNAMIC_TRAEFIK_PATH, 'middlewares.yml');
 
@@ -50,8 +53,12 @@ export const createDefaultMiddlewares = (): void => {
 
 /**
  * Create default Traefik configuration
+ *
+ * This includes the main Traefik configuration file with entry points, providers, and ACME settings.
+ * It checks if the main configuration file already exists, and if not, it creates it with the default settings.
+ * Also ensures that the ACME JSON file has the correct permissions for Traefik to read and write certificates.
  */
-export const createDefaultTraefikConfig = (): void => {
+export const createTraefikDefaultConfig = (): void => {
     const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths();
     const mainConfig = join(MAIN_TRAEFIK_PATH, 'traefik.yml');
     const acmeJsonPath = join(DYNAMIC_TRAEFIK_PATH, 'acme.json');
@@ -82,6 +89,9 @@ export const createDefaultTraefikConfig = (): void => {
 
 /**
  * Create Traefik dynamic routing config for local development
+ *
+ * This function creates a Traefik dynamic configuration file that defines a router and service for the GitPaaS application.
+ * It checks if the configuration file already exists, and if not, it creates it with the default settings pointing to the GitPaaS service.
  */
 export const createDefaultServerTraefikConfig = (): void => {
     if (setupMode !== 'local') return;

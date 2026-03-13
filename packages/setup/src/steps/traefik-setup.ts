@@ -3,14 +3,13 @@ import { join } from 'node:path';
 
 import { stringify } from 'yaml';
 
+import { setupMode } from '../configs/environment';
 import { paths } from '../configs/paths';
 import { getDefaultTraefikConfig } from '../configs/traefik';
 import { FileConfig } from '../models/traefik';
 
 /**
  * Get default Traefik middlewares configuration as YAML string
- *
- * @returns YAML string of default Traefik middlewares configuration
  */
 export const getDefaultMiddlewares = (): string => {
     const defaultMiddlewares = {
@@ -26,9 +25,7 @@ export const getDefaultMiddlewares = (): string => {
         },
     };
 
-    const yamlStr = stringify(defaultMiddlewares);
-
-    return yamlStr;
+    return stringify(defaultMiddlewares);
 };
 
 /**
@@ -47,6 +44,8 @@ export const createDefaultMiddlewares = (): void => {
 
     mkdirSync(DYNAMIC_TRAEFIK_PATH, { recursive: true });
     writeFileSync(middlewaresPath, yamlStr, 'utf8');
+
+    console.log('✅ Traefik middlewares created');
 };
 
 /**
@@ -61,17 +60,13 @@ export const createDefaultTraefikConfig = (): void => {
         chmodSync(acmeJsonPath, '600');
     }
 
-    // Create the traefik directory first
     mkdirSync(MAIN_TRAEFIK_PATH, { recursive: true });
 
-    // Check if traefik.yml exists and handle the case where it might be a directory
     if (existsSync(mainConfig)) {
         const stats = statSync(mainConfig);
 
-        // If traefik.yml is a directory, remove it
         if (stats.isDirectory()) {
             console.log('Found traefik.yml as directory, removing it...');
-
             rmSync(mainConfig, { recursive: true, force: true });
         } else if (stats.isFile()) {
             console.log('✅ Main config already exists');
@@ -82,13 +77,15 @@ export const createDefaultTraefikConfig = (): void => {
     const yamlStr = getDefaultTraefikConfig();
     writeFileSync(mainConfig, yamlStr, 'utf8');
 
-    console.log('✅ Traefik config created successfully');
+    console.log('✅ Traefik config created');
 };
 
 /**
- * Initialize Traefik service in Docker Swarm
+ * Create Traefik dynamic routing config for local development
  */
 export const createDefaultServerTraefikConfig = (): void => {
+    if (setupMode !== 'local') return;
+
     const { DYNAMIC_TRAEFIK_PATH } = paths();
     const configFilePath = join(DYNAMIC_TRAEFIK_PATH, 'gitpaas.yml');
 

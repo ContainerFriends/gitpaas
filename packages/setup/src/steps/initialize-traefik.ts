@@ -9,7 +9,7 @@ import { getRemoteDocker } from '../services/docker';
  * Initialize Traefik service
  */
 export const initializeStandaloneTraefik = async ({ env, serverId, additionalPorts = [] }: TraefikOptions = {}): Promise<void> => {
-    const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths(!!serverId);
+    const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths();
     const imageName = `traefik:v${TRAEFIK_VERSION}`;
     const containerName = 'gitpaas-traefik';
 

@@ -1,6 +1,7 @@
 /* eslint-disable pii/no-email */
 import { stringify } from 'yaml';
 
+import { setupMode } from './environment';
 import { MainTraefikConfig } from '../models/traefik';
 
 export const TRAEFIK_SSL_PORT = Number.parseInt(process.env.TRAEFIK_SSL_PORT || '443');
@@ -39,7 +40,7 @@ export const getDefaultTraefikConfig = () => {
     };
 
     // Configure providers based on environment
-    if (process.env.NODE_ENV === 'development') {
+    if (setupMode === 'local') {
         if (configObject.providers) {
             configObject.providers.docker = {
                 defaultRule: 'Host(`{{ trimPrefix `/` .Name }}.docker.localhost`)',
@@ -58,7 +59,7 @@ export const getDefaultTraefikConfig = () => {
     }
 
     // Configure TLS and certificates for production
-    if (process.env.NODE_ENV === 'production') {
+    if (setupMode === 'production') {
         if (configObject.entryPoints?.websecure) {
             configObject.entryPoints.websecure.http = {
                 tls: {

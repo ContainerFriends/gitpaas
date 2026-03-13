@@ -29,24 +29,6 @@ export const docker = new Docker({
  */
 export const getRemoteDocker = async (serverId?: string | null) => {
     return docker;
-    /* if (!serverId) return docker;
-
-    const server = await findServerById(serverId);
-
-    if (!server?.sshKeyId) return docker;
-
-    const dockerode = new Docker({
-        host: server.ipAddress,
-        port: server.port,
-        username: server.username,
-        protocol: 'ssh',
-
-        sshOptions: {
-            privateKey: server.sshKey?.privateKey,
-        },
-    });
-
-    return dockerode; */
 };
 
 /**

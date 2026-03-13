@@ -1,10 +1,15 @@
 import { join } from 'path';
 
+import { setupMode } from './environment';
+
 /**
  * Paths configuration
+ *
+ * In production, all paths are under /etc/gitpaas
+ * In local development, paths are under .docker at the monorepo root
  */
-export const paths = (isServer = false) => {
-    const BASE_PATH = isServer || process.env.NODE_ENV === 'production' ? '/etc/gitpaas' : join(process.cwd(), '../../.docker');
+export const paths = () => {
+    const BASE_PATH = setupMode === 'production' ? '/etc/gitpaas' : join(process.cwd(), '../../.docker');
     const MAIN_TRAEFIK_PATH = `${BASE_PATH}/traefik`;
     const DYNAMIC_TRAEFIK_PATH = `${MAIN_TRAEFIK_PATH}/dynamic`;
 

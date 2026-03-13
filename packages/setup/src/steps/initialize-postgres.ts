@@ -6,9 +6,9 @@ import { docker, pullImage } from '../services/docker';
 import { execAsync } from '../utils/exec-async';
 
 /**
- * Wait for PostgreSQL to be ready
+ * Wait for PostgreSQL to be ready (local mode - uses docker exec pg_isready)
  */
-export async function waitForPostgres(maxAttempts = 30): Promise<void> {
+export async function waitForPostgresLocal(maxAttempts = 30): Promise<void> {
     console.log('⏳ Waiting for PostgreSQL to be ready...');
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -35,7 +35,7 @@ export async function waitForPostgres(maxAttempts = 30): Promise<void> {
 }
 
 /**
- * Initialize Postgres service
+ * Initialize Postgres service in Docker Swarm (local mode only)
  */
 export const initializePostgres = async () => {
     const imageName = process.env.POSTGRES_IMAGE || 'postgres:18.3-alpine3.23';

@@ -1,3 +1,15 @@
+# [1.2.0](https://github.com/ContainerFriends/gitpaas/compare/v1.1.1...v1.2.0) (2026-03-13)
+
+
+### Bug Fixes
+
+* improve database initialization on local setup ([d3fad2a](https://github.com/ContainerFriends/gitpaas/commit/d3fad2a6e5304db295bd9b84bcdffee999c57356))
+
+
+### Features
+
+* change setup package to local setup ([744a773](https://github.com/ContainerFriends/gitpaas/commit/744a773b6e66c20fcbad3d3b8d8d03ba25e4090e))
+
 ## [1.1.1](https://github.com/ContainerFriends/gitpaas/compare/v1.1.0...v1.1.1) (2026-03-11)
 
 

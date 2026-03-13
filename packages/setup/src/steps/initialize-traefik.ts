@@ -1,89 +1,102 @@
-import type { ContainerCreateOptions } from 'dockerode';
+import type { CreateServiceOptions } from 'dockerode';
 
 import { paths } from '../configs/paths';
 import { TRAEFIK_HTTP3_PORT, TRAEFIK_PORT, TRAEFIK_SSL_PORT, TRAEFIK_VERSION } from '../configs/traefik';
-import { TraefikOptions } from '../models/traefik';
-import { getRemoteDocker } from '../services/docker';
+import { docker, pullImage } from '../services/docker';
 
 /**
- * Initialize Traefik service
+ * Initialize Traefik as a Docker Swarm service
  */
-export const initializeStandaloneTraefik = async ({ env, serverId, additionalPorts = [] }: TraefikOptions = {}): Promise<void> => {
+export const initializeTraefik = async (): Promise<void> => {
     const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths();
     const imageName = `traefik:v${TRAEFIK_VERSION}`;
-    const containerName = 'gitpaas-traefik';
+    const serviceName = 'gitpaas-traefik';
 
-    const exposedPorts: Record<string, object> = {
-        [`${TRAEFIK_PORT}/tcp`]: {},
-        [`${TRAEFIK_SSL_PORT}/tcp`]: {},
-        [`${TRAEFIK_HTTP3_PORT}/udp`]: {},
-    };
-
-    const portBindings: Record<string, Array<{ HostPort: string }>> = {
-        [`${TRAEFIK_PORT}/tcp`]: [{ HostPort: TRAEFIK_PORT.toString() }],
-        [`${TRAEFIK_SSL_PORT}/tcp`]: [{ HostPort: TRAEFIK_SSL_PORT.toString() }],
-        [`${TRAEFIK_HTTP3_PORT}/udp`]: [{ HostPort: TRAEFIK_HTTP3_PORT.toString() }],
-    };
-
-    const enableDashboard = additionalPorts.some((port) => port.targetPort === 8080);
-
-    if (enableDashboard) {
-        exposedPorts['8080/tcp'] = {};
-        portBindings['8080/tcp'] = [{ HostPort: '8080' }];
-    }
-
-    for (const port of additionalPorts) {
-        const portKey = `${port.targetPort}/${port.protocol ?? 'tcp'}`;
-        exposedPorts[portKey] = {};
-        portBindings[portKey] = [{ HostPort: port.publishedPort.toString() }];
-    }
-
-    const settings: ContainerCreateOptions = {
-        name: containerName,
-        Image: imageName,
-        NetworkingConfig: {
-            EndpointsConfig: {
-                'gitpaas-network': {},
+    const settings: CreateServiceOptions = {
+        Name: serviceName,
+        TaskTemplate: {
+            ContainerSpec: {
+                Image: imageName,
+                Mounts: [
+                    {
+                        Type: 'bind',
+                        Source: `${MAIN_TRAEFIK_PATH}/traefik.yml`,
+                        Target: '/etc/traefik/traefik.yml',
+                        ReadOnly: true,
+                    },
+                    {
+                        Type: 'bind',
+                        Source: DYNAMIC_TRAEFIK_PATH,
+                        Target: '/etc/gitpaas/traefik/dynamic',
+                        ReadOnly: true,
+                    },
+                    {
+                        Type: 'bind',
+                        Source: '/var/run/docker.sock',
+                        Target: '/var/run/docker.sock',
+                        ReadOnly: true,
+                    },
+                ],
+            },
+            Networks: [{ Target: 'gitpaas-network' }],
+            Placement: {
+                Constraints: ['node.role==manager'],
             },
         },
-        ExposedPorts: exposedPorts,
-        HostConfig: {
-            RestartPolicy: {
-                Name: 'always',
+        Mode: {
+            Replicated: {
+                Replicas: 1,
             },
-            Binds: [
-                `${MAIN_TRAEFIK_PATH}/traefik.yml:/etc/traefik/traefik.yml`,
-                `${DYNAMIC_TRAEFIK_PATH}:/etc/gitpaas/traefik/dynamic`,
-                '/var/run/docker.sock:/var/run/docker.sock',
+        },
+        EndpointSpec: {
+            Ports: [
+                {
+                    TargetPort: TRAEFIK_PORT,
+                    PublishedPort: TRAEFIK_PORT,
+                    Protocol: 'tcp',
+                    PublishMode: 'host',
+                },
+                {
+                    TargetPort: TRAEFIK_SSL_PORT,
+                    PublishedPort: TRAEFIK_SSL_PORT,
+                    Protocol: 'tcp',
+                    PublishMode: 'host',
+                },
+                {
+                    TargetPort: TRAEFIK_HTTP3_PORT,
+                    PublishedPort: TRAEFIK_HTTP3_PORT,
+                    Protocol: 'udp',
+                    PublishMode: 'host',
+                },
             ],
-            PortBindings: portBindings,
         },
-        Env: env,
     };
-
-    const docker = await getRemoteDocker(serverId);
 
     try {
-        await docker.pull(imageName);
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        await pullImage(imageName);
         console.log('✅ Traefik image pulled');
     } catch (error) {
-        console.log('⏩ Traefik image not found: pulling...', error);
-    }
-    try {
-        const container = docker.getContainer(containerName);
-        await container.remove({ force: true });
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-    } catch {
-        console.log('⏩ Traefik container not found: starting new one...');
+        console.log('⏩ Traefik image pull failed, continuing...', error);
     }
 
     try {
-        await docker.createContainer(settings);
-        const newContainer = docker.getContainer(containerName);
-        await newContainer.start();
-        console.log('✅ Traefik started');
-    } catch (error) {
-        console.log('⏩ Traefik not found: starting...', error);
+        const service = docker.getService(serviceName);
+        const inspect = await service.inspect();
+
+        await service.update({
+            version: Number.parseInt(inspect.Version.Index),
+            ...settings,
+        });
+        console.log('✅ Traefik updated');
+    } catch {
+        try {
+            await docker.createService(settings);
+            console.log('✅ Traefik started');
+        } catch (error: any) {
+            if (error?.statusCode !== 409) {
+                throw error;
+            }
+            console.log('⏩ Traefik service already exists, continuing...');
+        }
     }
 };

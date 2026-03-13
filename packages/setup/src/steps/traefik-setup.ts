@@ -3,10 +3,8 @@ import { join } from 'node:path';
 
 import { stringify } from 'yaml';
 
-import { setupMode } from '../configs/environment';
 import { paths } from '../configs/paths';
 import { getDefaultTraefikConfig } from '../configs/traefik';
-import { FileConfig } from '../models/traefik';
 
 /**
  * Get default Traefik middlewares configuration as YAML string
@@ -85,48 +83,4 @@ export const createTraefikDefaultConfig = (): void => {
     writeFileSync(mainConfig, yamlStr, 'utf8');
 
     console.log('✅ Traefik config created');
-};
-
-/**
- * Create Traefik dynamic routing config for local development
- *
- * This function creates a Traefik dynamic configuration file that defines a router and service for the GitPaaS application.
- * It checks if the configuration file already exists, and if not, it creates it with the default settings pointing to the GitPaaS service.
- */
-export const createDefaultServerTraefikConfig = (): void => {
-    if (setupMode !== 'local') return;
-
-    const { DYNAMIC_TRAEFIK_PATH } = paths();
-    const configFilePath = join(DYNAMIC_TRAEFIK_PATH, 'gitpaas.yml');
-
-    if (existsSync(configFilePath)) {
-        console.log('✅ Default traefik config already exists');
-        return;
-    }
-
-    const appName = 'gitpaas';
-    const serviceURLDefault = `http://${appName}:${process.env.GITPAAS_PORT || 3000}`;
-    const config: FileConfig = {
-        http: {
-            routers: {
-                [`${appName}-router-app`]: {
-                    rule: `Host(\`${appName}.docker.localhost\`) && PathPrefix(\`/\`)`,
-                    service: `${appName}-service-app`,
-                    entryPoints: ['web'],
-                },
-            },
-            services: {
-                [`${appName}-service-app`]: {
-                    loadBalancer: {
-                        servers: [{ url: serviceURLDefault }],
-                        passHostHeader: true,
-                    },
-                },
-            },
-        },
-    };
-
-    const yamlStr = stringify(config);
-    mkdirSync(DYNAMIC_TRAEFIK_PATH, { recursive: true });
-    writeFileSync(join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`), yamlStr, 'utf8');
 };

@@ -208,42 +208,16 @@ install_gitpaas() {
 
     echo "Swarm initialized"
 
-    docker network rm -f gitpaas-network 2>/dev/null
-    docker network create --driver overlay --attachable gitpaas-network
-
-    echo "Network created"
-
+    # Run setup image: creates network, directories, Traefik config, and runs migrations
+    SETUP_IMAGE="ghcr.io/${GHCR_OWNER:-gitpaas}/gitpaas-setup:${VERSION_TAG}"
+    docker pull $SETUP_IMAGE
     mkdir -p /etc/gitpaas
+    docker run --rm \
+      --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
+      --mount type=bind,source=/etc/gitpaas,target=/etc/gitpaas \
+      $SETUP_IMAGE
 
-    chmod 777 /etc/gitpaas
-
-    # Generate secure random password for Postgres
-    POSTGRES_PASSWORD=$(generate_random_password)
-    
-    # Store password as Docker Secret (encrypted and secure)
-    echo "$POSTGRES_PASSWORD" | docker secret create gitpaas_postgres_password - 2>/dev/null || true
-    
-    echo "Generated secure database credentials (stored in Docker Secrets)"
-
-    docker service create \
-    --name gitpaas-postgres \
-    --constraint 'node.role==manager' \
-    --network gitpaas-network \
-    --env POSTGRES_USER=gitpaas \
-    --env POSTGRES_DB=gitpaas \
-    --secret source=gitpaas_postgres_password,target=/run/secrets/postgres_password \
-    --env POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password \
-    --mount type=volume,source=gitpaas-postgres,target=/var/lib/postgresql/data \
-    $endpoint_mode \
-    postgres:16
-
-    docker service create \
-    --name gitpaas-redis \
-    --constraint 'node.role==manager' \
-    --network gitpaas-network \
-    --mount type=volume,source=gitpaas-redis,target=/data \
-    $endpoint_mode \
-    redis:7
+    echo "Setup completed"
 
     # Installation
     # Set RELEASE_TAG environment variable for canary/feature versions
@@ -307,21 +281,6 @@ install_gitpaas() {
       --label traefik.http.services.frontend-secure.loadbalancer.server.port=80 \
       $endpoint_mode \
       $FRONTEND_IMAGE
-
-    sleep 4
-
-    docker service create \
-        --name gitpaas-traefik \
-        --replicas 1 \
-        --network gitpaas-network \
-        --constraint 'node.role == manager' \
-        --mount type=bind,source=/etc/gitpaas/traefik/traefik.yml,target=/etc/traefik/traefik.yml \
-        --mount type=bind,source=/etc/gitpaas/traefik/dynamic,target=/etc/gitpaas/traefik/dynamic \
-        --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,readonly \
-        --publish published=80,target=80,mode=host \
-        --publish published=443,target=443,mode=host \
-        $endpoint_mode \
-        traefik:v3.6.7
 
     GREEN="\033[0;32m"
     YELLOW="\033[1;33m"

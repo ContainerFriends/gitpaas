@@ -1,17 +1,14 @@
 import { exit } from 'node:process';
 
 import { setupMode } from './configs/environment';
-import { TRAEFIK_VERSION } from './configs/traefik';
 import { setupDirectories } from './steps/config-paths';
 import { initializeNetwork } from './steps/initialize-network';
-import { initializePostgres, waitForPostgresLocal } from './steps/initialize-postgres';
+import { initializePostgres, waitForPostgres } from './steps/initialize-postgres';
 import { initializeRedis } from './steps/initialize-redis';
 import { initializeSwarm } from './steps/initialize-swarm';
-import { initializeStandaloneTraefik } from './steps/initialize-traefik';
+import { initializeTraefik } from './steps/initialize-traefik';
 import { generatePrismaClient, runMigrations } from './steps/run-migrations';
-import { createTraefikDefaultMiddlewares, createDefaultServerTraefikConfig, createTraefikDefaultConfig } from './steps/traefik-setup';
-import { waitForPostgresProduction } from './steps/wait-for-postgres';
-import { execAsync } from './utils/exec-async';
+import { createTraefikDefaultMiddlewares, createTraefikDefaultConfig } from './steps/traefik-setup';
 
 const isLocal = setupMode === 'local';
 
@@ -34,20 +31,19 @@ const isLocal = setupMode === 'local';
         // Step 4: Initialize network
         await initializeNetwork();
 
-        if (isLocal) {
-            // Step 5 (local): Create local routing config and start services
-            createDefaultServerTraefikConfig();
-            await execAsync(`docker pull traefik:v${TRAEFIK_VERSION}`);
-            await initializeStandaloneTraefik();
-            await initializeRedis();
-            await initializePostgres();
-            await waitForPostgresLocal();
-        } else {
-            // Step 6 (production): Wait for externally managed PostgreSQL
-            await waitForPostgresProduction();
-        }
+        // Step 5: Initialize Traefik
+        await initializeTraefik();
 
-        // Step 7: Generate Prisma client and deploy migrations
+        // Step 6: Initialize Redis
+        await initializeRedis();
+
+        // Step 7: Initialize Postgres
+        await initializePostgres();
+
+        // Step 8: Wait for Postgres to be ready
+        await waitForPostgres();
+
+        // Step 9: Generate Prisma client and deploy migrations
         await generatePrismaClient();
         await runMigrations();
 

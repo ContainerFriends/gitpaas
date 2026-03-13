@@ -1,5 +1,5 @@
 {
-  "name": "@gitpaas/setup",
+  "name": "@gitpaas/local-setup",
   "version": "0.0.0",
   "description": "GitPaaS installation and configuration management",
   "private": true,

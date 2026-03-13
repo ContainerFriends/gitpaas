@@ -8,8 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "setup:local": "npm run setup:local --workspace=@gitpaas/setup",
-    "setup:production": "npm run setup:production --workspace=@gitpaas/setup",
+    "setup": "npm run setup --workspace=@gitpaas/setup",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",

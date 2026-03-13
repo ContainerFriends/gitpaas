@@ -6,8 +6,7 @@
   "type": "module",
   "scripts": {
     "lint": "eslint .",
-    "setup:local": "tsx -r dotenv/config src/main.ts local",
-    "setup:production": "tsx src/main.ts production",
+    "setup": "tsx -r dotenv/config src/main.ts local",
     "build": "tsc",
     "type-check": "tsc --noEmit"
   },

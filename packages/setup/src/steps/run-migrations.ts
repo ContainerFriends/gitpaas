@@ -9,11 +9,8 @@ import { execAsync } from '../utils/exec-async';
  * - Idempotent: safe to run multiple times
  */
 export const runMigrations = async (): Promise<void> => {
-    console.log('📦 Running database migrations...');
-
     try {
-        const { stdout } = await execAsync('npx prisma migrate deploy --config=./prisma.config.ts');
-        console.log(stdout);
+        await execAsync('npx prisma migrate deploy --config=./prisma.config.ts');
         console.log('✅ Database migrations completed');
     } catch (error: unknown) {
         const execError = error as { stderr?: string };
@@ -26,11 +23,8 @@ export const runMigrations = async (): Promise<void> => {
  * Generate Prisma client
  */
 export const generatePrismaClient = async (): Promise<void> => {
-    console.log('🔧 Generating Prisma client...');
-
     try {
-        const { stdout } = await execAsync('npx prisma generate --config=./prisma.config.ts');
-        console.log(stdout);
+        await execAsync('npx prisma generate --config=./prisma.config.ts');
         console.log('✅ Prisma client generated');
     } catch (error: unknown) {
         const execError = error as { stderr?: string };

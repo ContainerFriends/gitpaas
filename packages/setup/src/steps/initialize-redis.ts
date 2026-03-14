@@ -46,25 +46,35 @@ export const initializeRedis = async () => {
     };
 
     try {
-        await pullImage(imageName);
+        const images = await docker.listImages({ filters: { reference: [imageName] } });
 
-        const service = docker.getService(containerName);
-        const inspect = await service.inspect();
-
-        await service.update({
-            version: Number.parseInt(inspect.Version.Index),
-            ...settings,
-        });
-        console.log('✅ Redis started');
-    } catch {
-        try {
-            await docker.createService(settings);
-        } catch (error: any) {
-            if (error?.statusCode !== 409) {
-                throw error;
-            }
-            console.log('⏩ Redis service already exists, continuing...');
+        if (images.length > 0) {
+            console.log('✅ Redis image already exists');
+        } else {
+            await pullImage(imageName);
+            console.log('✅ Redis image pulled');
         }
-        console.log('⏩ Redis not found: starting...');
+    } catch (error) {
+        console.log('❌ Redis image pull failed, continuing...', error);
+    }
+
+    try {
+        const services = await docker.listServices({ filters: { name: [containerName] } });
+        const existingService = services.find((s) => s.Spec?.Name === containerName);
+
+        if (existingService) {
+            const service = docker.getService(containerName);
+
+            await service.update({
+                version: Number(existingService.Version?.Index),
+                ...settings,
+            });
+            console.log('✅ Redis updated');
+        } else {
+            await docker.createService(settings);
+            console.log('✅ Redis started');
+        }
+    } catch (error) {
+        console.log('❌ Redis service setup failed', error);
     }
 };

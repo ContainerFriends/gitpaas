@@ -29,8 +29,6 @@ const ensurePostgresSecret = async (): Promise<void> => {
  * Wait for PostgreSQL to be ready (uses docker exec pg_isready)
  */
 export async function waitForPostgres(maxAttempts = 30): Promise<void> {
-    console.log('⏳ Waiting for PostgreSQL to be ready...');
-
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
             // Get the actual container name for the PostgreSQL service
@@ -121,24 +119,35 @@ export const initializePostgres = async () => {
         }),
     };
     try {
-        await pullImage(imageName);
+        const images = await docker.listImages({ filters: { reference: [imageName] } });
 
-        const service = docker.getService(containerName);
-        const inspect = await service.inspect();
-        await service.update({
-            version: Number.parseInt(inspect.Version.Index),
-            ...settings,
-        });
-        console.log('✅ Postgres started');
-    } catch {
-        try {
-            await docker.createService(settings);
-        } catch (error: any) {
-            if (error?.statusCode !== 409) {
-                throw error;
-            }
-            console.log('⏩ Postgres service already exists, continuing...');
+        if (images.length > 0) {
+            console.log('✅ Postgres image already exists');
+        } else {
+            await pullImage(imageName);
+            console.log('✅ Postgres image pulled');
         }
-        console.log('⏩ Postgres not found: starting...');
+    } catch (error) {
+        console.log('❌ Postgres image pull failed, continuing...', error);
+    }
+
+    try {
+        const services = await docker.listServices({ filters: { name: [containerName] } });
+        const existingService = services.find((s) => s.Spec?.Name === containerName);
+
+        if (existingService) {
+            const service = docker.getService(containerName);
+
+            await service.update({
+                version: Number(existingService.Version?.Index),
+                ...settings,
+            });
+            console.log('✅ Postgres updated');
+        } else {
+            await docker.createService(settings);
+            console.log('✅ Postgres started');
+        }
+    } catch (error) {
+        console.log('❌ Postgres service setup failed', error);
     }
 };

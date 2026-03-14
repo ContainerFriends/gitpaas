@@ -5,7 +5,7 @@ import { TRAEFIK_HTTP3_PORT, TRAEFIK_PORT, TRAEFIK_SSL_PORT, TRAEFIK_VERSION } f
 import { docker, pullImage } from '../services/docker';
 
 /**
- * Initialize Traefik as a Docker Swarm service
+ * Initialize Traefik as a Docker service
  */
 export const initializeTraefik = async (): Promise<void> => {
     const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths();
@@ -72,30 +72,35 @@ export const initializeTraefik = async (): Promise<void> => {
     };
 
     try {
-        await pullImage(imageName);
-        console.log('✅ Traefik image pulled');
+        const images = await docker.listImages({ filters: { reference: [imageName] } });
+
+        if (images.length > 0) {
+            console.log('✅ Traefik image already exists');
+        } else {
+            await pullImage(imageName);
+            console.log('✅ Traefik image pulled');
+        }
     } catch (error) {
-        console.log('⏩ Traefik image pull failed, continuing...', error);
+        console.log('❌ Traefik image pull failed, continuing...', error);
     }
 
     try {
-        const service = docker.getService(serviceName);
-        const inspect = await service.inspect();
+        const services = await docker.listServices({ filters: { name: [serviceName] } });
+        const existingService = services.find((s) => s.Spec?.Name === serviceName);
 
-        await service.update({
-            version: Number.parseInt(inspect.Version.Index),
-            ...settings,
-        });
-        console.log('✅ Traefik updated');
-    } catch {
-        try {
+        if (existingService) {
+            const service = docker.getService(serviceName);
+
+            await service.update({
+                version: Number(existingService.Version?.Index),
+                ...settings,
+            });
+            console.log('✅ Traefik updated');
+        } else {
             await docker.createService(settings);
             console.log('✅ Traefik started');
-        } catch (error: any) {
-            if (error?.statusCode !== 409) {
-                throw error;
-            }
-            console.log('⏩ Traefik service already exists, continuing...');
         }
+    } catch (error) {
+        console.log('❌ Traefik service setup failed', error);
     }
 };

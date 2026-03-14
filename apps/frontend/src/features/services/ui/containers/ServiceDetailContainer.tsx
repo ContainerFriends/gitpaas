@@ -1,20 +1,20 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, GitBranch, LinkIcon, Save } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { ServiceProvider } from '../components/ServiceProvider';
 import { useServices } from '../hooks/useServices';
 import { ServiceDetailFormData } from '../models/service-form.models';
 import { serviceDetailFormSchema } from '../schemas/service.schemas';
 
+import { useGitProviders } from '@features/git-providers/ui/hooks/useGitProviders';
 import { useProjects } from '@features/projects/ui/hooks/useProjects';
 import { useBreadcrumbMetadata } from '@layout/contexts/BreadcrumbContext';
 import { Button } from '@shared/components/button';
 import { Card, CardContent, CardHeader } from '@shared/components/card';
-import { Input } from '@shared/components/input';
-import { Label } from '@shared/components/label';
 
 interface ServiceDetailContainerProps {
     serviceId: string;
@@ -28,6 +28,7 @@ export function ServiceDetailContainer({ serviceId, projectId }: ServiceDetailCo
     const navigate = useNavigate();
     const { selectedProject, getProjectById } = useProjects();
     const { selectedService, loadingService, getServiceById, updateService } = useServices();
+    const { gitProviders, loadGitProviders } = useGitProviders();
     const [isSaving, setIsSaving] = useState(false);
 
     /**
@@ -40,6 +41,7 @@ export function ServiceDetailContainer({ serviceId, projectId }: ServiceDetailCo
         resolver: zodResolver(serviceDetailFormSchema),
         defaultValues: {
             name: '',
+            gitProviderId: '',
             repositoryUrl: '',
             branch: '',
         },
@@ -49,16 +51,20 @@ export function ServiceDetailContainer({ serviceId, projectId }: ServiceDetailCo
         register,
         handleSubmit,
         reset,
+        watch,
         formState: { errors, isDirty },
     } = form;
 
+    const selectedGitProviderId = watch('gitProviderId');
+
     /**
-     * Load project and service by ID
+     * Load project, service, and git providers
      */
     useEffect(() => {
         getProjectById(projectId);
         getServiceById(serviceId);
-    }, [getProjectById, getServiceById, projectId, serviceId]);
+        loadGitProviders();
+    }, [getProjectById, getServiceById, loadGitProviders, projectId, serviceId]);
 
     /**
      * Update form when service is loaded
@@ -67,6 +73,7 @@ export function ServiceDetailContainer({ serviceId, projectId }: ServiceDetailCo
         if (selectedService?.id === serviceId) {
             reset({
                 name: selectedService.name,
+                gitProviderId: '',
                 repositoryUrl: selectedService.repositoryUrl || '',
                 branch: selectedService.branch || '',
             });
@@ -151,49 +158,16 @@ export function ServiceDetailContainer({ serviceId, projectId }: ServiceDetailCo
             </Card>
 
             {/* Provider */}
-            <Card className="cursor-default hover:border-border">
-                <CardHeader>Provider</CardHeader>
-                <CardContent>
-                    <div className="max-w-2xl">
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                            <div className="grid gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="repositoryUrl">Repository URL</Label>
-                                    <div className="relative">
-                                        <LinkIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            id="repositoryUrl"
-                                            placeholder="https://github.com/owner/repo"
-                                            className="pl-9"
-                                            {...register('repositoryUrl')}
-                                        />
-                                    </div>
-                                    {errors.repositoryUrl && <p className="text-sm text-destructive">{errors.repositoryUrl.message}</p>}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="branch">Branch</Label>
-                                    <div className="relative">
-                                        <GitBranch className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input id="branch" placeholder="main" className="pl-9" {...register('branch')} />
-                                    </div>
-                                    {errors.branch && <p className="text-sm text-destructive">{errors.branch.message}</p>}
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-end gap-3 pt-6 border-t">
-                                <Button type="button" variant="outline" onClick={handleBack}>
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={!isDirty || isSaving}>
-                                    <Save />
-                                    {isSaving ? 'Saving...' : 'Save Changes'}
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </CardContent>
-            </Card>
+            <ServiceProvider
+                gitProviders={gitProviders}
+                selectedGitProviderId={selectedGitProviderId}
+                register={register}
+                errors={errors}
+                handleSubmit={handleSubmit}
+                onSubmit={onSubmit}
+                isDirty={isDirty}
+                isSaving={isSaving}
+            />
         </div>
     );
 }

@@ -19,4 +19,17 @@ export const containerDockerGateway: ContainerGateway = {
             throw new DockerError(`Failed to get containers: ${(error as Error).message}`, DockerErrorType.API_ERROR);
         }
     },
+    removeContainer: async (id: string): Promise<boolean> => {
+        try {
+            const container = dockerClient.getContainer(id);
+            await container.remove({ force: true });
+
+            return true;
+        } catch (error: any) {
+            if (error.statusCode === 404) {
+                return false;
+            }
+            throw new DockerError(`Failed to remove container ${id}: ${error.message}`, DockerErrorType.API_ERROR);
+        }
+    },
 };

@@ -12,6 +12,7 @@ export interface ContainersContextValue {
     error: string | null;
     filteredContainers: Container[];
     loadContainers: () => Promise<void>;
+    removeContainer: (id: string) => Promise<void>;
     setFilter: (filter: string) => void;
 }
 

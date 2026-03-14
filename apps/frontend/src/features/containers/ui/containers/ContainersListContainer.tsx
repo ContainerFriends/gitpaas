@@ -1,6 +1,8 @@
 import { Box, Search } from 'lucide-react';
 import { ReactNode, useEffect } from 'react';
+import { toast } from 'sonner';
 
+import { Container } from '../../domain/models/container.models';
 import { ContainersTable } from '../components/ContainersTable';
 import { useContainers } from '../hooks/useContainers';
 
@@ -9,7 +11,7 @@ import { useContainers } from '../hooks/useContainers';
  */
 export function ContainersListContainer(): ReactNode {
     // eslint-disable-next-line object-curly-newline
-    const { filteredContainers, loading, error, loadContainers, setFilter, filter } = useContainers();
+    const { filteredContainers, loading, error, loadContainers, removeContainer, setFilter, filter } = useContainers();
 
     /**
      * Load containers
@@ -17,6 +19,17 @@ export function ContainersListContainer(): ReactNode {
     useEffect(() => {
         loadContainers();
     }, [loadContainers]);
+
+    /**
+     * Handle delete container action
+     */
+    const handleDeleteContainer = async (container: Container) => {
+        try {
+            await removeContainer(container.id);
+        } catch {
+            toast.error('Failed to remove container');
+        }
+    };
 
     if (loading) {
         return (
@@ -84,7 +97,7 @@ export function ContainersListContainer(): ReactNode {
                 />
             </div>
 
-            <ContainersTable containers={filteredContainers} />
+            <ContainersTable containers={filteredContainers} onDelete={handleDeleteContainer} />
         </div>
     );
 }

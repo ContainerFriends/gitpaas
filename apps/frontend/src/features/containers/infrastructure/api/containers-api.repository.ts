@@ -27,4 +27,16 @@ export const containersApiRepository = (token: string): ContainersRepository => 
 
         return data.map(containersApiMapper.toDomain);
     },
+
+    remove: async (id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE_URL}/containers/${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        await handleHttpError(response, 'remove container');
+    },
 });

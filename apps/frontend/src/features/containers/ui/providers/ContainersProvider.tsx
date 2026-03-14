@@ -1,6 +1,8 @@
 import { ReactNode, useCallback } from 'react';
+import { toast } from 'sonner';
 
 import { getContainersUseCase } from '../../application/get-containers.use-case';
+import { removeContainerUseCase } from '../../application/remove-container.use-case';
 import { containersApiRepository } from '../../infrastructure/api/containers-api.repository';
 import { ContainersContext, ContainersContextValue } from '../context/ContainersContext';
 import { useContainersState } from '../hooks/useContainersState';
@@ -14,7 +16,7 @@ interface ContainersProviderProps {
  */
 export function ContainersProvider({ children }: ContainersProviderProps): ReactNode {
     // eslint-disable-next-line object-curly-newline
-    const { state, setContainers, setFilter, setLoading, setError } = useContainersState();
+    const { state, setContainers, deleteContainer, setFilter, setLoading, setError } = useContainersState();
 
     // Mock token for development - replace with Auth0 when available
     const getMockToken = useCallback(async (): Promise<string> => {
@@ -40,6 +42,26 @@ export function ContainersProvider({ children }: ContainersProviderProps): React
     }, [getMockToken, setLoading, setError, setContainers]);
 
     /**
+     * Remove a container
+     */
+    const removeContainerHandler = useCallback(
+        async (id: string): Promise<void> => {
+            try {
+                setError(null);
+                const token = await getMockToken();
+                await removeContainerUseCase(containersApiRepository(token), id);
+                deleteContainer(id);
+                toast.success('Container removed successfully');
+            } catch (error) {
+                setError('Failed to remove container');
+                toast.error('Failed to remove container');
+                throw error;
+            }
+        },
+        [getMockToken, setError, deleteContainer],
+    );
+
+    /**
      * Set filter for containers
      */
     const setFilterHandler = useCallback(
@@ -56,6 +78,7 @@ export function ContainersProvider({ children }: ContainersProviderProps): React
         error: state.error,
         filteredContainers: state.filteredContainers,
         loadContainers,
+        removeContainer: removeContainerHandler,
         setFilter: setFilterHandler,
     };
 

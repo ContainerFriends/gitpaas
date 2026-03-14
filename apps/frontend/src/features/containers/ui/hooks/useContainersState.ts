@@ -7,6 +7,7 @@ import { Container } from '../../domain/models/container.models';
  */
 type ContainersAction =
     | { type: 'SET_CONTAINERS'; payload: Container[] }
+    | { type: 'DELETE_CONTAINER'; payload: string }
     | { type: 'SET_FILTER'; payload: string }
     | { type: 'SET_LOADING'; payload: boolean }
     | { type: 'SET_ERROR'; payload: string | null };
@@ -64,6 +65,16 @@ function containersReducer(state: ContainersState, action: ContainersAction): Co
             };
         }
 
+        case 'DELETE_CONTAINER': {
+            const updatedContainers = state.containers.filter((container) => container.id !== action.payload);
+            const filteredContainers = filterContainers(updatedContainers, state.filter);
+            return {
+                ...state,
+                containers: updatedContainers,
+                filteredContainers,
+            };
+        }
+
         case 'SET_FILTER': {
             const filteredContainers = filterContainers(state.containers, action.payload);
             return {
@@ -100,6 +111,10 @@ export function useContainersState() {
         dispatch({ type: 'SET_CONTAINERS', payload: containers });
     }, []);
 
+    const deleteContainer = useCallback((id: string) => {
+        dispatch({ type: 'DELETE_CONTAINER', payload: id });
+    }, []);
+
     const setFilter = useCallback((filter: string) => {
         dispatch({ type: 'SET_FILTER', payload: filter });
     }, []);
@@ -115,6 +130,7 @@ export function useContainersState() {
     return {
         state,
         setContainers,
+        deleteContainer,
         setFilter,
         setLoading,
         setError,

@@ -36,7 +36,7 @@ export const getRemoteDocker = async (serverId?: string | null) => {
  */
 export const pullImage = async (dockerImage: string, onData?: (data: any) => void, authConfig?: Partial<RegistryAuth>): Promise<void> => {
     if (!dockerImage) {
-        throw new Error('Docker image not found');
+        throw new Error('❌ Docker image not provided');
     }
 
     if (authConfig?.username && authConfig?.password) {

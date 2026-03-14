@@ -11,7 +11,6 @@ export const initializeTraefik = async (): Promise<void> => {
     const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths();
     const imageName = `traefik:v${TRAEFIK_VERSION}`;
     const serviceName = 'gitpaas-traefik';
-
     const settings: CreateServiceOptions = {
         Name: serviceName,
         TaskTemplate: {

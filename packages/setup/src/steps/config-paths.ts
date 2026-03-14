@@ -33,9 +33,15 @@ export const setupDirectories = (): void => {
         VOLUME_BACKUPS_PATH,
     ];
 
+    let allExisted = true;
+
     for (const dir of directories) {
         try {
-            createDirectoryIfNotExist(dir);
+            const wasCreated = createDirectoryIfNotExist(dir);
+
+            if (wasCreated) {
+                allExisted = false;
+            }
 
             if (dir === SSH_PATH) {
                 chmodSync(SSH_PATH, '700');
@@ -45,5 +51,5 @@ export const setupDirectories = (): void => {
         }
     }
 
-    console.log('✅ Directories created');
+    console.log(allExisted ? '✅ Directories already exists' : '✅ Directories created');
 };

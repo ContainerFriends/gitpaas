@@ -29,6 +29,10 @@ export const createServiceSchema = Joi.object({
         'string.empty': 'Service name cannot be empty',
         'string.max': 'Service name must not exceed 100 characters',
     }),
+    type: Joi.string().valid('docker_compose').required().messages({
+        'any.required': 'Service type is required',
+        'any.only': 'Service type must be docker_compose',
+    }),
     projectId: Joi.string().required().messages({
         'any.required': 'Project ID is required',
         'string.empty': 'Project ID cannot be empty',

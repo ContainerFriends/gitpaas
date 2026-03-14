@@ -11,6 +11,7 @@ export const servicePrismaMapper = {
     toDomain: (prismaService: PrismaService): Service => ({
         id: prismaService.id,
         name: prismaService.name,
+        type: prismaService.type,
         repositoryId: prismaService.repositoryId || '',
         branch: prismaService.branch || '',
         projectId: prismaService.projectId,
@@ -20,6 +21,7 @@ export const servicePrismaMapper = {
     toPersistenceCreate: (createDto: CreateServiceDto): any => ({
         id: createDto.id,
         name: createDto.name,
+        type: createDto.type,
         repositoryId: createDto.repositoryId,
         branch: createDto.branch || 'main',
         projectId: createDto.projectId,

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-import { ServiceFormData } from '../models/service-form.models';
+import { EditServiceFormData } from '../models/service-form.models';
 
 import { EditServiceForm } from './EditServiceForm';
 
@@ -8,10 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/compon
 
 interface EditServiceDialogProps {
     open: boolean;
-    initialData: ServiceFormData;
+    initialData: EditServiceFormData;
     isLoading?: boolean;
     onOpenChange: (open: boolean) => void;
-    onSubmit: (data: ServiceFormData) => void;
+    onSubmit: (data: EditServiceFormData) => void;
 }
 
 /**

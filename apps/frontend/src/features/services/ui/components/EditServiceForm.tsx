@@ -2,17 +2,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ReactNode, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { ServiceFormData } from '../models/service-form.models';
-import { serviceFormSchema } from '../schemas/service.schemas';
+import { EditServiceFormData } from '../models/service-form.models';
+import { editServiceFormSchema } from '../schemas/service.schemas';
 
 import { Button } from '@shared/components/button';
 import { Input } from '@shared/components/input';
 import { Label } from '@shared/components/label';
 
 interface EditServiceFormProps {
-    initialData: ServiceFormData;
+    initialData: EditServiceFormData;
     isLoading?: boolean;
-    onSubmit: (data: ServiceFormData) => void;
+    onSubmit: (data: EditServiceFormData) => void;
     onCancel: () => void;
 }
 
@@ -25,8 +25,8 @@ export function EditServiceForm({ initialData, onSubmit, onCancel, isLoading = f
         handleSubmit,
         formState: { errors, isValid },
         reset,
-    } = useForm<ServiceFormData>({
-        resolver: zodResolver(serviceFormSchema),
+    } = useForm<EditServiceFormData>({
+        resolver: zodResolver(editServiceFormSchema),
         mode: 'onChange',
         defaultValues: initialData,
     });

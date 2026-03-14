@@ -16,6 +16,7 @@ export async function createServiceUseCase(repository: ServicesRepository, data:
     const createDto: CreateServiceDto = {
         id: uuidv4(),
         name: data.name,
+        type: data.type,
         projectId: data.projectId,
     };
 

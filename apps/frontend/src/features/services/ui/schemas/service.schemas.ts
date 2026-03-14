@@ -1,9 +1,17 @@
 import { z } from 'zod';
 
 /**
- * Service form schema (used for both create and update)
+ * Service form schema (used for create)
  */
 export const serviceFormSchema = z.object({
+    name: z.string().min(1, 'Name is required').max(255, 'Name must be less than 255 characters'),
+    type: z.enum(['docker_compose'], { message: 'Service type is required' }),
+});
+
+/**
+ * Edit service form schema (used for update)
+ */
+export const editServiceFormSchema = z.object({
     name: z.string().min(1, 'Name is required').max(255, 'Name must be less than 255 characters'),
 });
 

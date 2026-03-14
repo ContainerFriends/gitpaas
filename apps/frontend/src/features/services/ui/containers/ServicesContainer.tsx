@@ -6,7 +6,7 @@ import { CreateServiceDialog } from '../components/CreateServiceDialog';
 import { EditServiceDialog } from '../components/EditServiceDialog';
 import { ServiceCard } from '../components/ServiceCard';
 import { useServices } from '../hooks/useServices';
-import { ServiceFormData } from '../models/service-form.models';
+import { EditServiceFormData, ServiceFormData } from '../models/service-form.models';
 
 import { useProjects } from '@features/projects/ui/hooks/useProjects';
 import { useBreadcrumbMetadata } from '@layout/contexts/BreadcrumbContext';
@@ -93,7 +93,7 @@ export function ServicesContainer({ projectId }: ServicesContainerProps): ReactN
     /**
      * Handle update service form submission
      */
-    const handleUpdateService = async (data: ServiceFormData) => {
+    const handleUpdateService = async (data: EditServiceFormData) => {
         if (!selectedProject) return;
 
         setIsEditing(true);

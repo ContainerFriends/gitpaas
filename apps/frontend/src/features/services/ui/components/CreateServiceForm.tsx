@@ -1,7 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { ArrowLeft } from 'lucide-react';
 import { ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { ServiceType } from '../../domain/models/service.models';
 import { ServiceFormData } from '../models/service-form.models';
 import { serviceFormSchema } from '../schemas/service.schemas';
 
@@ -10,15 +12,18 @@ import { Input } from '@shared/components/input';
 import { Label } from '@shared/components/label';
 
 interface ServiceFormProps {
+    type: ServiceType;
     onSubmit: (data: ServiceFormData) => void;
     onCancel?: () => void;
+    onBack?: () => void;
     isLoading?: boolean;
 }
 
 /**
  * Service Form component
  */
-export function CreateServiceForm({ onSubmit, onCancel, isLoading = false }: ServiceFormProps): ReactNode {
+// eslint-disable-next-line object-curly-newline
+export function CreateServiceForm({ type, onSubmit, onCancel, onBack, isLoading = false }: ServiceFormProps): ReactNode {
     const {
         register,
         handleSubmit,
@@ -26,6 +31,9 @@ export function CreateServiceForm({ onSubmit, onCancel, isLoading = false }: Ser
     } = useForm<ServiceFormData>({
         resolver: zodResolver(serviceFormSchema),
         mode: 'onChange',
+        defaultValues: {
+            type,
+        },
     });
 
     return (
@@ -36,13 +44,23 @@ export function CreateServiceForm({ onSubmit, onCancel, isLoading = false }: Ser
                 {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
             </div>
 
-            <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-                    Cancel
-                </Button>
-                <Button type="submit" disabled={!isValid || isLoading}>
-                    {isLoading ? 'Creating...' : 'Create'}
-                </Button>
+            <div className="flex justify-between pt-4">
+                <div>
+                    {onBack && (
+                        <Button type="button" variant="ghost" size="sm" onClick={onBack} disabled={isLoading}>
+                            <ArrowLeft />
+                            Back
+                        </Button>
+                    )}
+                </div>
+                <div className="flex gap-3">
+                    <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+                        Cancel
+                    </Button>
+                    <Button type="submit" disabled={!isValid || isLoading}>
+                        {isLoading ? 'Creating...' : 'Create'}
+                    </Button>
+                </div>
             </div>
         </form>
     );

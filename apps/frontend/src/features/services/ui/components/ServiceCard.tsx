@@ -2,8 +2,9 @@ import { Calendar, MoreVertical, Settings } from 'lucide-react';
 import { ReactNode, MouseEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-import { Service } from '../../domain/models/service.models';
+import { Service, ServiceType } from '../../domain/models/service.models';
 
+import { Badge } from '@shared/components/badge';
 import { Button } from '@shared/components/button';
 import { Card, CardFooter, CardHeader } from '@shared/components/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@shared/components/dropdown-menu';
@@ -28,6 +29,10 @@ export function ServiceCard({ service, onEdit, onDelete }: ServiceCardProps): Re
             day: 'numeric',
             year: 'numeric',
         });
+    };
+
+    const serviceTypeLabels: Record<ServiceType, string> = {
+        docker_compose: 'Docker Compose',
     };
 
     const handleDropdownClick = (e: MouseEvent) => {
@@ -85,9 +90,12 @@ export function ServiceCard({ service, onEdit, onDelete }: ServiceCardProps): Re
                 </div>
             </CardHeader>
             <CardFooter>
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    <span>Created {formatDate(service.createdAt)}</span>
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        <span>Created {formatDate(service.createdAt)}</span>
+                    </div>
+                    <Badge variant="secondary">{serviceTypeLabels[service.type]}</Badge>
                 </div>
             </CardFooter>
         </Card>

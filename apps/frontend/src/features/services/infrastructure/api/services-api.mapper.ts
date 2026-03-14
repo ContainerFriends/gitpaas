@@ -1,4 +1,4 @@
-import { Service } from '../../domain/models/service.models';
+import { Service, ServiceType } from '../../domain/models/service.models';
 
 import { ApiService } from './services-api.models';
 
@@ -9,6 +9,7 @@ export const servicesApiMapper = {
     toDomain: (apiResponse: ApiService): Service => ({
         id: apiResponse.id,
         name: apiResponse.name,
+        type: apiResponse.type as ServiceType,
         repositoryUrl: apiResponse.repositoryUrl,
         branch: apiResponse.branch,
         projectId: apiResponse.projectId,

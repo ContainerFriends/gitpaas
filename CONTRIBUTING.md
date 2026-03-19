@@ -56,7 +56,7 @@ cp packages/setup/.env.example packages/setup/.env
 cp apps/backend/.env.example apps/backend/.env
 ```
 
-En las variables de entorno de Backend debes modificar la propiedad `DEVELOPMENT_SERVER_URL` e introducir tu url tunelizada para que la Github App pueda comunicarse con tu maquina.
+In the backend environment variables, you must modify the `DEVELOPMENT_SERVER_URL` property and enter your tunneled URL so that the GitHub App can communicate with your machine.
 
 ### 3. Run setup package
 
@@ -77,15 +77,15 @@ This command launches the applications in development mode to simulate the behav
 
 ## Development workflow
 
-Una vez instalado el stack en tu entorno y con las aplicaciones levantadas, para emular ciertos flujos del sistema se deben seguir las siguientes guias:
+Once the stack has been installed in your environment and the applications are up and running, follow these guidelines to simulate certain system workflows:
 
-### Instalación de la Github App
+### Installing the GitHub App
 
-En un entorno real, cuando el usuario ejecuta el script de instalación `install.sh`, éste devuleve una url para instalar la Github App en caso de que no exista en el sistema. Para reproducir ese flujo en local:
+In a production environment, when the user runs the `install.sh` installation script, it returns a URL to install the GitHub App if it does not already exist on the system. To replicate this process locally:
 
-1. Realizar una petición al Backend en la ruta `http://localhost:4000/v1/health?token=random-token-for-setup` donde el **token** debe ser el que hayas definido en la variable de entorno `SETUP_TOKEN`.
+1. Make a request to the backend at the path `http://localhost:4000/v1/health?token=random-token-for-setup`, where the **token** must be the one you defined in the `SETUP_TOKEN` environment variable.
 
-2. Backend devolverá una respuesta en Json con una url para la aplicación de Github installer. Esta url deber ser abierta en un navegador (asegúrate de que la aplicación de Github installer esté levantada).
+2. The backend will return a JSON response containing a URL for the GitHub Installer app. This URL must be opened in a browser (make sure the GitHub Installer app is running).
 
 ---
 

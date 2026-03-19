@@ -15,9 +15,14 @@ export function generateGithubManifestUrlUseCase(apiVersion: string): string {
         name: `GitPaaS-${process.env.HOSTNAME || 'Server'}`,
         url: isDevelopment ? developmentServerUrl : serverUrl,
         hook_attributes: {
-            url: isDevelopment ? `${developmentServerUrl}/${apiVersion}/events` : `${serverUrl}/${apiVersion}/events`,
+            url: isDevelopment ? `${developmentServerUrl}/${apiVersion}/events/webhook` : `${serverUrl}/${apiVersion}/events/webhook`,
         },
-        redirect_url: `${githubInstallerUrl}/installation-success`,
+        redirect_url: isDevelopment
+            ? `${developmentServerUrl}/${apiVersion}/events/github-installation`
+            : `${serverUrl}/${apiVersion}/events/github-installation`,
+        setup_url: isDevelopment
+            ? `${developmentServerUrl}/${apiVersion}/events/github-postinstallation`
+            : `${serverUrl}/${apiVersion}/events/github-postinstallation`,
         public: false,
         default_permissions: {
             contents: 'read',

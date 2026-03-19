@@ -1,5 +1,22 @@
 #!/bin/bash
 
+# Paths
+BASE_PATH="/etc/gitpaas"
+MAIN_TRAEFIK_PATH="$BASE_PATH/traefik"
+DYNAMIC_TRAEFIK_PATH="$MAIN_TRAEFIK_PATH/dynamic"
+LOGS_PATH="$BASE_PATH/logs"
+APPLICATIONS_PATH="$BASE_PATH/applications"
+SSH_PATH="$BASE_PATH/ssh"
+CERTIFICATES_PATH="$DYNAMIC_TRAEFIK_PATH/certificates"
+MONITORING_PATH="$BASE_PATH/monitoring"
+SCHEDULES_PATH="$BASE_PATH/schedules"
+VOLUME_BACKUPS_PATH="$BASE_PATH/volume-backups"
+
+# Traefik ports and version
+TRAEFIK_SSL_PORT="${TRAEFIK_SSL_PORT:-443}"
+TRAEFIK_PORT="${TRAEFIK_PORT:-80}"
+TRAEFIK_HTTP3_PORT="${TRAEFIK_HTTP3_PORT:-443}"
+
 # Detect version from environment variable or detect latest stable from GitHub
 # Usage: GITPAAS_VERSION=latest bash install.sh
 # Usage: bash install.sh (detects latest stable version)
@@ -80,6 +97,421 @@ generate_random_password() {
     echo "$password"
 }
 
+# Setup application directories
+setup_directories() {
+    local directories=(
+        "$BASE_PATH"
+        "$MAIN_TRAEFIK_PATH"
+        "$DYNAMIC_TRAEFIK_PATH"
+        "$LOGS_PATH"
+        "$APPLICATIONS_PATH"
+        "$SSH_PATH"
+        "$CERTIFICATES_PATH"
+        "$MONITORING_PATH"
+        "$SCHEDULES_PATH"
+        "$VOLUME_BACKUPS_PATH"
+    )
+
+    for dir in "${directories[@]}"; do
+        if [ ! -d "$dir" ]; then
+            mkdir -p "$dir" || { echo "Failed to create directory: $dir"; continue; }
+        fi
+
+        if [ "$dir" = "$SSH_PATH" ]; then
+            chmod 700 "$SSH_PATH"
+        fi
+    done
+
+    echo "✅ Directories configured successfully"
+}
+
+# Create Traefik default middlewares configuration
+create_traefik_default_middlewares() {
+    local middlewares_path="$DYNAMIC_TRAEFIK_PATH/middlewares.yml"
+
+    if [ -f "$middlewares_path" ]; then
+        return
+    fi
+
+    mkdir -p "$DYNAMIC_TRAEFIK_PATH"
+
+    cat > "$middlewares_path" << 'EOF'
+http:
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+EOF
+
+    echo "✅ Traefik default middlewares created"
+}
+
+# Create Traefik default config
+create_traefik_default_config() {
+    local main_config="$MAIN_TRAEFIK_PATH/traefik.yml"
+    local acme_json_path="$DYNAMIC_TRAEFIK_PATH/acme.json"
+
+    if [ -f "$acme_json_path" ]; then
+        chmod 600 "$acme_json_path"
+    fi
+
+    mkdir -p "$MAIN_TRAEFIK_PATH"
+
+    if [ -e "$main_config" ]; then
+        if [ -d "$main_config" ]; then
+            rm -rf "$main_config"
+        elif [ -f "$main_config" ]; then
+            echo "✅ Traefik config already exists, skipping"
+            return
+        fi
+    fi
+
+    cat > "$main_config" << EOF
+global:
+  sendAnonymousUsage: false
+
+providers:
+  file:
+    directory: /etc/gitpaas/traefik/dynamic
+    watch: true
+  docker:
+    defaultRule: "Host(\`{{ trimPrefix \`/\` .Name }}.docker.localhost\`)"
+
+entryPoints:
+  web:
+    address: ":${TRAEFIK_PORT}"
+  websecure:
+    address: ":${TRAEFIK_SSL_PORT}"
+    http3:
+      advertisedPort: ${TRAEFIK_HTTP3_PORT}
+
+api:
+  insecure: true
+EOF
+
+    echo "✅ Traefik default config created"
+}
+
+# Check if Docker network is initialized
+docker_network_initialized() {
+    docker network inspect gitpaas-network > /dev/null 2>&1
+}
+
+# Initialize Docker network
+initialize_network() {
+    if ! docker_network_initialized; then
+        docker network create --driver overlay --attachable gitpaas-network
+        echo "✅ Docker network created successfully"
+    else
+        echo "✅ Docker network already exists, skipping"
+    fi
+}
+
+# Pull Docker image if not present
+pull_image_if_missing() {
+    local image="$1"
+
+    if ! docker image inspect "$image" > /dev/null 2>&1; then
+        echo "📦 Pulling image $image..."
+        docker pull "$image" || echo "❌ Traefik image pull failed, continuing..."
+    fi
+}
+
+# Initialize Traefik as a Docker service
+initialize_traefik() {
+    local image_name="traefik:v${TRAEFIK_VERSION}"
+    local service_name="gitpaas-traefik"
+
+    pull_image_if_missing "$image_name"
+
+    local existing_service
+    existing_service=$(docker service ls --filter "name=${service_name}" --format '{{.Name}}' | grep -x "$service_name")
+
+    if [ -n "$existing_service" ]; then
+        echo "🔄 Updating Traefik service..."
+        docker service rm "$service_name"
+    fi
+
+    docker service create \
+        --name "$service_name" \
+        --network gitpaas-network \
+        --constraint "node.role==manager" \
+        --replicas 1 \
+        --mount type=bind,source="$MAIN_TRAEFIK_PATH/traefik.yml",target=/etc/traefik/traefik.yml,readonly \
+        --mount type=bind,source="$DYNAMIC_TRAEFIK_PATH",target=/etc/gitpaas/traefik/dynamic,readonly \
+        --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,readonly \
+        --publish mode=host,target=${TRAEFIK_PORT},published=${TRAEFIK_PORT},protocol=tcp \
+        --publish mode=host,target=${TRAEFIK_SSL_PORT},published=${TRAEFIK_SSL_PORT},protocol=tcp \
+        --publish mode=host,target=${TRAEFIK_HTTP3_PORT},published=${TRAEFIK_HTTP3_PORT},protocol=udp \
+        "$image_name" || { echo "❌ Traefik service setup failed"; return 1; }
+
+    echo "✅ Traefik service created successfully"
+}
+
+# Initialize Redis as a Docker service
+initialize_redis() {
+    local image_name="${REDIS_IMAGE:-redis:8.4-alpine3.22}"
+    local service_name="gitpaas-redis"
+
+    pull_image_if_missing "$image_name"
+
+    local existing_service
+    existing_service=$(docker service ls --filter "name=${service_name}" --format '{{.Name}}' | grep -x "$service_name")
+
+    if [ -n "$existing_service" ]; then
+        echo "🔄 Updating Redis service..."
+        docker service rm "$service_name"
+    fi
+
+    local publish_flag=""
+    if [ "${NODE_ENV}" = "development" ]; then
+        publish_flag="--publish mode=host,target=6379,published=6379,protocol=tcp"
+    fi
+
+    docker service create \
+        --name "$service_name" \
+        --network gitpaas-network \
+        --constraint "node.role==manager" \
+        --replicas 1 \
+        --mount type=volume,source=gitpaas-redis,target=/data \
+        $publish_flag \
+        "$image_name" || { echo "❌ Redis service setup failed"; return 1; }
+
+    echo "✅ Redis service created successfully"
+}
+
+# Ensure Postgres Docker secret exists
+ensure_postgres_secret() {
+    local secret_name="gitpaas_postgres_password"
+
+    if docker secret inspect "$secret_name" > /dev/null 2>&1; then
+        echo "✅ PostgreSQL secret already exists"
+        return 0
+    fi
+
+    local password
+    password=$(openssl rand -base64 24 | tr '+/' '-_' | tr -d '=')
+
+    echo "$password" | docker secret create "$secret_name" - > /dev/null
+    echo "✅ PostgreSQL secret created"
+
+    DATABASE_URL="postgres://gitpaas:${password}@gitpaas-postgres:5432/gitpaas"
+    export DATABASE_URL
+    echo "✅ DATABASE_URL configured"
+}
+
+# Initialize Postgres as a Docker service (production)
+initialize_postgres() {
+    local image_name="${POSTGRES_IMAGE:-postgres:18.3-alpine3.23}"
+    local service_name="gitpaas-postgres"
+
+    ensure_postgres_secret
+
+    pull_image_if_missing "$image_name"
+
+    local existing_service
+    existing_service=$(docker service ls --filter "name=${service_name}" --format '{{.Name}}' | grep -x "$service_name")
+
+    if [ -n "$existing_service" ]; then
+        echo "🔄 Updating Postgres service..."
+        docker service rm "$service_name"
+    fi
+
+    docker service create \
+        --name "$service_name" \
+        --network gitpaas-network \
+        --constraint "node.role==manager" \
+        --replicas 1 \
+        --mount type=volume,source=gitpaas-postgres,target=/var/lib/postgresql/data \
+        --secret gitpaas_postgres_password \
+        --env POSTGRES_USER=gitpaas \
+        --env POSTGRES_DB=gitpaas \
+        --env POSTGRES_PASSWORD_FILE=/run/secrets/gitpaas_postgres_password \
+        "$image_name" || { echo "❌ Postgres service setup failed"; return 1; }
+
+    echo "✅ Postgres service created successfully"
+}
+
+# Wait for PostgreSQL to be ready
+wait_for_postgres() {
+    local max_attempts="${1:-30}"
+    local attempt=1
+
+    echo "⏳ Waiting for PostgreSQL to be ready..."
+
+    while [ "$attempt" -le "$max_attempts" ]; do
+        local container_id
+        container_id=$(docker ps --filter "label=com.docker.swarm.service.name=gitpaas-postgres" --format '{{.ID}}' | head -1)
+
+        if [ -n "$container_id" ]; then
+            if docker exec "$container_id" pg_isready -h localhost -p 5432 -U postgres > /dev/null 2>&1; then
+                echo "✅ PostgreSQL is ready"
+                return 0
+            fi
+        fi
+
+        echo "⏳ Attempt $attempt/$max_attempts - PostgreSQL not ready yet..."
+        sleep 2
+        attempt=$((attempt + 1))
+    done
+
+    echo "❌ PostgreSQL failed to become ready within the expected time"
+    return 1
+}
+
+connect_to_network() {
+    local container_id
+    container_id=$(hostname)
+
+    if docker network connect gitpaas-network "$container_id" 2>&1 | grep -q "already exists"; then
+        return 0
+    fi
+
+    echo "✅ Connected to gitpaas-network"
+}
+
+# Generate Prisma client
+generate_prisma_client() {
+    echo "🔄 Generating Prisma client..."
+    export DATABASE_URL="postgres://gitpaas:password@localhost:5432/gitpaas"
+
+    if npx prisma generate --config=./packages/setup/prisma.config.ts; then
+        echo "✅ Prisma client generated successfully"
+    else
+        echo "❌ Prisma generate failed"
+        return 1
+    fi
+}
+
+# Run Prisma migrations
+run_migrations() {
+    echo "🔄 Running Prisma migrations..."
+
+    if npx prisma migrate deploy --config=./packages/setup/prisma.config.ts; then
+        echo "✅ Migrations applied successfully"
+    else
+        echo "❌ Migration failed"
+        return 1
+    fi
+}
+
+# Initialize Backend as a Docker service
+initialize_backend() {
+    if [ -z "$BACKEND_IMAGE" ]; then
+        echo "❌ BACKEND_IMAGE environment variable is required"
+        return 1
+    fi
+
+    if [ -z "$DATABASE_URL" ]; then
+        echo "❌ DATABASE_URL is not available. Ensure PostgreSQL setup completed first."
+        return 1
+    fi
+
+    if [ -z "$ADVERTISE_ADDR" ]; then
+        echo "❌ ADVERTISE_ADDR environment variable is required"
+        return 1
+    fi
+
+    local service_name="gitpaas-backend"
+    local secret_id
+    secret_id=$(docker secret inspect gitpaas_postgres_password --format '{{.ID}}' 2>/dev/null)
+
+    if [ -z "$secret_id" ]; then
+        echo "❌ Postgres secret not found"
+        return 1
+    fi
+
+    pull_image_if_missing "$BACKEND_IMAGE"
+
+    local existing_service
+    existing_service=$(docker service ls --filter "name=${service_name}" --format '{{.Name}}' | grep -x "$service_name")
+
+    if [ -n "$existing_service" ]; then
+        echo "🔄 Updating Backend service..."
+        docker service rm "$service_name"
+    fi
+
+    local release_tag_env=""
+    if [ -n "$RELEASE_TAG" ]; then
+        release_tag_env="--env RELEASE_TAG=${RELEASE_TAG}"
+    fi
+
+    docker service create \
+        --name "$service_name" \
+        --network gitpaas-network \
+        --constraint "node.role==manager" \
+        --replicas 1 \
+        --update-parallelism 1 \
+        --update-order stop-first \
+        --label "traefik.enable=true" \
+        --label "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https" \
+        --label "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true" \
+        --label "traefik.http.routers.backend.rule=PathPrefix(\`/\`)" \
+        --label "traefik.http.routers.backend.entrypoints=web" \
+        --label "traefik.http.routers.backend.middlewares=redirect-to-https" \
+        --label "traefik.http.routers.backend-secure.rule=PathPrefix(\`/\`)" \
+        --label "traefik.http.routers.backend-secure.entrypoints=websecure" \
+        --label "traefik.http.routers.backend-secure.tls=true" \
+        --label "traefik.http.services.backend-secure.loadbalancer.server.port=4000" \
+        --env DATABASE_URL="${DATABASE_URL}" \
+        --env ADVERTISE_ADDR="${ADVERTISE_ADDR}" \
+        --env NODE_ENV=production \
+        --env SERVER_URL=http://localhost:4000 \
+        --env 'DEVELOPMENT_SERVER_URL=""' \
+        --env SETUP_TOKEN=test \
+        --env CORS_ORIGIN="https://${ADVERTISE_ADDR}" \
+        --env GITHUB_INSTALLER_URL="https://${ADVERTISE_ADDR}/installer" \
+        $release_tag_env \
+        --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
+        --mount type=bind,source=/etc/gitpaas,target=/etc/gitpaas \
+        --secret source=gitpaas_postgres_password,target=/run/secrets/postgres_password,uid=0,gid=0,mode=0444 \
+        "$BACKEND_IMAGE" || { echo "❌ Backend service setup failed"; return 1; }
+
+    echo "✅ Backend service created successfully"
+}
+
+# Initialize Github Installer as a Docker service
+initialize_github_installer() {
+    if [ -z "$INSTALLER_IMAGE" ]; then
+        echo "❌ INSTALLER_IMAGE environment variable is required"
+        return 1
+    fi
+
+    local service_name="gitpaas-installer"
+
+    pull_image_if_missing "$INSTALLER_IMAGE"
+
+    local existing_service
+    existing_service=$(docker service ls --filter "name=${service_name}" --format '{{.Name}}' | grep -x "$service_name")
+
+    if [ -n "$existing_service" ]; then
+        echo "🔄 Updating Github Installer service..."
+        docker service rm "$service_name"
+    fi
+
+    docker service create \
+        --name "$service_name" \
+        --network gitpaas-network \
+        --constraint "node.role==manager" \
+        --replicas 1 \
+        --update-parallelism 1 \
+        --update-order stop-first \
+        --label "traefik.enable=true" \
+        --label "traefik.http.routers.installer.rule=PathPrefix(\`/installer\`)" \
+        --label "traefik.http.routers.installer.priority=10" \
+        --label "traefik.http.routers.installer.entrypoints=web" \
+        --label "traefik.http.routers.installer.middlewares=redirect-to-https" \
+        --label "traefik.http.routers.installer-secure.rule=PathPrefix(\`/installer\`)" \
+        --label "traefik.http.routers.installer-secure.priority=10" \
+        --label "traefik.http.routers.installer-secure.entrypoints=websecure" \
+        --label "traefik.http.routers.installer-secure.tls=true" \
+        --label "traefik.http.services.installer-secure.loadbalancer.server.port=80" \
+        "$INSTALLER_IMAGE" || { echo "❌ Installer service setup failed"; return 1; }
+
+    echo "✅ Github Installer service created successfully"
+}
+
 install_gitpaas() {
     # Detect version tag
     VERSION_TAG=$(detect_version)
@@ -117,13 +549,31 @@ install_gitpaas() {
     fi
 
     command_exists() {
-      command -v "$@" > /dev/null 2>&1
+        command -v "$@" > /dev/null 2>&1
     }
 
     if command_exists docker; then
-      echo "Docker already installed"
+        echo "✅ Docker already installed"
     else
-      curl -sSL https://get.docker.com | sh -s -- --version 28.5.0
+        echo "📦 Installing Docker..."
+        curl -sSL https://get.docker.com | sh -s -- --version 28.5.0
+    fi
+
+    if command_exists jq; then
+        echo "✅ jq already installed"
+    else
+        echo "📦 Installing jq..."
+        if command_exists apt-get; then
+            apt-get install -y jq >/dev/null 2>&1
+        elif command_exists yum; then
+            yum install -y jq >/dev/null 2>&1
+        elif command_exists apk; then
+            apk add --no-cache jq >/dev/null 2>&1
+        else
+            echo "⚠️  Could not install jq automatically. Please install it manually." >&2
+            exit 1
+        fi
+        echo "✅ jq installed"
     fi
 
     # Check if running in Proxmox LXC container and set endpoint mode
@@ -217,30 +667,19 @@ install_gitpaas() {
 
     echo "✅ Swarm initialized"
 
-    # Run Setup image
-    SETUP_IMAGE="ghcr.io/${GHCR_OWNER:-containerfriends}/gitpaas-setup:${DOCKER_VERSION_TAG}"
-    docker pull $SETUP_IMAGE
-    mkdir -p /etc/gitpaas
-    # Set RELEASE_TAG environment variable for canary/feature versions
-    release_tag=""
-    if [[ "$VERSION_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-        release_tag="latest"
-    elif [ "$VERSION_TAG" != "latest" ]; then
-        release_tag="$VERSION_TAG"
-    fi
-
-    GHCR_OWNER="${GHCR_OWNER:-containerfriends}"
-    BACKEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-backend:${DOCKER_VERSION_TAG}"
-    INSTALLER_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-installer:${DOCKER_VERSION_TAG}"
-
-    docker run --rm \
-      --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
-      --mount type=bind,source=/etc/gitpaas,target=/etc/gitpaas \
-      -e BACKEND_IMAGE=$BACKEND_IMAGE \
-      -e INSTALLER_IMAGE=$INSTALLER_IMAGE \
-      -e ADVERTISE_ADDR=$advertise_addr \
-      ${release_tag:+-e RELEASE_TAG=$release_tag} \
-      $SETUP_IMAGE
+    setup_directories
+    create_traefik_default_middlewares
+    create_traefik_default_config
+    initialize_network
+    initialize_traefik
+    initialize_redis
+    initialize_postgres
+    wait_for_postgres
+    connect_to_network
+    generate_prisma_client
+    run_migrations
+    initialize_backend
+    initialize_github_installer
 
     echo "✅ Setup completed"
 
@@ -261,11 +700,40 @@ install_gitpaas() {
     }
 
     public_ip="${ADVERTISE_ADDR:-$(get_ip)}"
-    formatted_addr=$(format_ip_for_url "$public_ip")
-    echo ""
-    printf "${GREEN}Congratulations, GitPaaS is installed!${NC}\n"
-    printf "${BLUE}Wait 15 seconds for the server to start${NC}\n"
-    printf "${YELLOW}Please go to https://${formatted_addr}${NC}\n\n"
+
+    # Check GitHub App installation status
+    printf "${BLUE}🔍 Checking GitHub App installation status...${NC}\n"
+
+    max_attempts=10
+    attempt=0
+    health_response=""
+
+    while [ $attempt -lt $max_attempts ]; do
+        health_response=$(curl -ksf --connect-timeout 5 'https://localhost/v1/health?token="test"' 2>/dev/null)
+        if [ -n "$health_response" ]; then
+            break
+        fi
+        attempt=$((attempt + 1))
+        echo "⏳ Waiting for backend to be ready... ($attempt/$max_attempts)"
+        sleep 5
+    done
+
+    if [ -z "$health_response" ]; then
+        printf "${YELLOW}⚠️ Could not reach the backend. Check the service status with: docker service ls${NC}\n"
+    else
+        is_installed=$(echo "$health_response" | jq -r '.services.githubApp.isInstalled')
+        install_url=$(echo "$health_response" | jq -r '.services.githubApp.installUrl')
+
+        if [ "$is_installed" = "false" ]; then
+            printf "\n"
+            printf "${YELLOW}⚠️ GitHub App is not installed yet.${NC}\n"
+            printf "${YELLOW}To complete the setup, visit the following URL in your browser:${NC}\n\n"
+            printf "${GREEN}👉 ${install_url}${NC}\n\n"
+            printf "${BLUE}Follow the GitHub App installation flow and GitPaaS will be ready.${NC}\n"
+        else
+            printf "${GREEN}✅ GitHub App is installed and ready!${NC}\n"
+        fi
+    fi
 }
 
 update_gitpaas() {

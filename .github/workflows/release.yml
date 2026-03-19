@@ -47,8 +47,6 @@ jobs:
             dockerfile: iac/application/Dockerfile.backend
           - image: gitpaas-installer
             dockerfile: iac/application/Dockerfile.installer
-          - image: gitpaas-setup
-            dockerfile: iac/application/Dockerfile.setup
     steps:
       - uses: actions/checkout@v4
 

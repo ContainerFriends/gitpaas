@@ -49,8 +49,11 @@ export const initializeBackend = async () => {
                     `DATABASE_URL=${databaseUrl}`,
                     `ADVERTISE_ADDR=${process.env.ADVERTISE_ADDR ?? ''}`,
                     'NODE_ENV=production',
+                    'SERVER_URL=http://localhost:4000',
+                    'DEVELOPMENT_SERVER_URL=""',
+                    'SETUP_TOKEN="test"',
                     `CORS_ORIGIN=https://${process.env.ADVERTISE_ADDR ?? ''}`,
-                    `FRONTEND_URL=https://${process.env.ADVERTISE_ADDR ?? ''}`,
+                    `GITHUB_INSTALLER_URL=https://${process.env.ADVERTISE_ADDR ?? ''}`,
                     ...(process.env.RELEASE_TAG ? [`RELEASE_TAG=${process.env.RELEASE_TAG}`] : []),
                 ],
                 Mounts: [

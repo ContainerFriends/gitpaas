@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/ContainerFriends/gitpaas/compare/v1.0.0...v1.0.1) (2026-03-19)
+
+
+### Bug Fixes
+
+* change Installer docker image ([6f77d00](https://github.com/ContainerFriends/gitpaas/commit/6f77d005f02c6f5266407f9cd105573e112367fc))
+
 # 1.0.0 (2026-03-19)
 
 

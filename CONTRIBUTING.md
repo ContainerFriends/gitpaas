@@ -71,45 +71,23 @@ npm run dev:github-installer
 
 This command launches the applications in development mode to simulate the behavior of the server where GitPaaS is running.
 
-### 4. Run tests
+---
 
-```bash
-make test          # unit tests
-make test-e2e      # end-to-end (requires Swarm)
-```
+## Development workflow
 
-### Useful make targets
+Una vez instalado el stack en tu entorno y con las aplicaciones levantadas, para emular ciertos flujos del sistema se deben seguir las siguientes guias:
 
-| Command | Description |
-|---------|-------------|
-| `make dev` | Start full local stack with hot-reload |
-| `make build` | Build all binaries |
-| `make test` | Run unit tests |
-| `make lint` | Run linters |
-| `make docs` | Serve docs locally |
-| `make clean` | Stop and remove dev containers |
+### Instalación de la Github App
+
+En un entorno real, cuando el usuario ejecuta el script de instalación `install.sh`, éste devuleve una url para instalar la Github App en caso de que no exista en el sistema. Para reproducir ese flujo en local:
+
+1. Realizar una petición al Backend en la ruta `http://localhost:4000/health?token=random-token-for-setup` donde el **token** debe ser el que hayas definido en la variable de entorno `SETUP_TOKEN`.
+
+2. Backend devolverá una respuesta en Json con una url para la aplicación de Github installer. Esta url deber ser abierta en un navegador (asegúrate de que la aplicación de Github installer esté levantada).
 
 ---
 
-## Project Structure
-
-```
-gitpaas/
-├── cmd/                  # Entrypoints (api, agent, reconciler)
-├── internal/
-│   ├── reconciler/       # Core control loop logic
-│   ├── git/              # Git polling and diffing
-│   ├── swarm/            # Docker Swarm client wrapper
-│   └── api/              # REST + WebSocket handlers
-├── ui/                   # Frontend (React)
-├── deploy/               # Swarm stack definitions for GitPaaS itself
-├── docs/                 # Architecture, ADRs, user docs
-└── Makefile
-```
-
----
-
-## Development Workflow
+## Contributing workflow
 
 1. **Fork** the repo and create a branch from `main`:
    ```bash

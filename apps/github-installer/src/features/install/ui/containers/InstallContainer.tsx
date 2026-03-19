@@ -25,10 +25,15 @@ const steps = [
     },
 ];
 
+interface InstallContainerProps {
+    manifest: string;
+}
+
 /**
  * Install container component.
  */
-export function InstallContainer(): ReactNode {
+export function InstallContainer({ manifest }: InstallContainerProps): ReactNode {
+    console.log('Received manifest:', manifest); // Debug log to check the manifest value
     return (
         <div className="min-h-screen bg-background flex items-center justify-center">
             {/* Background effects */}

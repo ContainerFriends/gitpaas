@@ -1,0 +1,103 @@
+import { Calendar, MoreVertical, Settings } from 'lucide-react';
+import { ReactNode, MouseEvent } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+
+import { Service, ServiceType } from '../../domain/models/service.models';
+
+import { Badge } from '@shared/components/badge';
+import { Button } from '@shared/components/button';
+import { Card, CardFooter, CardHeader } from '@shared/components/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@shared/components/dropdown-menu';
+
+interface ServiceCardProps {
+    service: Service;
+    onEdit?: (serviceId: string) => void;
+    onDelete?: (serviceId: string) => void;
+}
+
+/**
+ * Service card component
+ */
+export function ServiceCard({ service, onEdit, onDelete }: ServiceCardProps): ReactNode {
+    const navigate = useNavigate();
+    const { projectId } = useParams<{ projectId: string }>();
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    };
+
+    const serviceTypeLabels: Record<ServiceType, string> = {
+        docker_compose: 'Docker Compose',
+    };
+
+    const handleDropdownClick = (e: MouseEvent) => {
+        e.stopPropagation();
+    };
+
+    const handleCardClick = () => {
+        if (projectId) {
+            navigate(`/projects/${projectId}/services/${service.id}`);
+        }
+    };
+
+    const handleViewDetail = (e: MouseEvent) => {
+        e.stopPropagation();
+        if (projectId) {
+            navigate(`/projects/${projectId}/services/${service.id}`);
+        }
+    };
+
+    return (
+        <Card className="min-h-[150px] flex flex-col cursor-pointer transition-shadow hover:shadow-md" onClick={handleCardClick}>
+            <CardHeader className="flex-grow">
+                <div className="flex items-start justify-between">
+                    <h3 className="font-semibold">{service.name}</h3>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={handleDropdownClick}>
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-32">
+                            <DropdownMenuItem onClick={handleViewDetail}>
+                                <Settings className="h-4 w-4 mr-2" />
+                                Configure
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onEdit?.(service.id);
+                                }}
+                            >
+                                Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete?.(service.id);
+                                }}
+                                className="text-destructive focus:text-destructive"
+                            >
+                                Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </CardHeader>
+            <CardFooter>
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        <span>Created {formatDate(service.createdAt)}</span>
+                    </div>
+                    <Badge variant="secondary">{serviceTypeLabels[service.type]}</Badge>
+                </div>
+            </CardFooter>
+        </Card>
+    );
+}

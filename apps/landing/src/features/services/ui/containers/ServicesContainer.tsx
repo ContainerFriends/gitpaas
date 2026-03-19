@@ -1,0 +1,245 @@
+import { Layers, Plus, Search } from 'lucide-react';
+import { ReactNode, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+
+import { CreateServiceDialog } from '../components/CreateServiceDialog';
+import { EditServiceDialog } from '../components/EditServiceDialog';
+import { ServiceCard } from '../components/ServiceCard';
+import { useServices } from '../hooks/useServices';
+import { EditServiceFormData, ServiceFormData } from '../models/service-form.models';
+
+import { useProjects } from '@features/projects/ui/hooks/useProjects';
+import { useBreadcrumbMetadata } from '@layout/contexts/BreadcrumbContext';
+import { Button } from '@shared/components/button';
+
+interface ServicesContainerProps {
+    projectId: string;
+}
+
+/**
+ * Services Container component
+ */
+export function ServicesContainer({ projectId }: ServicesContainerProps): ReactNode {
+    const { selectedProject, loadingProject, getProjectById } = useProjects();
+    // eslint-disable-next-line object-curly-newline, max-len, prettier/prettier
+    const { filteredServices, selectedService, loadingService, filter, error, loadServicesByProjectId, getServiceById, createService, updateService, deleteService } = useServices();
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+
+    /**
+     * Register project name in breadcrumbs when project is loaded
+     */
+    useBreadcrumbMetadata(projectId, selectedProject?.name);
+
+    /**
+     * Load project
+     */
+    useEffect(() => {
+        getProjectById(projectId);
+    }, [getProjectById, projectId]);
+
+    /**
+     * Load services when project is loaded
+     */
+    useEffect(() => {
+        if (selectedProject?.id === projectId) {
+            loadServicesByProjectId(projectId);
+        }
+    }, [selectedProject, projectId, loadServicesByProjectId]);
+
+    /**
+     * Handle edit service action
+     */
+    const handleEditService = async (serviceId: string) => {
+        try {
+            await getServiceById(serviceId);
+            setIsEditDialogOpen(true);
+        } catch {
+            toast.error('Failed to edit service');
+        }
+    };
+
+    /**
+     * Handle delete service action
+     */
+    const handleDeleteService = async (serviceId: string) => {
+        try {
+            await deleteService(serviceId);
+            await loadServicesByProjectId(projectId);
+            toast.success('Service deleted successfully');
+        } catch {
+            toast.error('Failed to delete service');
+        }
+    };
+
+    /**
+     * Handle create service form submission
+     */
+    const handleCreateService = async (data: ServiceFormData) => {
+        setIsCreating(true);
+        try {
+            await createService(data);
+            await loadServicesByProjectId(projectId);
+            setIsCreateDialogOpen(false);
+        } catch {
+            toast.error('Failed to create service');
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
+    /**
+     * Handle update service form submission
+     */
+    const handleUpdateService = async (data: EditServiceFormData) => {
+        if (!selectedProject) return;
+
+        setIsEditing(true);
+        try {
+            await updateService(selectedService.id, data);
+            await loadServicesByProjectId(projectId);
+            setIsEditDialogOpen(false);
+        } catch {
+            toast.error('Failed to update service');
+        } finally {
+            setIsEditing(false);
+        }
+    };
+
+    /**
+     * Handle open create service dialog
+     */
+    const handleOpenCreateDialog = () => {
+        setIsCreateDialogOpen(true);
+    };
+
+    /**
+     * Loading resources template
+     */
+    if (loadingService || loadingProject) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-semibold tracking-tight">Services</h1>
+                        <p className="text-sm text-muted-foreground mt-0.5">Loading services...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    /**
+     * Error template
+     */
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-semibold tracking-tight">Services</h1>
+                        <p className="text-sm text-destructive mt-0.5">Error: {error}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    /**
+     * No project found template
+     */
+    if (!selectedProject) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-semibold tracking-tight">Services</h1>
+                        <p className="text-sm text-muted-foreground mt-0.5">Project not found</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    /**
+     * No services found template
+     */
+    if (selectedProject && filteredServices.length === 0) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-semibold tracking-tight">{selectedProject.name}</h1>
+                    </div>
+                </div>
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="rounded-full bg-muted p-3 mb-4">
+                        <Layers className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">No services found</h3>
+                    <p className="text-sm text-muted-foreground mb-4 max-w-sm">Get started by creating your first service.</p>
+                    <Button onClick={handleOpenCreateDialog}>
+                        <Plus />
+                        Create your first service
+                    </Button>
+                </div>
+
+                <CreateServiceDialog
+                    open={isCreateDialogOpen}
+                    onOpenChange={setIsCreateDialogOpen}
+                    onSubmit={handleCreateService}
+                    isLoading={isCreating}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-xl font-semibold tracking-tight">{selectedProject.name}</h1>
+                </div>
+                <Button size="sm" onClick={handleOpenCreateDialog}>
+                    <Plus />
+                    New service
+                </Button>
+            </div>
+
+            <div className="relative w-full max-w-sm">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <input
+                    type="text"
+                    placeholder="Filter services..."
+                    value={filter}
+                    className="h-8 w-full rounded-md border border-border bg-muted/50 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
+                />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredServices.map((service) => (
+                    <ServiceCard key={service.id} service={service} onEdit={handleEditService} onDelete={handleDeleteService} />
+                ))}
+            </div>
+
+            <CreateServiceDialog
+                open={isCreateDialogOpen}
+                onOpenChange={setIsCreateDialogOpen}
+                onSubmit={handleCreateService}
+                isLoading={isCreating}
+            />
+
+            {selectedService && (
+                <EditServiceDialog
+                    open={isEditDialogOpen}
+                    onOpenChange={setIsEditDialogOpen}
+                    onSubmit={handleUpdateService}
+                    initialData={{ name: selectedService.name }}
+                    isLoading={isEditing || loadingService}
+                />
+            )}
+        </div>
+    );
+}

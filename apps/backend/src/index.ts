@@ -11,10 +11,9 @@ import { setupGracefulShutdown } from '@core/infrastructure/express/graceful-shu
 import { helmetConfig } from '@core/infrastructure/express/helmet.express';
 import { appLogger } from '@core/infrastructure/loggers/winston.logger';
 import { healthRouter } from '@core/ui/routes/health.routes';
-import { eventsRouter } from '@features/events/ui/routes/events.routes';
 
 // Check for required environment variables
-const requiredEnvVars = ['PORT', 'HOST', 'NODE_ENV', 'API_VERSION', 'CORS_ORIGIN', 'REQUEST_TIMEOUT', 'DATABASE_URL'];
+const requiredEnvVars = ['PORT', 'HOST', 'NODE_ENV', 'API_VERSION', 'CORS_ORIGIN', 'REQUEST_TIMEOUT', 'DATABASE_URL', 'FRONTEND_URL'];
 
 checkRequiredEnvVariables(requiredEnvVars);
 
@@ -35,7 +34,6 @@ app.use(json({ limit: '10mb' }));
 
 // Routes
 app.use(`/health`, healthRouter);
-app.use(`/${expressConfig.apiVersion}/events`, eventsRouter);
 
 // Start server
 const server = app.listen(expressConfig.port, () => {

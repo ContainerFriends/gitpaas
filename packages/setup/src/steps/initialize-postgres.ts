@@ -1,5 +1,4 @@
 /* eslint-disable no-secrets/no-secrets */
-/* eslint-disable pii/no-phone-number */
 import { hostname } from 'node:os';
 
 import type { CreateServiceOptions } from 'dockerode';
@@ -130,7 +129,7 @@ export const initializePostgres = async () => {
                 Env: [
                     'POSTGRES_USER=gitpaas',
                     'POSTGRES_DB=gitpaas',
-                    ...(isLocal ? ['POSTGRES_PASSWORD=amukds4wi9001583845717ad2'] : ['POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password']),
+                    ...(isLocal ? ['POSTGRES_PASSWORD=password'] : ['POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password']),
                 ],
                 Mounts: [
                     {

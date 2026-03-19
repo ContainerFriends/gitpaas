@@ -3,8 +3,8 @@ import { RequestHandler } from 'express';
 
 import { appLogger } from '@core/infrastructure/loggers/winston.logger';
 import { handleError } from '@core/ui/handlers/error.handler';
-import { finishInstallGithubAppOrchestrator } from '@features/git-providers/application/orchestrators/finish-install-github-app.orchestrator';
-import { gitProviderPrismaRepository } from '@features/git-providers/infrastructure/database/git-provider-prisma.repository';
+import { finishInstallGithubAppOrchestrator } from '@features/installations/application/orchestrators/finish-install-github-app.orchestrator';
+import { systemPrismaRepository } from '@features/system/infrastructure/database/system-prisma.repository';
 
 /**
  * Post install GitHub App controller
@@ -16,16 +16,16 @@ export const postInstallGithubAppController: RequestHandler<
     unknown,
     unknown,
     unknown,
-    { traceId: string; setup_action: string; installation_id: string }
+    { setup_action: string; trace_id: string; installation_id: string }
 > = async (req, res) => {
     try {
-        const { traceId, setup_action, installation_id } = req.query;
+        const { setup_action, trace_id, installation_id } = req.query;
 
         if (setup_action === 'install') {
-            await finishInstallGithubAppOrchestrator(gitProviderPrismaRepository, traceId, installation_id);
+            await finishInstallGithubAppOrchestrator(systemPrismaRepository, trace_id, installation_id);
         }
 
-        res.redirect(`${process.env.FRONTEND_URL}/git-providers`);
+        res.redirect(`${process.env.GITHUB_INSTALLER_URL}/installation-success`);
     } catch (error) {
         appLogger.error({ message: `Error: ${(error as Error).message}` }, 'Post install GitHub App controller');
 

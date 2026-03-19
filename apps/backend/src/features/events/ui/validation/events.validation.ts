@@ -10,10 +10,6 @@ export const installGithubAppQuerySchema = Joi.object({
         'string.guid': 'Trace ID must be a valid UUID',
         'any.required': 'Trace ID is required',
     }),
-    state: Joi.string().required().messages({
-        'string.empty': 'State is required',
-        'any.required': 'State is required',
-    }),
 });
 
 export const postInstallGithubAppQuerySchema = Joi.object({

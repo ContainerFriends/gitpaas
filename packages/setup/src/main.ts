@@ -3,7 +3,7 @@ import { exit } from 'node:process';
 import { setupMode } from './configs/environment';
 import { setupDirectories } from './steps/config-paths';
 import { initializeBackend } from './steps/initialize-backend';
-import { initializeFrontend } from './steps/initialize-frontend';
+import { initializeGithubInstaller } from './steps/initialize-github-installer';
 import { initializeNetwork } from './steps/initialize-network';
 import { configureDatabaseUrl, initializePostgres, waitForPostgres } from './steps/initialize-postgres';
 import { initializeRedis } from './steps/initialize-redis';
@@ -56,8 +56,8 @@ const isLocal = setupMode === 'local';
         // Step 11: Initialize Backend
         await runStep('Initialize Backend', initializeBackend);
 
-        // Step 12: Initialize Frontend
-        await runStep('Initialize Frontend', initializeFrontend);
+        // Step 12: Initialize Github installer
+        await runStep('Initialize Github installer', initializeGithubInstaller);
 
         console.log(`\n🥳 GitPaaS ${isLocal ? 'local' : 'production'} setup completed`);
         exit(0);

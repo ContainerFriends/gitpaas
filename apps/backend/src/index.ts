@@ -1,27 +1,29 @@
 // eslint-disable-next-line import/no-unassigned-import
 import 'dotenv/config';
 
-import cors from 'cors';
 import express, { json } from 'express';
 
 import { expressConfig } from '@core/infrastructure/express/config.express';
-import { validateCorsConfig } from '@core/infrastructure/express/cors.express';
 import { checkRequiredEnvVariables } from '@core/infrastructure/express/env-config.express';
 import { setupGracefulShutdown } from '@core/infrastructure/express/graceful-shutdown.express';
 import { helmetConfig } from '@core/infrastructure/express/helmet.express';
 import { appLogger } from '@core/infrastructure/loggers/winston.logger';
-import { healthRouter } from '@core/ui/routes/health.routes';
-import { containerRouter } from '@features/containers/ui/routes/container.routes';
 import { eventsRouter } from '@features/events/ui/routes/events.routes';
-import { gitProviderRouter } from '@features/git-providers/ui/routes/git-provider.routes';
-import { networkRouter } from '@features/networks/ui/routes/network.routes';
-import { projectRouter } from '@features/projects/ui/routes/project.routes';
-import { repositoryRouter } from '@features/repositories/ui/routes/repository.routes';
-import { servicesRouter } from '@features/services/ui/routes/services.routes';
-import { volumeRouter } from '@features/volumes/ui/routes/volume.routes';
+import { healthRouter } from '@features/health/ui/routes/health.routes';
 
 // Check for required environment variables
-const requiredEnvVars = ['PORT', 'HOST', 'NODE_ENV', 'API_VERSION', 'CORS_ORIGIN', 'REQUEST_TIMEOUT', 'DATABASE_URL'];
+const requiredEnvVars = [
+    'PORT',
+    'HOST',
+    'NODE_ENV',
+    'API_VERSION',
+    'SERVER_URL',
+    'DEVELOPMENT_SERVER_URL',
+    'REQUEST_TIMEOUT',
+    'DATABASE_URL',
+    'GITHUB_INSTALLER_URL',
+    'SETUP_TOKEN',
+];
 
 checkRequiredEnvVariables(requiredEnvVars);
 
@@ -30,32 +32,16 @@ const app = express();
 // Configure security policies
 app.use(helmetConfig);
 
-// Configure CORS
-validateCorsConfig(expressConfig.corsOrigin, expressConfig.environment);
-const corsOriginString = expressConfig.corsOrigin;
-const allowedOrigins = corsOriginString.split(',').map((origin) => origin.trim());
-
-app.use(cors({ origin: allowedOrigins }));
-
 // Parse JSON bodies with size limit
 app.use(json({ limit: '10mb' }));
 
 // Routes
-app.use(`/health`, healthRouter);
-app.use(`/${expressConfig.apiVersion}/projects`, projectRouter);
-app.use(`/${expressConfig.apiVersion}/networks`, networkRouter);
-app.use(`/${expressConfig.apiVersion}/containers`, containerRouter);
-app.use(`/${expressConfig.apiVersion}/services`, servicesRouter);
-app.use(`/${expressConfig.apiVersion}/volumes`, volumeRouter);
-app.use(`/${expressConfig.apiVersion}/git-providers`, gitProviderRouter);
-app.use(`/${expressConfig.apiVersion}/repositories`, repositoryRouter);
+app.use(`/${expressConfig.apiVersion}/health`, healthRouter);
 app.use(`/${expressConfig.apiVersion}/events`, eventsRouter);
-
-//
 
 // Start server
 const server = app.listen(expressConfig.port, () => {
-    appLogger.info({ message: `🚀 Backend server running on http://${expressConfig.host}:${expressConfig.port}` }, 'Application');
+    appLogger.info({ message: `🚀 Backend running on http://${expressConfig.host}:${expressConfig.port}` }, 'Application');
 });
 
 // Setup graceful shutdown

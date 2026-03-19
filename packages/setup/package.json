@@ -1,7 +1,7 @@
 {
   "name": "@gitpaas/setup",
   "version": "0.0.0",
-  "description": "GitPaaS installation and configuration management for local development and production",
+  "description": "Package for setting up GitPaaS on local and production environments",
   "private": true,
   "type": "module",
   "scripts": {

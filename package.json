@@ -1,6 +1,6 @@
 {
   "name": "gitpaas",
-  "version": "1.9.1",
+  "version": "0.0.0",
   "private": true,
   "packageManager": "npm@11.9.0",
   "workspaces": [
@@ -9,6 +9,8 @@
   ],
   "scripts": {
     "setup": "npm run setup --workspace=@gitpaas/setup",
+    "dev:backend": "npm run dev --workspace=@gitpaas/backend",
+    "dev:github-installer": "npm run dev --workspace=@gitpaas/github-installer",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",

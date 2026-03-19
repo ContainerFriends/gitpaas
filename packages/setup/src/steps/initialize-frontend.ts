@@ -10,7 +10,6 @@ export const initializeFrontend = async () => {
     const isLocal = setupMode === 'local';
 
     if (isLocal) {
-        console.log('⏭️ Skipping frontend service (local mode)');
         return;
     }
 

@@ -10,7 +10,6 @@ export const initializeBackend = async () => {
     const isLocal = setupMode === 'local';
 
     if (isLocal) {
-        console.log('⏭️ Skipping backend service (local mode)');
         return;
     }
 

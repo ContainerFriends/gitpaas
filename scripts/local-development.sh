@@ -289,12 +289,20 @@ generate_prisma_client() {
 # Run Prisma migrations
 run_migrations() {
     echo "🔄 Running Prisma migrations..."
-
-    if DATABASE_URL="postgres://gitpaas:password@localhost:5432/gitpaas" \
-        npx prisma migrate deploy --config=./apps/backend/prisma.config.ts > /dev/null 2>&1; then
+    
+    # Capturamos stdout y stderr en una variable
+    local MIGRATION_OUTPUT
+    MIGRATION_OUTPUT=$(DATABASE_URL="postgres://gitpaas:password@localhost:5432/gitpaas" \
+        npx prisma migrate deploy --config=./apps/backend/prisma.config.ts 2>&1)
+    
+    # $? captura el estado de salida del último comando ejecutado
+    if [ $? -eq 0 ]; then
         echo "✅ Migrations applied successfully"
     else
-        echo "❌ Migration failed"
+        echo -e "\n❌ Migration failed. Error details:"
+        echo "----------------------------------------------------------------"
+        echo "$MIGRATION_OUTPUT"
+        echo "----------------------------------------------------------------"
         return 1
     fi
 }

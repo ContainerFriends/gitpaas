@@ -1,6 +1,6 @@
 {
   "name": "gitpaas",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "private": true,
   "packageManager": "npm@11.9.0",
   "workspaces": [
@@ -8,7 +8,8 @@
     "packages/*"
   ],
   "scripts": {
-    "setup": "./scripts/local-development.sh",
+    "setup:local": "./scripts/local-development.sh",
+    "clean:local": "./scripts/clean-local-environment.sh",
     "dev:backend": "npm run dev --workspace=@gitpaas/backend",
     "dev:github-installer": "npm run dev --workspace=@gitpaas/github-installer",
     "build": "turbo run build",

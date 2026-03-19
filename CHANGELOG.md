@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/ContainerFriends/gitpaas/compare/v1.0.3...v1.1.0) (2026-03-19)
+
+
+### Features
+
+* delete setup package and add local development script ([542ee7b](https://github.com/ContainerFriends/gitpaas/commit/542ee7beea78a2ef147801812e43c4d7d50ca6ce))
+
 ## [1.0.3](https://github.com/ContainerFriends/gitpaas/compare/v1.0.2...v1.0.3) (2026-03-19)
 
 

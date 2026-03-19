@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/ContainerFriends/gitpaas/compare/v1.0.1...v1.0.2) (2026-03-19)
+
+
+### Bug Fixes
+
+* change Github installer and Backend image initialization ([a1985cf](https://github.com/ContainerFriends/gitpaas/commit/a1985cfcf5c6f62d9ff7b8f68824319ee04495d6))
+
 ## [1.0.1](https://github.com/ContainerFriends/gitpaas/compare/v1.0.0...v1.0.1) (2026-03-19)
 
 

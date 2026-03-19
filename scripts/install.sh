@@ -1,5 +1,10 @@
 #!/bin/bash
 
+GREEN="\033[0;32m"
+YELLOW="\033[1;33m"
+BLUE="\033[0;34m"
+NC="\033[0m" # No Color
+
 # Paths
 BASE_PATH="/etc/gitpaas"
 MAIN_TRAEFIK_PATH="$BASE_PATH/traefik"
@@ -16,6 +21,68 @@ VOLUME_BACKUPS_PATH="$BASE_PATH/volume-backups"
 TRAEFIK_SSL_PORT="${TRAEFIK_SSL_PORT:-443}"
 TRAEFIK_PORT="${TRAEFIK_PORT:-80}"
 TRAEFIK_HTTP3_PORT="${TRAEFIK_HTTP3_PORT:-443}"
+
+command_exists() {
+    command -v "$@" > /dev/null 2>&1
+}
+
+get_ip() {
+    local ip=""
+    
+    # Try IPv4 first
+    # First attempt: ifconfig.io
+    ip=$(curl -4s --connect-timeout 5 https://ifconfig.io 2>/dev/null)
+    
+    # Second attempt: icanhazip.com
+    if [ -z "$ip" ]; then
+        ip=$(curl -4s --connect-timeout 5 https://icanhazip.com 2>/dev/null)
+    fi
+    
+    # Third attempt: ipecho.net
+    if [ -z "$ip" ]; then
+        ip=$(curl -4s --connect-timeout 5 https://ipecho.net/plain 2>/dev/null)
+    fi
+
+    # If no IPv4, try IPv6
+    if [ -z "$ip" ]; then
+        # Try IPv6 with ifconfig.io
+        ip=$(curl -6s --connect-timeout 5 https://ifconfig.io 2>/dev/null)
+        
+        # Try IPv6 with icanhazip.com
+        if [ -z "$ip" ]; then
+            ip=$(curl -6s --connect-timeout 5 https://icanhazip.com 2>/dev/null)
+        fi
+        
+        # Try IPv6 with ipecho.net
+        if [ -z "$ip" ]; then
+            ip=$(curl -6s --connect-timeout 5 https://ipecho.net/plain 2>/dev/null)
+        fi
+    fi
+
+    if [ -z "$ip" ]; then
+        echo "Error: Could not determine server IP address automatically (neither IPv4 nor IPv6)." >&2
+        echo "Please set the ADVERTISE_ADDR environment variable manually." >&2
+        echo "Example: export ADVERTISE_ADDR=<your-server-ip>" >&2
+        exit 1
+    fi
+
+    echo "$ip"
+}
+
+get_private_ip() {
+    ip addr show | grep -E "inet (192\.168\.|10\.|172\.1[6-9]\.|172\.2[0-9]\.|172\.3[0-1]\.)" | head -n1 | awk '{print $2}' | cut -d/ -f1
+}
+
+format_ip_for_url() {
+    local ip="$1"
+    if echo "$ip" | grep -q ':'; then
+        # IPv6
+        echo "[${ip}]"
+    else
+        # IPv4
+        echo "${ip}"
+    fi
+}
 
 # Detect version from environment variable or detect latest stable from GitHub
 # Usage: GITPAAS_VERSION=latest bash install.sh
@@ -290,13 +357,12 @@ ensure_postgres_secret() {
         return 0
     fi
 
-    local password
-    password=$(openssl rand -base64 24 | tr '+/' '-_' | tr -d '=')
+    export CURRENT_DB_PASSWORD=$(openssl rand -base64 24 | tr '+/' '-_' | tr -d '=')
 
-    echo "$password" | docker secret create "$secret_name" - > /dev/null
+    echo "$CURRENT_DB_PASSWORD" | docker secret create "$secret_name" - > /dev/null
     echo "✅ PostgreSQL secret created"
 
-    DATABASE_URL="postgres://gitpaas:${password}@gitpaas-postgres:5432/gitpaas"
+    DATABASE_URL="postgres://gitpaas:${CURRENT_DB_PASSWORD}@gitpaas-postgres:5432/gitpaas"
     export DATABASE_URL
     echo "✅ DATABASE_URL configured"
 }
@@ -371,12 +437,18 @@ connect_to_network() {
     echo "✅ Connected to gitpaas-network"
 }
 
-# Generate Prisma client
+# Generate Prisma client using a temporary container
 generate_prisma_client() {
     echo "🔄 Generating Prisma client..."
-    export DATABASE_URL="postgres://gitpaas:password@localhost:5432/gitpaas"
+    
+    docker run --rm \
+        --network gitpaas-network \
+        -v "$(pwd):/app" \
+        -w /app \
+        -e DATABASE_URL="postgres://gitpaas:${CURRENT_DB_PASSWORD}@gitpaas-postgres:5432/gitpaas" \
+        node:24.14.0-alpine3.23 npx prisma generate --config=./packages/setup/prisma.config.ts > /dev/null 2>&1
 
-    if npx prisma generate --config=./packages/setup/prisma.config.ts; then
+    if [ $? -eq 0 ]; then
         echo "✅ Prisma client generated successfully"
     else
         echo "❌ Prisma generate failed"
@@ -384,11 +456,18 @@ generate_prisma_client() {
     fi
 }
 
-# Run Prisma migrations
+# Run Prisma migrations using a temporary container
 run_migrations() {
     echo "🔄 Running Prisma migrations..."
 
-    if npx prisma migrate deploy --config=./packages/setup/prisma.config.ts; then
+    docker run --rm \
+        --network gitpaas-network \
+        -v "$(pwd):/app" \
+        -w /app \
+        -e DATABASE_URL="postgres://gitpaas:${CURRENT_DB_PASSWORD}@gitpaas-postgres:5432/gitpaas" \
+        node:24.14.0-alpine3.23 npx prisma migrate deploy --config=./packages/setup/prisma.config.ts > /dev/null 2>&1
+
+    if [ $? -eq 0 ]; then
         echo "✅ Migrations applied successfully"
     else
         echo "❌ Migration failed"
@@ -517,40 +596,36 @@ install_gitpaas() {
     VERSION_TAG=$(detect_version)
     DOCKER_VERSION_TAG=$(clean_version_for_docker "$VERSION_TAG")
     
-    echo "📥 Installing GitPaaS version: ${VERSION_TAG}"
+    echo "🚀 Starting GitPaaS ${VERSION_TAG} configuration"
 
     if [ "$(id -u)" != "0" ]; then
-        echo "This script must be run as root" >&2
+        echo "❌ This script must be run as root" >&2
         exit 1
     fi
 
-    # check if is Mac OS
+    # Check if is Mac OS
     if [ "$(uname)" = "Darwin" ]; then
-        echo "This script must be run on Linux" >&2
+        echo "❌ This script must be run on Linux" >&2
         exit 1
     fi
 
-    # check if is running inside a container
+    # Check if is running inside a container
     if [ -f /.dockerenv ]; then
-        echo "This script must be run on Linux" >&2
+        echo "❌ This script must be run on Linux" >&2
         exit 1
     fi
 
-    # check if something is running on port 80
+    # Check if something is running on port 80
     if ss -tulnp | grep ':80 ' >/dev/null; then
-        echo "Error: something is already running on port 80" >&2
+        echo "❌ Error: something is already running on port 80" >&2
         exit 1
     fi
 
-    # check if something is running on port 443
+    # Check if something is running on port 443
     if ss -tulnp | grep ':443 ' >/dev/null; then
-        echo "Error: something is already running on port 443" >&2
+        echo "❌ Error: something is already running on port 443" >&2
         exit 1
     fi
-
-    command_exists() {
-        command -v "$@" > /dev/null 2>&1
-    }
 
     if command_exists docker; then
         echo "✅ Docker already installed"
@@ -570,7 +645,7 @@ install_gitpaas() {
         elif command_exists apk; then
             apk add --no-cache jq >/dev/null 2>&1
         else
-            echo "⚠️  Could not install jq automatically. Please install it manually." >&2
+            echo "⚠️ Could not install jq automatically. Please install it manually." >&2
             exit 1
         fi
         echo "✅ jq installed"
@@ -588,60 +663,12 @@ install_gitpaas() {
         sleep 5
     fi
 
-
     docker swarm leave --force 2>/dev/null
-
-    get_ip() {
-        local ip=""
-        
-        # Try IPv4 first
-        # First attempt: ifconfig.io
-        ip=$(curl -4s --connect-timeout 5 https://ifconfig.io 2>/dev/null)
-        
-        # Second attempt: icanhazip.com
-        if [ -z "$ip" ]; then
-            ip=$(curl -4s --connect-timeout 5 https://icanhazip.com 2>/dev/null)
-        fi
-        
-        # Third attempt: ipecho.net
-        if [ -z "$ip" ]; then
-            ip=$(curl -4s --connect-timeout 5 https://ipecho.net/plain 2>/dev/null)
-        fi
-
-        # If no IPv4, try IPv6
-        if [ -z "$ip" ]; then
-            # Try IPv6 with ifconfig.io
-            ip=$(curl -6s --connect-timeout 5 https://ifconfig.io 2>/dev/null)
-            
-            # Try IPv6 with icanhazip.com
-            if [ -z "$ip" ]; then
-                ip=$(curl -6s --connect-timeout 5 https://icanhazip.com 2>/dev/null)
-            fi
-            
-            # Try IPv6 with ipecho.net
-            if [ -z "$ip" ]; then
-                ip=$(curl -6s --connect-timeout 5 https://ipecho.net/plain 2>/dev/null)
-            fi
-        fi
-
-        if [ -z "$ip" ]; then
-            echo "Error: Could not determine server IP address automatically (neither IPv4 nor IPv6)." >&2
-            echo "Please set the ADVERTISE_ADDR environment variable manually." >&2
-            echo "Example: export ADVERTISE_ADDR=<your-server-ip>" >&2
-            exit 1
-        fi
-
-        echo "$ip"
-    }
-
-    get_private_ip() {
-        ip addr show | grep -E "inet (192\.168\.|10\.|172\.1[6-9]\.|172\.2[0-9]\.|172\.3[0-1]\.)" | head -n1 | awk '{print $2}' | cut -d/ -f1
-    }
 
     advertise_addr="${ADVERTISE_ADDR:-$(get_private_ip)}"
 
     if [ -z "$advertise_addr" ]; then
-        echo "ERROR: We couldn't find a private IP address."
+        echo "❌ ERROR: We couldn't find a private IP address."
         echo "Please set the ADVERTISE_ADDR environment variable manually."
         echo "Example: export ADVERTISE_ADDR=192.168.1.100"
         exit 1
@@ -661,7 +688,7 @@ install_gitpaas() {
     fi
     
      if [ $? -ne 0 ]; then
-        echo "Error: Failed to initialize Docker Swarm" >&2
+        echo "❌ Error: Failed to initialize Docker Swarm" >&2
         exit 1
     fi
 
@@ -680,24 +707,6 @@ install_gitpaas() {
     run_migrations
     initialize_backend
     initialize_github_installer
-
-    echo "✅ Setup completed"
-
-    GREEN="\033[0;32m"
-    YELLOW="\033[1;33m"
-    BLUE="\033[0;34m"
-    NC="\033[0m" # No Color
-
-    format_ip_for_url() {
-        local ip="$1"
-        if echo "$ip" | grep -q ':'; then
-            # IPv6
-            echo "[${ip}]"
-        else
-            # IPv4
-            echo "${ip}"
-        fi
-    }
 
     public_ip="${ADVERTISE_ADDR:-$(get_ip)}"
 
@@ -732,6 +741,7 @@ install_gitpaas() {
             printf "${BLUE}Follow the GitHub App installation flow and GitPaaS will be ready.${NC}\n"
         else
             printf "${GREEN}✅ GitHub App is installed and ready!${NC}\n"
+            echo "✅ Setup completed"
         fi
     fi
 }

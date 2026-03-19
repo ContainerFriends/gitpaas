@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/ContainerFriends/gitpaas/compare/v1.0.2...v1.0.3) (2026-03-19)
+
+
+### Bug Fixes
+
+* pass Backend environment variables to Docker service ([9490806](https://github.com/ContainerFriends/gitpaas/commit/949080689436b43059ee1789148f4addc43ea46f))
+
 ## [1.0.2](https://github.com/ContainerFriends/gitpaas/compare/v1.0.1...v1.0.2) (2026-03-19)
 
 

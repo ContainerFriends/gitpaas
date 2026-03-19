@@ -13,27 +13,27 @@ export const initializeGithubInstaller = async () => {
         return;
     }
 
-    const imageName = process.env.FRONTEND_IMAGE;
+    const imageName = process.env.INSTALLER_IMAGE;
 
     if (!imageName) {
-        throw new Error('❌ FRONTEND_IMAGE environment variable is required');
+        throw new Error('❌ INSTALLER_IMAGE environment variable is required');
     }
 
-    const serviceName = 'gitpaas-frontend';
+    const serviceName = 'gitpaas-installer';
 
     const settings: CreateServiceOptions = {
         Name: serviceName,
         Labels: {
             'traefik.enable': 'true',
-            'traefik.http.routers.frontend.rule': 'PathPrefix(`/`)',
-            'traefik.http.routers.frontend.priority': '1',
-            'traefik.http.routers.frontend.entrypoints': 'web',
-            'traefik.http.routers.frontend.middlewares': 'redirect-to-https',
-            'traefik.http.routers.frontend-secure.rule': 'PathPrefix(`/`)',
-            'traefik.http.routers.frontend-secure.priority': '1',
-            'traefik.http.routers.frontend-secure.entrypoints': 'websecure',
-            'traefik.http.routers.frontend-secure.tls': 'true',
-            'traefik.http.services.frontend-secure.loadbalancer.server.port': '80',
+            'traefik.http.routers.installer.rule': 'PathPrefix(`/installer`)',
+            'traefik.http.routers.installer.priority': '10',
+            'traefik.http.routers.installer.entrypoints': 'web',
+            'traefik.http.routers.installer.middlewares': 'redirect-to-https',
+            'traefik.http.routers.installer-secure.rule': 'PathPrefix(`/installer`)',
+            'traefik.http.routers.installer-secure.priority': '10',
+            'traefik.http.routers.installer-secure.entrypoints': 'websecure',
+            'traefik.http.routers.installer-secure.tls': 'true',
+            'traefik.http.services.installer-secure.loadbalancer.server.port': '80',
         },
         TaskTemplate: {
             ContainerSpec: {
@@ -58,7 +58,7 @@ export const initializeGithubInstaller = async () => {
     try {
         await pullImage(imageName);
     } catch (error) {
-        console.log('❌ Frontend image pull failed, continuing...', error);
+        console.log('❌ Installer image pull failed, continuing...', error);
     }
 
     try {
@@ -76,6 +76,6 @@ export const initializeGithubInstaller = async () => {
             await docker.createService(settings);
         }
     } catch (error) {
-        console.log('❌ Frontend service setup failed', error);
+        console.log('❌ Installer service setup failed', error);
     }
 };

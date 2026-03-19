@@ -56,6 +56,8 @@ cp packages/setup/.env.example packages/setup/.env
 cp apps/backend/.env.example apps/backend/.env
 ```
 
+En las variables de entorno de Backend debes modificar la propiedad `DEVELOPMENT_SERVER_URL` e introducir tu url tunelizada para que la Github App pueda comunicarse con tu maquina.
+
 ### 3. Run setup package
 
 ```bash
@@ -81,7 +83,7 @@ Una vez instalado el stack en tu entorno y con las aplicaciones levantadas, para
 
 En un entorno real, cuando el usuario ejecuta el script de instalación `install.sh`, éste devuleve una url para instalar la Github App en caso de que no exista en el sistema. Para reproducir ese flujo en local:
 
-1. Realizar una petición al Backend en la ruta `http://localhost:4000/health?token=random-token-for-setup` donde el **token** debe ser el que hayas definido en la variable de entorno `SETUP_TOKEN`.
+1. Realizar una petición al Backend en la ruta `http://localhost:4000/v1/health?token=random-token-for-setup` donde el **token** debe ser el que hayas definido en la variable de entorno `SETUP_TOKEN`.
 
 2. Backend devolverá una respuesta en Json con una url para la aplicación de Github installer. Esta url deber ser abierta en un navegador (asegúrate de que la aplicación de Github installer esté levantada).
 

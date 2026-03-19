@@ -1,18 +1,23 @@
 /**
  * Generate Github App manifest url use case
  *
+ * @param apiVersion API version to use in the manifest
+ *
  * @returns Url with the manifest to install the GitHub App
  */
-export function generateGithubManifestUrlUseCase(): string {
+export function generateGithubManifestUrlUseCase(apiVersion: string): string {
     const githubInstallerUrl = process.env.GITHUB_INSTALLER_URL;
+    const serverUrl = process.env.SERVER_URL;
+    const developmentServerUrl = process.env.DEVELOPMENT_SERVER_URL;
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
     const manifest = {
         name: `GitPaaS-${process.env.HOSTNAME || 'Server'}`,
-        url: '',
+        url: isDevelopment ? developmentServerUrl : serverUrl,
         hook_attributes: {
-            url: `endpoint/api/webhooks/github`,
+            url: isDevelopment ? `${developmentServerUrl}/${apiVersion}/events` : `${serverUrl}/${apiVersion}/events`,
         },
-        redirect_url: `endpoint/api/setup/callback`,
+        redirect_url: `${githubInstallerUrl}/installation-success`,
         public: false,
         default_permissions: {
             contents: 'read',
@@ -24,5 +29,5 @@ export function generateGithubManifestUrlUseCase(): string {
 
     const manifestBase64 = Buffer.from(JSON.stringify(manifest)).toString('base64');
 
-    return `${githubInstallerUrl}/install?manifest=${manifestBase64}`;
+    return `${githubInstallerUrl}?manifest=${manifestBase64}`;
 }

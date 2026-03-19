@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { ExternalLink, Github, CheckCircle2, Shield, Rocket } from 'lucide-react';
-import { ReactNode } from 'react';
+import { ReactNode, useRef } from 'react';
 
 import { Button } from '@shared/components/button';
 
@@ -29,17 +29,36 @@ interface InstallContainerProps {
     manifest: string;
 }
 
+function decodeManifest(manifest: string): string {
+    return atob(manifest);
+}
+
 /**
  * Install container component.
  */
 export function InstallContainer({ manifest }: InstallContainerProps): ReactNode {
-    console.log('Received manifest:', manifest); // Debug log to check the manifest value
+    const formRef = useRef<HTMLFormElement>(null);
+    const decodedManifest = decodeManifest(manifest);
+
+    console.log('Decoded manifest:', decodedManifest);
+
+    const handleInstallClick = (): void => {
+        formRef.current?.submit();
+    };
+
     return (
         <div className="min-h-screen bg-background flex items-center justify-center">
             {/* Background effects */}
             <div className="fixed inset-0 bg-hero-gradient pointer-events-none" />
             <div className="fixed top-1/4 left-1/3 w-96 h-96 bg-primary/8 rounded-full blur-[128px] pointer-events-none" />
             <div className="fixed bottom-1/4 right-1/3 w-72 h-72 bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
+
+            {/* Hidden form for GitHub app installation */}
+            {decodedManifest && (
+                <form ref={formRef} method="post" action="https://github.com/settings/apps/new" className="hidden">
+                    <input type="hidden" name="manifest" value={decodedManifest} />
+                </form>
+            )}
 
             <div className="relative z-10 max-w-2xl mx-auto px-4 py-16 w-full">
                 {/* Header */}
@@ -61,7 +80,7 @@ export function InstallContainer({ manifest }: InstallContainerProps): ReactNode
                     </p>
                 </motion.div>
 
-                {/* Install CTA — prominent, first */}
+                {/* Install CTA */}
                 <motion.div
                     className="rounded-2xl border border-glow bg-card-gradient p-8 md:p-10 text-center mb-14"
                     initial={{ opacity: 0, y: 20 }}
@@ -75,14 +94,17 @@ export function InstallContainer({ manifest }: InstallContainerProps): ReactNode
                     <p className="text-muted-foreground mb-8 max-w-md mx-auto">
                         This will redirect you to GitHub where you can choose which repositories GitPaaS can access.
                     </p>
-                    <Button size="lg" className="text-base px-10 py-6 h-auto glow-sm text-lg font-semibold" asChild>
-                        <a href="https://github.com/apps/gitpaas/installations/new" target="_blank" rel="noopener noreferrer">
-                            <Github className="w-5 h-5 mr-2" />
-                            Install GitHub App
-                            <ExternalLink className="w-4 h-4 ml-2" />
-                        </a>
+                    <Button
+                        size="lg"
+                        className="text-base px-10 py-6 h-auto glow-sm text-lg font-semibold"
+                        disabled={!decodedManifest}
+                        onClick={handleInstallClick}
+                    >
+                        <Github className="w-5 h-5 mr-2" />
+                        Install GitHub App
+                        <ExternalLink className="w-4 h-4 ml-2" />
                     </Button>
-                    <p className="text-xs text-muted-foreground mt-4">You'll be redirected to GitHub to authorize the installation.</p>
+                    <p className="text-xs text-muted-foreground mt-4">You&apos;ll be redirected to GitHub to authorize the installation.</p>
                 </motion.div>
 
                 {/* How it works — simplified */}

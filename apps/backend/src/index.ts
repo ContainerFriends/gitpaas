@@ -1,11 +1,9 @@
 // eslint-disable-next-line import/no-unassigned-import
 import 'dotenv/config';
 
-import cors from 'cors';
 import express, { json } from 'express';
 
 import { expressConfig } from '@core/infrastructure/express/config.express';
-import { validateCorsConfig } from '@core/infrastructure/express/cors.express';
 import { checkRequiredEnvVariables } from '@core/infrastructure/express/env-config.express';
 import { setupGracefulShutdown } from '@core/infrastructure/express/graceful-shutdown.express';
 import { helmetConfig } from '@core/infrastructure/express/helmet.express';
@@ -18,7 +16,8 @@ const requiredEnvVars = [
     'HOST',
     'NODE_ENV',
     'API_VERSION',
-    'CORS_ORIGIN',
+    'SERVER_URL',
+    'DEVELOPMENT_SERVER_URL',
     'REQUEST_TIMEOUT',
     'DATABASE_URL',
     'GITHUB_INSTALLER_URL',
@@ -32,18 +31,11 @@ const app = express();
 // Configure security policies
 app.use(helmetConfig);
 
-// Configure CORS
-validateCorsConfig(expressConfig.corsOrigin, expressConfig.environment);
-const corsOriginString = expressConfig.corsOrigin;
-const allowedOrigins = corsOriginString.split(',').map((origin) => origin.trim());
-
-app.use(cors({ origin: allowedOrigins }));
-
 // Parse JSON bodies with size limit
 app.use(json({ limit: '10mb' }));
 
 // Routes
-app.use(`/health`, healthRouter);
+app.use(`/${expressConfig.apiVersion}/health`, healthRouter);
 
 // Start server
 const server = app.listen(expressConfig.port, () => {

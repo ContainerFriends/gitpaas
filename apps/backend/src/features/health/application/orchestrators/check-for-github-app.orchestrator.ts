@@ -8,10 +8,11 @@ import { generateGithubManifestUrlUseCase } from '../use-cases/generate-github-m
  *
  * @param repository System repository
  * @param clientToken Client token
+ * @param apiVersion API version to use in the manifest
  *
  * @returns Status of the GitHub App installation
  */
-export async function checkForGithubAppOrchestrator(repository: SystemRepository, clientToken: string): Promise<GithubAppStatus> {
+export async function checkForGithubAppOrchestrator(repository: SystemRepository, clientToken: string, apiVersion: string): Promise<GithubAppStatus> {
     const isTokenValid = clientToken === process.env.SETUP_TOKEN;
 
     if (!isTokenValid) {
@@ -26,7 +27,7 @@ export async function checkForGithubAppOrchestrator(repository: SystemRepository
     if (!existsOnPersistance) {
         return {
             isInstalled: false,
-            installUrl: generateGithubManifestUrlUseCase(),
+            installUrl: generateGithubManifestUrlUseCase(apiVersion),
         };
     }
 

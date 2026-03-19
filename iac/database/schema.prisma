@@ -6,3 +6,14 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model SystemConfig {
+  id            String   @id @default(uuid()) @db.Uuid
+  appId         String   @unique @map("app_id")
+  privateKey    String   @map("private_key") @db.Text
+  webhookSecret String   @map("webhook_secret")
+  appSlug       String   @map("app_slug")
+  initializedAt DateTime @default(now()) @map("initialized_at")
+
+  @@map("system_configs")
+}

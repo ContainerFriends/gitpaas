@@ -10,7 +10,7 @@ import { checkRequiredEnvVariables } from '@core/infrastructure/express/env-conf
 import { setupGracefulShutdown } from '@core/infrastructure/express/graceful-shutdown.express';
 import { helmetConfig } from '@core/infrastructure/express/helmet.express';
 import { appLogger } from '@core/infrastructure/loggers/winston.logger';
-import { healthRouter } from '@core/ui/routes/health.routes';
+import { healthRouter } from '@features/health/ui/routes/health.routes';
 
 // Check for required environment variables
 const requiredEnvVars = ['PORT', 'HOST', 'NODE_ENV', 'API_VERSION', 'CORS_ORIGIN', 'REQUEST_TIMEOUT', 'DATABASE_URL', 'FRONTEND_URL'];

@@ -4,4 +4,5 @@
 export interface GithubAppStatus {
     isInstalled: boolean;
     installUrl?: string;
+    error?: string;
 }

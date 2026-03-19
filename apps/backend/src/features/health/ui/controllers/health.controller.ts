@@ -11,11 +11,12 @@ import { prismaClient } from '@core/infrastructure/prisma/prisma.client';
  * @param req Request
  * @param res Response
  */
-export const healthController: RequestHandler = async (_req, res) => {
+export const healthController: RequestHandler<unknown, unknown, unknown, { token: string }> = async (req, res) => {
+    const clientToken = req.query.token;
     const dbHealthy = await prismaClient.healthCheck();
     const status = dbHealthy ? 'healthy' : 'unhealthy';
 
-    const githubAppStatus = await checkForGithubAppOrchestrator(systemPrismaRepository);
+    const githubAppStatus = await checkForGithubAppOrchestrator(systemPrismaRepository, clientToken);
 
     res.status(dbHealthy ? 200 : 503).json({
         status,

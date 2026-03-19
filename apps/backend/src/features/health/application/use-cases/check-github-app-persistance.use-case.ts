@@ -8,6 +8,6 @@ import { SystemRepository } from '../../domain/repositories/system.repository';
  *
  * @returns System configuration
  */
-export async function checkGithubAppPersistanceUseCase(repository: SystemRepository): Promise<SystemConfig> {
+export async function checkGithubAppPersistanceUseCase(repository: SystemRepository): Promise<SystemConfig | null> {
     return repository.getAppConfig();
 }

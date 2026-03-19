@@ -13,7 +13,17 @@ import { appLogger } from '@core/infrastructure/loggers/winston.logger';
 import { healthRouter } from '@features/health/ui/routes/health.routes';
 
 // Check for required environment variables
-const requiredEnvVars = ['PORT', 'HOST', 'NODE_ENV', 'API_VERSION', 'CORS_ORIGIN', 'REQUEST_TIMEOUT', 'DATABASE_URL', 'FRONTEND_URL'];
+const requiredEnvVars = [
+    'PORT',
+    'HOST',
+    'NODE_ENV',
+    'API_VERSION',
+    'CORS_ORIGIN',
+    'REQUEST_TIMEOUT',
+    'DATABASE_URL',
+    'GITHUB_INSTALLER_URL',
+    'SETUP_TOKEN',
+];
 
 checkRequiredEnvVariables(requiredEnvVars);
 

@@ -18,18 +18,18 @@ RUN --mount=type=cache,id=npm,target=/root/.npm npm install --frozen-lockfile
 # Build application
 ENV NODE_ENV=production
 ENV VITE_API_BASE_URL=/api/v1
-RUN npm run build --workspace=@gitpaas/frontend
+RUN npm run build --workspace=@gitpaas/github-installer
 
 ###########
 # Run stage
 ###########
-FROM nginx:1.27-alpine AS gitpaas-frontend
+FROM nginx:1.27-alpine AS gitpaas-installer
 
 # Copy built assets
-COPY --from=build /usr/src/app/apps/frontend/dist /usr/share/nginx/html
+COPY --from=build /usr/src/app/apps/github-installer/dist /usr/share/nginx/html
 
 # Copy Nginx configuration
-COPY iac/application/nginx-frontend.conf /etc/nginx/conf.d/default.conf
+COPY iac/application/nginx-installer.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 

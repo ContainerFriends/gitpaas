@@ -11,14 +11,7 @@ import { setupGracefulShutdown } from '@core/infrastructure/express/graceful-shu
 import { helmetConfig } from '@core/infrastructure/express/helmet.express';
 import { appLogger } from '@core/infrastructure/loggers/winston.logger';
 import { healthRouter } from '@core/ui/routes/health.routes';
-import { containerRouter } from '@features/containers/ui/routes/container.routes';
 import { eventsRouter } from '@features/events/ui/routes/events.routes';
-import { gitProviderRouter } from '@features/git-providers/ui/routes/git-provider.routes';
-import { networkRouter } from '@features/networks/ui/routes/network.routes';
-import { projectRouter } from '@features/projects/ui/routes/project.routes';
-import { repositoryRouter } from '@features/repositories/ui/routes/repository.routes';
-import { servicesRouter } from '@features/services/ui/routes/services.routes';
-import { volumeRouter } from '@features/volumes/ui/routes/volume.routes';
 
 // Check for required environment variables
 const requiredEnvVars = ['PORT', 'HOST', 'NODE_ENV', 'API_VERSION', 'CORS_ORIGIN', 'REQUEST_TIMEOUT', 'DATABASE_URL'];
@@ -42,20 +35,11 @@ app.use(json({ limit: '10mb' }));
 
 // Routes
 app.use(`/health`, healthRouter);
-app.use(`/${expressConfig.apiVersion}/projects`, projectRouter);
-app.use(`/${expressConfig.apiVersion}/networks`, networkRouter);
-app.use(`/${expressConfig.apiVersion}/containers`, containerRouter);
-app.use(`/${expressConfig.apiVersion}/services`, servicesRouter);
-app.use(`/${expressConfig.apiVersion}/volumes`, volumeRouter);
-app.use(`/${expressConfig.apiVersion}/git-providers`, gitProviderRouter);
-app.use(`/${expressConfig.apiVersion}/repositories`, repositoryRouter);
 app.use(`/${expressConfig.apiVersion}/events`, eventsRouter);
-
-//
 
 // Start server
 const server = app.listen(expressConfig.port, () => {
-    appLogger.info({ message: `🚀 Backend server running on http://${expressConfig.host}:${expressConfig.port}` }, 'Application');
+    appLogger.info({ message: `🚀 Backend running on http://${expressConfig.host}:${expressConfig.port}` }, 'Application');
 });
 
 // Setup graceful shutdown

@@ -53,6 +53,7 @@ Core concepts:
 git clone https://github.com/your-org/gitpaas.git
 cd gitpaas
 cp packages/setup/.env.example packages/setup/.env
+cp apps/backend/.env.example apps/backend/.env
 ```
 
 ### 3. Run setup package
@@ -61,13 +62,14 @@ cp packages/setup/.env.example packages/setup/.env
 npm run setup
 ```
 
-### 3. Start backend application
+### 3. Start applications
 
 ```bash
-make dev
+npm run dev:backend
+npm run dev:github-installer
 ```
 
-This starts all services locally via Docker Compose (outside Swarm), with hot-reload enabled for the API and UI.
+This command launches the applications in development mode to simulate the behavior of the server where GitPaaS is running.
 
 ### 4. Run tests
 

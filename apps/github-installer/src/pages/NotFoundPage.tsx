@@ -1,7 +1,10 @@
-import { useEffect } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-export const NotFoundPage = () => {
+/**
+ * Not found page component.
+ */
+export function NotFoundPage(): ReactNode {
     const location = useLocation();
 
     useEffect(() => {
@@ -19,4 +22,4 @@ export const NotFoundPage = () => {
             </div>
         </div>
     );
-};
+}

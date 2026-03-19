@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 /**
  * Generate Github App manifest url use case
  *
@@ -11,6 +13,8 @@ export function generateGithubManifestUrlUseCase(apiVersion: string): string {
     const developmentServerUrl = process.env.DEVELOPMENT_SERVER_URL;
     const isDevelopment = process.env.NODE_ENV === 'development';
 
+    const traceId = uuidv4();
+
     const manifest = {
         name: `GitPaaS-${process.env.HOSTNAME || 'Server'}`,
         url: isDevelopment ? developmentServerUrl : serverUrl,
@@ -18,11 +22,11 @@ export function generateGithubManifestUrlUseCase(apiVersion: string): string {
             url: isDevelopment ? `${developmentServerUrl}/${apiVersion}/events/webhook` : `${serverUrl}/${apiVersion}/events/webhook`,
         },
         redirect_url: isDevelopment
-            ? `${developmentServerUrl}/${apiVersion}/events/github-installation`
-            : `${serverUrl}/${apiVersion}/events/github-installation`,
+            ? `${developmentServerUrl}/${apiVersion}/events/github-installation?traceId=${traceId}`
+            : `${serverUrl}/${apiVersion}/events/github-installation?traceId=${traceId}`,
         setup_url: isDevelopment
-            ? `${developmentServerUrl}/${apiVersion}/events/github-postinstallation`
-            : `${serverUrl}/${apiVersion}/events/github-postinstallation`,
+            ? `${developmentServerUrl}/${apiVersion}/events/github-postinstallation?traceId=${traceId}`
+            : `${serverUrl}/${apiVersion}/events/github-postinstallation?traceId=${traceId}`,
         public: false,
         default_permissions: {
             contents: 'read',

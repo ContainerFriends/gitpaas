@@ -4,6 +4,7 @@ import { appLogger } from '@core/infrastructure/loggers/winston.logger';
 import { handleError } from '@core/ui/handlers/error.handler';
 import { installGithubAppOrchestrator } from '@features/installations/application/orchestrators/install-github-app.orchestrator';
 import { installationsGithubOctokitGateway } from '@features/installations/infrastructure/octokit/installations-octokit.gateway';
+import { systemPrismaRepository } from '@features/system/infrastructure/database/system-prisma.repository';
 
 /**
  * Install GitHub App controller
@@ -11,11 +12,11 @@ import { installationsGithubOctokitGateway } from '@features/installations/infra
  * @param req Request
  * @param res Response
  */
-export const installGithubAppController: RequestHandler<unknown, unknown, unknown, { code: string }> = async (req, res) => {
+export const installGithubAppController: RequestHandler<unknown, unknown, unknown, { code: string; traceId: string }> = async (req, res) => {
     try {
-        const { code } = req.query;
+        const { code, traceId } = req.query;
 
-        const appConfig = await installGithubAppOrchestrator(installationsGithubOctokitGateway, code);
+        const appConfig = await installGithubAppOrchestrator(systemPrismaRepository, installationsGithubOctokitGateway, code, traceId);
 
         const installUrl = `https://github.com/apps/${appConfig.slug}/installations/new`;
 

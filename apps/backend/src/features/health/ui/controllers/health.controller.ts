@@ -1,10 +1,10 @@
 import { RequestHandler } from 'express';
 
 import { checkForGithubAppOrchestrator } from '../../application/orchestrators/check-for-github-app.orchestrator';
-import { systemPrismaRepository } from '../../infrastructure/database/system-prisma.repository';
 
 import { expressConfig } from '@core/infrastructure/express/config.express';
 import { prismaClient } from '@core/infrastructure/prisma/prisma.client';
+import { systemPrismaRepository } from '@features/system/infrastructure/database/system-prisma.repository';
 
 /**
  * Health controller

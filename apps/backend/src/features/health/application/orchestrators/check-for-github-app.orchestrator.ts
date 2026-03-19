@@ -1,7 +1,8 @@
 import { GithubAppStatus } from '../../domain/models/health.models';
-import { SystemRepository } from '../../domain/repositories/system.repository';
 import { checkGithubAppPersistanceUseCase } from '../use-cases/check-github-app-persistance.use-case';
 import { generateGithubManifestUrlUseCase } from '../use-cases/generate-github-manifest-url.use-case';
+
+import { SystemRepository } from '@features/system/domain/repositories/system.repository';
 
 /**
  * Check if a GitHub App is installed orchestrator

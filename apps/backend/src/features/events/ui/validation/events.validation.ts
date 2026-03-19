@@ -5,6 +5,11 @@ export const installGithubAppQuerySchema = Joi.object({
         'string.empty': 'Installation code is required',
         'any.required': 'Installation code is required',
     }),
+    traceId: Joi.string().uuid().required().messages({
+        'string.empty': 'Trace ID is required',
+        'string.guid': 'Trace ID must be a valid UUID',
+        'any.required': 'Trace ID is required',
+    }),
 });
 
 export const postInstallGithubAppQuerySchema = Joi.object({
@@ -15,5 +20,10 @@ export const postInstallGithubAppQuerySchema = Joi.object({
     setup_action: Joi.string().required().messages({
         'string.empty': 'Setup action is required',
         'any.required': 'Setup action is required',
+    }),
+    traceId: Joi.string().uuid().required().messages({
+        'string.empty': 'Trace ID is required',
+        'string.guid': 'Trace ID must be a valid UUID',
+        'any.required': 'Trace ID is required',
     }),
 });

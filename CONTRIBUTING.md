@@ -61,7 +61,7 @@ In the backend environment variables, you must modify the `DEVELOPMENT_SERVER_UR
 ### 3. Run setup package
 
 ```bash
-npm run setup
+npm run setup:local
 ```
 
 ### 3. Start applications

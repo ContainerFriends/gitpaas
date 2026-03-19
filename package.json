@@ -8,7 +8,8 @@
     "packages/*"
   ],
   "scripts": {
-    "setup": "./scripts/local-development.sh",
+    "setup:local": "./scripts/local-development.sh",
+    "clean:local": "./scripts/clean-local-environment.sh",
     "dev:backend": "npm run dev --workspace=@gitpaas/backend",
     "dev:github-installer": "npm run dev --workspace=@gitpaas/github-installer",
     "build": "turbo run build",

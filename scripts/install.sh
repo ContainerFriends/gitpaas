@@ -86,6 +86,7 @@ install_gitpaas() {
     DOCKER_VERSION_TAG=$(clean_version_for_docker "$VERSION_TAG")
     
     echo "📥 Installing GitPaaS version: ${VERSION_TAG}"
+
     if [ "$(id -u)" != "0" ]; then
         echo "This script must be run as root" >&2
         exit 1
@@ -230,13 +231,13 @@ install_gitpaas() {
 
     GHCR_OWNER="${GHCR_OWNER:-containerfriends}"
     BACKEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-backend:${DOCKER_VERSION_TAG}"
-    FRONTEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-frontend:${DOCKER_VERSION_TAG}"
+    INSTALLER_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-installer:${DOCKER_VERSION_TAG}"
 
     docker run --rm \
       --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
       --mount type=bind,source=/etc/gitpaas,target=/etc/gitpaas \
       -e BACKEND_IMAGE=$BACKEND_IMAGE \
-      -e FRONTEND_IMAGE=$FRONTEND_IMAGE \
+      -e INSTALLER_IMAGE=$INSTALLER_IMAGE \
       -e ADVERTISE_ADDR=$advertise_addr \
       ${release_tag:+-e RELEASE_TAG=$release_tag} \
       $SETUP_IMAGE
@@ -273,17 +274,17 @@ update_gitpaas() {
     DOCKER_VERSION_TAG=$(clean_version_for_docker "$VERSION_TAG")
     GHCR_OWNER="${GHCR_OWNER:-containerfriends}"
     BACKEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-backend:${DOCKER_VERSION_TAG}"
-    FRONTEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-frontend:${DOCKER_VERSION_TAG}"
+    INSTALLER_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-installer:${DOCKER_VERSION_TAG}"
     
     echo "Updating GitPaaS to version: ${VERSION_TAG}"
     
     # Pull images
     docker pull $BACKEND_IMAGE
-    docker pull $FRONTEND_IMAGE
+    docker pull $INSTALLER_IMAGE
 
     # Update services
     docker service update --image $BACKEND_IMAGE gitpaas-backend
-    docker service update --image $FRONTEND_IMAGE gitpaas-frontend
+    docker service update --image $INSTALLER_IMAGE gitpaas-installer
 
     echo "GitPaaS has been updated to version: ${VERSION_TAG}"
 }

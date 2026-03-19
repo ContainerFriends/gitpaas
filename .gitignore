@@ -1,0 +1,16 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+.docker
+tsconfig.tsbuildinfo
+
+# Environment files
+.env
+
+# Turbo
+.turbo
+
+# Development resources
+tunnel.sh

@@ -1,0 +1,11 @@
+# Dependencies
+node_modules
+
+# Environment files
+.env
+
+# Builds
+tsconfig.tsbuildinfo
+
+# Prisma
+src/core/infrastructure/prisma/client

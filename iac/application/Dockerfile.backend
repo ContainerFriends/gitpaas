@@ -1,0 +1,56 @@
+# syntax=docker/dockerfile:1
+FROM node:24.14.0-alpine3.23 AS base
+
+#############
+# Build stage
+#############
+FROM base AS build
+
+RUN apk update && apk upgrade --no-cache
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+# Install dependencies with caching
+RUN --mount=type=cache,id=npm,target=/root/.npm npm install --frozen-lockfile
+
+# Build Prisma client
+RUN cd packages/setup && DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate --config=./prisma.config.ts
+
+# Build application
+ENV NODE_ENV=production
+RUN npm run build --workspace=@gitpaas/backend
+
+# Prune devDependencies
+RUN npm prune --production --workspace=@gitpaas/backend
+
+# Prepare production files
+RUN mkdir -p /prod/backend
+RUN cp -R /usr/src/app/apps/backend/dist /prod/backend/dist
+RUN cp /usr/src/app/apps/backend/package.json /prod/backend/package.json
+RUN cp -R /usr/src/app/node_modules /prod/backend/node_modules
+
+###########
+# Run stage
+###########
+FROM base AS gitpaas-backend
+
+WORKDIR /app
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+ENV PORT=4000
+ENV HOST=0.0.0.0
+ENV API_VERSION=v1
+ENV REQUEST_TIMEOUT=15000
+ENV CORS_ORIGIN=
+ENV FRONTEND_URL=
+
+# Copy only the necessary files
+COPY --from=build /prod/backend .
+
+EXPOSE 4000
+
+CMD ["node", "dist/index.js"]

@@ -1,0 +1,33 @@
+{
+  "name": "@gitpaas/setup",
+  "version": "0.0.0",
+  "description": "GitPaaS installation and configuration management for local development and production",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "setup": "tsx -r dotenv/config src/main.ts local",
+    "build": "tsx esbuild.config.ts",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.5.0",
+    "@prisma/client": "7.5.0",
+    "bl": "6.1.6",
+    "dockerode": "4.0.9",
+    "dotenv": "17.3.1",
+    "ora": "9.3.0",
+    "pg": "8.20.0",
+    "prisma": "7.5.0",
+    "yaml": "2.8.2"
+  },
+  "devDependencies": {
+    "@gitpaas/eslint-config": "*",
+    "@types/bl": "5.0.2",
+    "@types/dockerode": "4.0.1",
+    "@types/node": "25.5.0",
+    "@types/pg": "8.18.0",
+    "esbuild": "0.27.4",
+    "tsx": "4.21.0"
+  }
+}

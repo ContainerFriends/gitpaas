@@ -1,0 +1,1 @@
+export { cn } from './merge-clases';

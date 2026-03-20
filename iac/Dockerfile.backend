@@ -22,7 +22,7 @@ FROM deps AS build
 
 WORKDIR /app
 
-COPY --from=deps /dependencies/node_modules ./node_modules
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Build Prisma client

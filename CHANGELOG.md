@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/ContainerFriends/gitpaas/compare/v1.3.0...v1.3.1) (2026-03-20)
+
+
+### Bug Fixes
+
+* change Frontend Dockerfile references to Nginx ([768d7e8](https://github.com/ContainerFriends/gitpaas/commit/768d7e8f85f1b5cd425b9641fde907879c86a85c))
+
 # [1.3.0](https://github.com/ContainerFriends/gitpaas/compare/v1.2.2...v1.3.0) (2026-03-20)
 
 

@@ -1,3 +1,14 @@
+# [1.2.0](https://github.com/ContainerFriends/gitpaas/compare/v1.1.0...v1.2.0) (2026-03-20)
+
+
+### Features
+
+* add docs application ([40025e0](https://github.com/ContainerFriends/gitpaas/commit/40025e066b8936e8c051cd78b6c6add2ae391ec5))
+* add NextJS as Landing ([e709c2a](https://github.com/ContainerFriends/gitpaas/commit/e709c2a3d249e6a6dea75d8e44ab3a8b10a91bc4))
+* delete obsolete Landing app ([eb5b4ce](https://github.com/ContainerFriends/gitpaas/commit/eb5b4ce1a5fe3483b6a5fce2109f7afd01060954))
+* improve installation script ([a768354](https://github.com/ContainerFriends/gitpaas/commit/a768354879bfb176a77496cb3eba0235af639100))
+* reduce Backend Dockerfile size ([7acdb44](https://github.com/ContainerFriends/gitpaas/commit/7acdb446aeea3c89ece4539f6be5552cb3791d17))
+
 # [1.1.0](https://github.com/ContainerFriends/gitpaas/compare/v1.0.3...v1.1.0) (2026-03-19)
 
 

@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/ContainerFriends/gitpaas/compare/v1.3.1...v1.3.2) (2026-03-20)
+
+
+### Bug Fixes
+
+* change dependencies folders for Backend Dockerfile ([07cba46](https://github.com/ContainerFriends/gitpaas/commit/07cba46244cbcd356eea43fbb3fa5219e4c771a3))
+
 ## [1.3.1](https://github.com/ContainerFriends/gitpaas/compare/v1.3.0...v1.3.1) (2026-03-20)
 
 

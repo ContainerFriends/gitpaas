@@ -7,6 +7,7 @@ NC="\033[0m" # No Color
 
 # Paths
 BASE_PATH="/etc/gitpaas"
+SOURCE_PATH="$BASE_PATH/source"
 MAIN_TRAEFIK_PATH="$BASE_PATH/traefik"
 DYNAMIC_TRAEFIK_PATH="$MAIN_TRAEFIK_PATH/dynamic"
 LOGS_PATH="$BASE_PATH/logs"
@@ -21,6 +22,7 @@ VOLUME_BACKUPS_PATH="$BASE_PATH/volume-backups"
 TRAEFIK_SSL_PORT="${TRAEFIK_SSL_PORT:-443}"
 TRAEFIK_PORT="${TRAEFIK_PORT:-80}"
 TRAEFIK_HTTP3_PORT="${TRAEFIK_HTTP3_PORT:-443}"
+TRAEFIK_VERSION="${TRAEFIK_VERSION:-3.6.10}"
 
 command_exists() {
     command -v "$@" > /dev/null 2>&1
@@ -116,6 +118,23 @@ clean_version_for_docker() {
     local version="$1"
     # Remove 'v' prefix only if followed by digits (e.g., v1.3.0 -> 1.3.0)
     echo "$version" | sed 's/^v\([0-9]\)/\1/'
+}
+
+download_release() {
+    local version="$1"
+    echo "📦 Downloading GitPaaS source ($version)..."
+    
+    mkdir -p "$SOURCE_PATH"
+    
+    curl -fsSL "https://github.com/ContainerFriends/gitpaas/archive/refs/tags/${version}.tar.gz" | \
+    tar -xzC "$SOURCE_PATH" --strip-components=1
+    
+    if [ $? -eq 0 ]; then
+        echo "✅ Source code downloaded to $SOURCE_PATH"
+    else
+        echo "❌ Failed to download source code"
+        exit 1
+    fi
 }
 
 # Function to detect if running in Proxmox LXC container
@@ -268,7 +287,7 @@ docker_network_initialized() {
 # Initialize Docker network
 initialize_network() {
     if ! docker_network_initialized; then
-        docker network create --driver overlay --attachable gitpaas-network
+        docker network create --driver overlay --attachable gitpaas-network > /dev/null 2>&1
         echo "✅ Docker network created successfully"
     else
         echo "✅ Docker network already exists, skipping"
@@ -281,7 +300,7 @@ pull_image_if_missing() {
 
     if ! docker image inspect "$image" > /dev/null 2>&1; then
         echo "📦 Pulling image $image..."
-        docker pull "$image" || echo "❌ Traefik image pull failed, continuing..."
+        docker pull "$image" > /dev/null 2>&1 || echo "❌ Image pull failed for $image, continuing..."
     fi
 }
 
@@ -296,8 +315,8 @@ initialize_traefik() {
     existing_service=$(docker service ls --filter "name=${service_name}" --format '{{.Name}}' | grep -x "$service_name")
 
     if [ -n "$existing_service" ]; then
-        echo "🔄 Updating Traefik service..."
-        docker service rm "$service_name"
+        echo "✅ Traefik service already running, skipping"
+        return 0
     fi
 
     docker service create \
@@ -311,7 +330,7 @@ initialize_traefik() {
         --publish mode=host,target=${TRAEFIK_PORT},published=${TRAEFIK_PORT},protocol=tcp \
         --publish mode=host,target=${TRAEFIK_SSL_PORT},published=${TRAEFIK_SSL_PORT},protocol=tcp \
         --publish mode=host,target=${TRAEFIK_HTTP3_PORT},published=${TRAEFIK_HTTP3_PORT},protocol=udp \
-        "$image_name" || { echo "❌ Traefik service setup failed"; return 1; }
+        "$image_name" > /dev/null 2>&1 || { echo "❌ Traefik service setup failed"; return 1; }
 
     echo "✅ Traefik service created successfully"
 }
@@ -327,8 +346,8 @@ initialize_redis() {
     existing_service=$(docker service ls --filter "name=${service_name}" --format '{{.Name}}' | grep -x "$service_name")
 
     if [ -n "$existing_service" ]; then
-        echo "🔄 Updating Redis service..."
-        docker service rm "$service_name"
+        echo "✅ Redis service already running, skipping"
+        return 0
     fi
 
     local publish_flag=""
@@ -343,7 +362,7 @@ initialize_redis() {
         --replicas 1 \
         --mount type=volume,source=gitpaas-redis,target=/data \
         $publish_flag \
-        "$image_name" || { echo "❌ Redis service setup failed"; return 1; }
+        "$image_name" > /dev/null 2>&1 || { echo "❌ Redis service setup failed"; return 1; }
 
     echo "✅ Redis service created successfully"
 }
@@ -380,8 +399,8 @@ initialize_postgres() {
     existing_service=$(docker service ls --filter "name=${service_name}" --format '{{.Name}}' | grep -x "$service_name")
 
     if [ -n "$existing_service" ]; then
-        echo "🔄 Updating Postgres service..."
-        docker service rm "$service_name"
+        echo "✅ Postgres service already running, skipping"
+        return 0
     fi
 
     docker service create \
@@ -394,7 +413,7 @@ initialize_postgres() {
         --env POSTGRES_USER=gitpaas \
         --env POSTGRES_DB=gitpaas \
         --env POSTGRES_PASSWORD_FILE=/run/secrets/gitpaas_postgres_password \
-        "$image_name" || { echo "❌ Postgres service setup failed"; return 1; }
+        "$image_name" > /dev/null 2>&1 || { echo "❌ Postgres service setup failed"; return 1; }
 
     echo "✅ Postgres service created successfully"
 }
@@ -437,21 +456,52 @@ connect_to_network() {
     echo "✅ Connected to gitpaas-network"
 }
 
-# Generate Prisma client using a temporary container
+# Generate Prisma client
 generate_prisma_client() {
     echo "🔄 Generating Prisma client..."
     
-    docker run --rm \
+    local PRISMA_OUT
+
+    PRISMA_OUT=$(docker run --rm \
         --network gitpaas-network \
-        -v "$(pwd):/app" \
+        -v "$SOURCE_PATH:/app" \
         -w /app \
         -e DATABASE_URL="postgres://gitpaas:${CURRENT_DB_PASSWORD}@gitpaas-postgres:5432/gitpaas" \
-        node:24.14.0-alpine3.23 npx prisma generate --config=./packages/setup/prisma.config.ts > /dev/null 2>&1
+        node:24.14.0-alpine3.23 sh -c "
+            npm install -g prisma@7.5.0 --omit=dev --no-update-notifier && \
+            prisma generate --config=./apps/backend/prisma.config.ts
+        " 2>&1)
 
     if [ $? -eq 0 ]; then
         echo "✅ Prisma client generated successfully"
     else
-        echo "❌ Prisma generate failed"
+        echo "❌ Prisma generate failed. Check disk space (df -h)"
+        echo "-------------------------------------------"
+        echo "$PRISMA_OUT"
+        echo "-------------------------------------------"
+        return 1
+    fi
+}
+
+# Run Prisma migrations
+run_migrations() {
+    echo "🔄 Running Prisma migrations..."
+
+    # Aplicamos la misma lógica de ruta interna ./apps/backend/...
+    docker run --rm \
+        --network gitpaas-network \
+        -v "$SOURCE_PATH:/app" \
+        -w /app \
+        -e DATABASE_URL="postgres://gitpaas:${CURRENT_DB_PASSWORD}@gitpaas-postgres:5432/gitpaas" \
+        node:24.14.0-alpine3.23 sh -c "
+            npm install -g prisma@7.5.0 --omit=dev --no-update-notifier && \
+            prisma migrate deploy --config=./apps/backend/prisma.config.ts
+        " > /dev/null 2>&1
+
+    if [ $? -eq 0 ]; then
+        echo "✅ Migrations applied successfully"
+    else
+        echo "❌ Migration failed"
         return 1
     fi
 }
@@ -465,7 +515,7 @@ run_migrations() {
         -v "$(pwd):/app" \
         -w /app \
         -e DATABASE_URL="postgres://gitpaas:${CURRENT_DB_PASSWORD}@gitpaas-postgres:5432/gitpaas" \
-        node:24.14.0-alpine3.23 npx prisma migrate deploy --config=./packages/setup/prisma.config.ts > /dev/null 2>&1
+        node:24.14.0-alpine3.23 npx prisma migrate deploy --config=/etc/gitpaas/source/apps/backend/prisma.config.ts > /dev/null 2>&1
 
     if [ $? -eq 0 ]; then
         echo "✅ Migrations applied successfully"
@@ -630,8 +680,14 @@ install_gitpaas() {
     if command_exists docker; then
         echo "✅ Docker already installed"
     else
-        echo "📦 Installing Docker..."
-        curl -sSL https://get.docker.com | sh -s -- --version 28.5.0
+        echo "📦 Installing Docker (this may take a minute)..."
+        # Capturamos errores en una variable, silenciando el progreso normal
+        if ! DOCKER_INSTALL_ERR=$(curl -sSL https://get.docker.com | sh -s -- --version 28.5.0 2>&1 >/dev/null); then
+            echo "❌ Docker installation failed:"
+            echo "$DOCKER_INSTALL_ERR"
+            exit 1
+        fi
+        echo "✅ Docker installed successfully"
     fi
 
     if command_exists jq; then
@@ -673,7 +729,7 @@ install_gitpaas() {
         echo "Example: export ADVERTISE_ADDR=192.168.1.100"
         exit 1
     fi
-    echo "Using advertise address: $advertise_addr"
+    echo "✅ Using advertise address: $advertise_addr"
 
     # Allow custom Docker Swarm init arguments via DOCKER_SWARM_INIT_ARGS environment variable
     # Example: export DOCKER_SWARM_INIT_ARGS="--default-addr-pool 172.20.0.0/16 --default-addr-pool-mask-length 24"
@@ -682,9 +738,9 @@ install_gitpaas() {
     
     if [ -n "$swarm_init_args" ]; then
         echo "Using custom swarm init arguments: $swarm_init_args"
-        docker swarm init --advertise-addr $advertise_addr $swarm_init_args
+        docker swarm init --advertise-addr $advertise_addr $swarm_init_args > /dev/null 2>&1
     else
-        docker swarm init --advertise-addr $advertise_addr
+        docker swarm init --advertise-addr $advertise_addr > /dev/null 2>&1
     fi
     
      if [ $? -ne 0 ]; then
@@ -692,9 +748,10 @@ install_gitpaas() {
         exit 1
     fi
 
-    echo "✅ Swarm initialized"
+    echo "✅ Docker Swarm initialized successfully"
 
     setup_directories
+    download_release "$VERSION_TAG"
     create_traefik_default_middlewares
     create_traefik_default_config
     initialize_network

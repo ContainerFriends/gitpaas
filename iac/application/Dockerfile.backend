@@ -26,7 +26,10 @@ COPY --from=deps /dependencies/node_modules ./node_modules
 COPY . .
 
 # Build Prisma client
-RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate --config=./apps/backend/prisma.config.ts
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" \
+    PRISMA_SCHEMA_PATH="./iac/database/schema.prisma" \
+    PRISMA_MIGRATIONS_PATH="./iac/database/migrations" \
+    npx prisma generate --config=./apps/backend/prisma.config.ts
 
 # Build application
 ENV NODE_ENV=production

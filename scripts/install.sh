@@ -25,10 +25,11 @@ TRAEFIK_HTTP3_PORT="${TRAEFIK_HTTP3_PORT:-443}"
 TRAEFIK_VERSION="${TRAEFIK_VERSION:-3.6.10}"
 
 # Images and versions
-VERSION_TAG="${VERSION_TAG:-v1.3.4}"
-DOCKER_VERSION_TAG="${DOCKER_VERSION_TAG:-1.3.4}"
+VERSION_TAG="${VERSION_TAG:-v1.3.5}"
+DOCKER_VERSION_TAG="${DOCKER_VERSION_TAG:-1.3.5}"
 GHCR_OWNER="${GHCR_OWNER:-containerfriends}"
 BACKEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-backend:${DOCKER_VERSION_TAG}"
+INSTALLER_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-installer:${DOCKER_VERSION_TAG}"
 
 command_exists() {
     command -v "$@" > /dev/null 2>&1
@@ -668,6 +669,8 @@ install_gitpaas() {
         echo "Example: export ADVERTISE_ADDR=192.168.1.100"
         exit 1
     fi
+
+    export ADVERTISE_ADDR="$advertise_addr"
     echo "✅ Using advertise address: $advertise_addr"
 
     # Allow custom Docker Swarm init arguments via DOCKER_SWARM_INIT_ARGS environment variable

@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/ContainerFriends/gitpaas/compare/v1.2.2...v1.3.0) (2026-03-20)
+
+
+### Features
+
+* reestructure Prisma ([5b2acff](https://github.com/ContainerFriends/gitpaas/commit/5b2acff59c039af75a942640fe412f653c976cfc))
+
 ## [1.2.2](https://github.com/ContainerFriends/gitpaas/compare/v1.2.1...v1.2.2) (2026-03-20)
 
 

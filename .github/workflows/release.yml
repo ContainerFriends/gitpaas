@@ -44,9 +44,9 @@ jobs:
       matrix:
         include:
           - image: gitpaas-backend
-            dockerfile: iac/application/Dockerfile.backend
+            dockerfile: iac/Dockerfile.backend
           - image: gitpaas-installer
-            dockerfile: iac/application/Dockerfile.installer
+            dockerfile: iac/Dockerfile.installer
     steps:
       - uses: actions/checkout@v4
 

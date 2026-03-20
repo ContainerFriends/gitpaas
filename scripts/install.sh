@@ -25,8 +25,8 @@ TRAEFIK_HTTP3_PORT="${TRAEFIK_HTTP3_PORT:-443}"
 TRAEFIK_VERSION="${TRAEFIK_VERSION:-3.6.10}"
 
 # Images and versions
-VERSION_TAG="${VERSION_TAG:-v1.1.0}"
-DOCKER_VERSION_TAG="${DOCKER_VERSION_TAG:-1.1.0}"
+VERSION_TAG="${VERSION_TAG:-v1.3.3}"
+DOCKER_VERSION_TAG="${DOCKER_VERSION_TAG:-1.3.3}"
 GHCR_OWNER="${GHCR_OWNER:-containerfriends}"
 BACKEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-backend:${DOCKER_VERSION_TAG}"
 
@@ -437,29 +437,6 @@ connect_to_network() {
 
 # Run Prisma migrations
 run_migrations() {
-    echo "🔄 Running Prisma migrations..."
-
-    # Aplicamos la misma lógica de ruta interna ./apps/backend/...
-    docker run --rm \
-        --network gitpaas-network \
-        -v "$SOURCE_PATH:/app" \
-        -w /app \
-        -e DATABASE_URL="postgres://gitpaas:${CURRENT_DB_PASSWORD}@gitpaas-postgres:5432/gitpaas" \
-        node:24.14.0-alpine3.23 sh -c "
-            npm install -g prisma@7.5.0 --omit=dev --no-update-notifier && \
-            prisma migrate deploy --config=./apps/backend/prisma.config.ts
-        " > /dev/null 2>&1
-
-    if [ $? -eq 0 ]; then
-        echo "✅ Migrations applied successfully"
-    else
-        echo "❌ Migration failed"
-        return 1
-    fi
-}
-
-# Run Prisma migrations
-run_migrations() {
     if [ -z "$BACKEND_IMAGE" ]; then
         echo "❌ BACKEND_IMAGE environment variable is required"
         return 1
@@ -475,7 +452,7 @@ run_migrations() {
         -e PRISMA_SCHEMA_PATH="/app/iac/database/schema.prisma" \
         -e PRISMA_MIGRATIONS_PATH="/app/iac/database/migrations" \
         "$BACKEND_IMAGE" \
-        npx prisma migrate deploy --config=./apps/backend/prisma.config.ts 2>&1)
+        npx prisma migrate deploy --config=./prisma.config.ts 2>&1)
 
     if [ $? -eq 0 ]; then
         echo "✅ Migrations applied successfully"

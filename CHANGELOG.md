@@ -1,3 +1,10 @@
+## [1.3.6](https://github.com/ContainerFriends/gitpaas/compare/v1.3.5...v1.3.6) (2026-03-20)
+
+
+### Bug Fixes
+
+* set ADVERTISE_ADDR variable on install ([95afcb6](https://github.com/ContainerFriends/gitpaas/commit/95afcb6adfd012fe9dfd18fdc07d723c40099f9e))
+
 ## [1.3.5](https://github.com/ContainerFriends/gitpaas/compare/v1.3.4...v1.3.5) (2026-03-20)
 
 

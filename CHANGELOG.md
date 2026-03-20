@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/ContainerFriends/gitpaas/compare/v1.3.2...v1.3.3) (2026-03-20)
+
+
+### Bug Fixes
+
+* change prisma schema reference ([8720e43](https://github.com/ContainerFriends/gitpaas/commit/8720e4344db5d4a0e9af2c7841faaf9bcaceb140))
+
 ## [1.3.2](https://github.com/ContainerFriends/gitpaas/compare/v1.3.1...v1.3.2) (2026-03-20)
 
 

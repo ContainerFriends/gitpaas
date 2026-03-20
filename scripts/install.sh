@@ -24,6 +24,12 @@ TRAEFIK_PORT="${TRAEFIK_PORT:-80}"
 TRAEFIK_HTTP3_PORT="${TRAEFIK_HTTP3_PORT:-443}"
 TRAEFIK_VERSION="${TRAEFIK_VERSION:-3.6.10}"
 
+# Images and versions
+VERSION_TAG="${VERSION_TAG:-v1.1.0}"
+DOCKER_VERSION_TAG="${DOCKER_VERSION_TAG:-1.1.0}"
+GHCR_OWNER="${GHCR_OWNER:-containerfriends}"
+BACKEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-backend:${DOCKER_VERSION_TAG}"
+
 command_exists() {
     command -v "$@" > /dev/null 2>&1
 }
@@ -84,33 +90,6 @@ format_ip_for_url() {
         # IPv4
         echo "${ip}"
     fi
-}
-
-# Detect version from environment variable or detect latest stable from GitHub
-# Usage: GITPAAS_VERSION=latest bash install.sh
-# Usage: bash install.sh (detects latest stable version)
-detect_version() {
-    local version="${GITPAAS_VERSION}"
-    
-    # If no version specified, get latest stable version from GitHub releases
-    if [ -z "$version" ]; then
-        echo "🔎 Detecting latest stable version from GitHub..." >&2
-        
-        # Try to get latest release from GitHub by following redirects
-        version=$(curl -fsSL -o /dev/null -w '%{url_effective}\n' \
-            https://github.com/ContainerFriends/gitpaas/releases/latest 2>/dev/null | \
-            sed 's#.*/tag/##')
-        
-        # Fallback to latest tag if detection fails
-        if [ -z "$version" ]; then
-            echo "⚠️ Warning: Could not detect latest version from GitHub, using fallback version latest" >&2
-            version="latest"
-        else
-            echo "✅ Latest stable version detected: $version" >&2
-        fi
-    fi
-    
-    echo "$version"
 }
 
 # Clean version tag for Docker images (remove 'v' prefix if present)
@@ -456,33 +435,6 @@ connect_to_network() {
     echo "✅ Connected to gitpaas-network"
 }
 
-# Generate Prisma client
-generate_prisma_client() {
-    echo "🔄 Generating Prisma client..."
-    
-    local PRISMA_OUT
-
-    PRISMA_OUT=$(docker run --rm \
-        --network gitpaas-network \
-        -v "$SOURCE_PATH:/app" \
-        -w /app \
-        -e DATABASE_URL="postgres://gitpaas:${CURRENT_DB_PASSWORD}@gitpaas-postgres:5432/gitpaas" \
-        node:24.14.0-alpine3.23 sh -c "
-            npm install -g prisma@7.5.0 --omit=dev --no-update-notifier && \
-            prisma generate --config=./apps/backend/prisma.config.ts
-        " 2>&1)
-
-    if [ $? -eq 0 ]; then
-        echo "✅ Prisma client generated successfully"
-    else
-        echo "❌ Prisma generate failed. Check disk space (df -h)"
-        echo "-------------------------------------------"
-        echo "$PRISMA_OUT"
-        echo "-------------------------------------------"
-        return 1
-    fi
-}
-
 # Run Prisma migrations
 run_migrations() {
     echo "🔄 Running Prisma migrations..."
@@ -506,21 +458,37 @@ run_migrations() {
     fi
 }
 
-# Run Prisma migrations using a temporary container
+# Run Prisma migrations
 run_migrations() {
+    if [ -z "$BACKEND_IMAGE" ]; then
+        echo "❌ BACKEND_IMAGE environment variable is required"
+        return 1
+    fi
+
+    pull_image_if_missing "$BACKEND_IMAGE"
+
     echo "🔄 Running Prisma migrations..."
 
-    docker run --rm \
+    MIGRATION_OUTPUT=$(docker run --rm \
         --network gitpaas-network \
-        -v "$(pwd):/app" \
-        -w /app \
         -e DATABASE_URL="postgres://gitpaas:${CURRENT_DB_PASSWORD}@gitpaas-postgres:5432/gitpaas" \
-        node:24.14.0-alpine3.23 npx prisma migrate deploy --config=/etc/gitpaas/source/apps/backend/prisma.config.ts > /dev/null 2>&1
+        -e PRISMA_SCHEMA_PATH="/app/iac/database/schema.prisma" \
+        -e PRISMA_MIGRATIONS_PATH="/app/iac/database/migrations" \
+        "$BACKEND_IMAGE" \
+        npx prisma migrate deploy --config=./apps/backend/prisma.config.ts 2>&1)
 
     if [ $? -eq 0 ]; then
         echo "✅ Migrations applied successfully"
     else
-        echo "❌ Migration failed"
+        echo "❌ Migration failed. Error details:"
+        echo "-------------------------------------------"
+        echo "$MIGRATION_OUTPUT"
+        echo "-------------------------------------------"
+        
+        if echo "$MIGRATION_OUTPUT" | grep -q "P1001"; then
+            echo "💡 Tip: Prisma cannot reach the database. Check if 'gitpaas-postgres' is healthy."
+        fi
+        
         return 1
     fi
 }
@@ -550,8 +518,6 @@ initialize_backend() {
         echo "❌ Postgres secret not found"
         return 1
     fi
-
-    pull_image_if_missing "$BACKEND_IMAGE"
 
     local existing_service
     existing_service=$(docker service ls --filter "name=${service_name}" --format '{{.Name}}' | grep -x "$service_name")
@@ -642,10 +608,6 @@ initialize_github_installer() {
 }
 
 install_gitpaas() {
-    # Detect version tag
-    VERSION_TAG=$(detect_version)
-    DOCKER_VERSION_TAG=$(clean_version_for_docker "$VERSION_TAG")
-    
     echo "🚀 Starting GitPaaS ${VERSION_TAG} configuration"
 
     if [ "$(id -u)" != "0" ]; then
@@ -760,7 +722,6 @@ install_gitpaas() {
     initialize_postgres
     wait_for_postgres
     connect_to_network
-    generate_prisma_client
     run_migrations
     initialize_backend
     initialize_github_installer

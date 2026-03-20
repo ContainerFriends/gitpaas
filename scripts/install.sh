@@ -25,8 +25,8 @@ TRAEFIK_HTTP3_PORT="${TRAEFIK_HTTP3_PORT:-443}"
 TRAEFIK_VERSION="${TRAEFIK_VERSION:-3.6.10}"
 
 # Images and versions
-VERSION_TAG="${VERSION_TAG:-v1.3.5}"
-DOCKER_VERSION_TAG="${DOCKER_VERSION_TAG:-1.3.5}"
+VERSION_TAG="${VERSION_TAG:-v1.3.6}"
+DOCKER_VERSION_TAG="${DOCKER_VERSION_TAG:-1.3.6}"
 GHCR_OWNER="${GHCR_OWNER:-containerfriends}"
 BACKEND_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-backend:${DOCKER_VERSION_TAG}"
 INSTALLER_IMAGE="ghcr.io/${GHCR_OWNER}/gitpaas-installer:${DOCKER_VERSION_TAG}"
@@ -241,8 +241,10 @@ providers:
   file:
     directory: /etc/gitpaas/traefik/dynamic
     watch: true
-  docker:
-    defaultRule: "Host(\`{{ trimPrefix \`/\` .Name }}.docker.localhost\`)"
+  swarm:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: gitpaas-network
 
 entryPoints:
   web:
@@ -299,7 +301,8 @@ initialize_traefik() {
         return 0
     fi
 
-    docker service create \
+    local output
+    output=$(docker service create \
         --name "$service_name" \
         --network gitpaas-network \
         --constraint "node.role==manager" \
@@ -310,7 +313,13 @@ initialize_traefik() {
         --publish mode=host,target=${TRAEFIK_PORT},published=${TRAEFIK_PORT},protocol=tcp \
         --publish mode=host,target=${TRAEFIK_SSL_PORT},published=${TRAEFIK_SSL_PORT},protocol=tcp \
         --publish mode=host,target=${TRAEFIK_HTTP3_PORT},published=${TRAEFIK_HTTP3_PORT},protocol=udp \
-        "$image_name" > /dev/null 2>&1 || { echo "❌ Traefik service setup failed"; return 1; }
+        "$image_name" 2>&1)
+
+    if [ $? -ne 0 ]; then
+        echo "❌ Traefik service setup failed:"
+        echo "$output"
+        return 1
+    fi
 
     echo "✅ Traefik service created successfully"
 }
@@ -450,8 +459,6 @@ run_migrations() {
     MIGRATION_OUTPUT=$(docker run --rm \
         --network gitpaas-network \
         -e DATABASE_URL="postgres://gitpaas:${CURRENT_DB_PASSWORD}@gitpaas-postgres:5432/gitpaas" \
-        -e PRISMA_SCHEMA_PATH="/app/iac/database/schema.prisma" \
-        -e PRISMA_MIGRATIONS_PATH="/app/iac/database/migrations" \
         "$BACKEND_IMAGE" \
         npx prisma migrate deploy --config=./prisma.config.ts 2>&1)
 
@@ -518,12 +525,10 @@ initialize_backend() {
         --update-parallelism 1 \
         --update-order stop-first \
         --label "traefik.enable=true" \
-        --label "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https" \
-        --label "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true" \
-        --label "traefik.http.routers.backend.rule=PathPrefix(\`/\`)" \
+        --label "traefik.http.routers.backend.rule=PathPrefix(\"/\")" \
         --label "traefik.http.routers.backend.entrypoints=web" \
-        --label "traefik.http.routers.backend.middlewares=redirect-to-https" \
-        --label "traefik.http.routers.backend-secure.rule=PathPrefix(\`/\`)" \
+        --label "traefik.http.routers.backend.middlewares=redirect-to-https@file" \
+        --label "traefik.http.routers.backend-secure.rule=PathPrefix(\"/\")" \
         --label "traefik.http.routers.backend-secure.entrypoints=websecure" \
         --label "traefik.http.routers.backend-secure.tls=true" \
         --label "traefik.http.services.backend-secure.loadbalancer.server.port=4000" \
@@ -539,7 +544,7 @@ initialize_backend() {
         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
         --mount type=bind,source=/etc/gitpaas,target=/etc/gitpaas \
         --secret source=gitpaas_postgres_password,target=/run/secrets/postgres_password,uid=0,gid=0,mode=0444 \
-        "$BACKEND_IMAGE" || { echo "❌ Backend service setup failed"; return 1; }
+        "$BACKEND_IMAGE" > /dev/null 2>&1 || { echo "❌ Backend service setup failed"; return 1; }
 
     echo "✅ Backend service created successfully"
 }
@@ -580,7 +585,7 @@ initialize_github_installer() {
         --label "traefik.http.routers.installer-secure.entrypoints=websecure" \
         --label "traefik.http.routers.installer-secure.tls=true" \
         --label "traefik.http.services.installer-secure.loadbalancer.server.port=80" \
-        "$INSTALLER_IMAGE" || { echo "❌ Installer service setup failed"; return 1; }
+        "$INSTALLER_IMAGE" > /dev/null 2>&1 || { echo "❌ Installer service setup failed"; return 1; }
 
     echo "✅ Github Installer service created successfully"
 }
@@ -704,7 +709,7 @@ install_gitpaas() {
     connect_to_network
     run_migrations
     initialize_backend
-    initialize_github_installer
+    #initialize_github_installer
 
     public_ip="${ADVERTISE_ADDR:-$(get_ip)}"
 

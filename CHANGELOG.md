@@ -1,3 +1,10 @@
+## [1.3.5](https://github.com/ContainerFriends/gitpaas/compare/v1.3.4...v1.3.5) (2026-03-20)
+
+
+### Bug Fixes
+
+* add Prisma schema to Backend Dockerfile ([5e7358b](https://github.com/ContainerFriends/gitpaas/commit/5e7358b009720e8bbc5679dea82ccfcb7b40089f))
+
 ## [1.3.4](https://github.com/ContainerFriends/gitpaas/compare/v1.3.3...v1.3.4) (2026-03-20)
 
 

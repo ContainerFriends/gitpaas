@@ -31,7 +31,7 @@ docker_swarm_initialized() {
 # Initialize Docker Swarm service
 initialize_swarm() {
     if ! docker_swarm_initialized; then
-        docker swarm init --advertise-addr "127.0.0.1" --listen-addr "0.0.0.0"
+        docker swarm init --advertise-addr "127.0.0.1" --listen-addr "0.0.0.0" > /dev/null 2>&1
         echo "✅ Docker Swarm initialized successfully"
     else
         echo "✅ Docker Swarm already running, skipping initialization"
@@ -142,7 +142,7 @@ docker_network_initialized() {
 # Initialize Docker network
 initialize_network() {
     if ! docker_network_initialized; then
-        docker network create --driver overlay --attachable gitpaas-network
+        docker network create --driver overlay --attachable gitpaas-network > /dev/null 2>&1
         echo "✅ Docker network created successfully"
     else
         echo "✅ Docker network already exists, skipping"
@@ -155,7 +155,7 @@ pull_image_if_missing() {
 
     if ! docker image inspect "$image" > /dev/null 2>&1; then
         echo "📦 Pulling image $image..."
-        docker pull "$image" || echo "❌ Traefik image pull failed, continuing..."
+        docker pull "$image" > /dev/null 2>&1 || echo "❌ Image pull failed for $image, continuing..."
     fi
 }
 
@@ -185,7 +185,7 @@ initialize_traefik() {
         --publish mode=host,target=${TRAEFIK_PORT},published=${TRAEFIK_PORT},protocol=tcp \
         --publish mode=host,target=${TRAEFIK_SSL_PORT},published=${TRAEFIK_SSL_PORT},protocol=tcp \
         --publish mode=host,target=${TRAEFIK_HTTP3_PORT},published=${TRAEFIK_HTTP3_PORT},protocol=udp \
-        "$image_name" || { echo "❌ Traefik service setup failed"; return 1; }
+        "$image_name" > /dev/null 2>&1 || { echo "❌ Traefik service setup failed"; return 1; }
 
     echo "✅ Traefik service created successfully"
 }
@@ -211,7 +211,7 @@ initialize_redis() {
         --constraint "node.role==manager" \
         --replicas 1 \
         --mount type=volume,source=gitpaas-redis,target=/data \
-        "$image_name" || { echo "❌ Redis service setup failed"; return 1; }
+        "$image_name" > /dev/null 2>&1 || { echo "❌ Redis service setup failed"; return 1; }
 
     echo "✅ Redis service created successfully"
 }
@@ -241,7 +241,7 @@ initialize_postgres() {
         --env POSTGRES_DB=gitpaas \
         --env POSTGRES_PASSWORD=password \
         --publish mode=host,target=5432,published=5432,protocol=tcp \
-        "$image_name" || { echo "❌ Postgres service setup failed"; return 1; }
+        "$image_name" > /dev/null 2>&1 || { echo "❌ Postgres service setup failed"; return 1; }
 
     echo "✅ Postgres service created successfully"
 }
@@ -290,12 +290,10 @@ generate_prisma_client() {
 run_migrations() {
     echo "🔄 Running Prisma migrations..."
     
-    # Capturamos stdout y stderr en una variable
     local MIGRATION_OUTPUT
     MIGRATION_OUTPUT=$(DATABASE_URL="postgres://gitpaas:password@localhost:5432/gitpaas" \
         npx prisma migrate deploy --config=./apps/backend/prisma.config.ts 2>&1)
     
-    # $? captura el estado de salida del último comando ejecutado
     if [ $? -eq 0 ]; then
         echo "✅ Migrations applied successfully"
     else

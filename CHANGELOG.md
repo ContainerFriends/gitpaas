@@ -1,3 +1,10 @@
+## [1.3.7](https://github.com/ContainerFriends/gitpaas/compare/v1.3.6...v1.3.7) (2026-03-20)
+
+
+### Bug Fixes
+
+* add migrations to Backend Dockerfile ([203ea47](https://github.com/ContainerFriends/gitpaas/commit/203ea47b9be439f4eb2afb291e7f21693ef788e9))
+
 ## [1.3.6](https://github.com/ContainerFriends/gitpaas/compare/v1.3.5...v1.3.6) (2026-03-20)
 
 

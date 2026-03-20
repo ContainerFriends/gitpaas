@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/ContainerFriends/gitpaas/compare/v1.2.0...v1.2.1) (2026-03-20)
+
+
+### Bug Fixes
+
+* declare Prisma variables on Backend Dockerfile ([ae823ed](https://github.com/ContainerFriends/gitpaas/commit/ae823edb1038ac09cb8fbd065645403c28bd382c))
+
 # [1.2.0](https://github.com/ContainerFriends/gitpaas/compare/v1.1.0...v1.2.0) (2026-03-20)
 
 

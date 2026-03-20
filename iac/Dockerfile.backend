@@ -56,6 +56,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/apps/backend/dist ./dist
 COPY --from=build /app/apps/backend/package.json ./package.json
 COPY --from=build /app/apps/backend/prisma.config.ts ./prisma.config.ts
+COPY --from=build /app/apps/backend/schema.prisma ./schema.prisma
 
 EXPOSE 4000
 

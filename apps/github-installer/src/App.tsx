@@ -7,9 +7,11 @@ import { InstallPage } from '@pages/InstallPage';
 import { NotFoundPage } from '@pages/NotFoundPage';
 
 export function App(): ReactNode {
+    const basename = import.meta.env.BASE_URL;
+
     return (
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            <BrowserRouter>
+            <BrowserRouter basename={basename}>
                 <Routes>
                     <Route path="/" element={<InstallPage />} />
                     <Route path="/installation-success" element={<SuccessInstallContainer />} />

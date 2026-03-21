@@ -1,8 +1,9 @@
 #!/bin/bash
-# scripts/bundle.sh
 
 OUTPUT="dist/install.sh"
 VERSION=$1
+# Definimos la base donde están tus archivos .sh
+BASE_PATH="packages/setup"
 
 mkdir -p dist
 
@@ -12,26 +13,33 @@ echo "# Version: $VERSION" >> $OUTPUT
 echo "# Generated: $(date)" >> $OUTPUT
 echo -e "export VERSION_TAG=\"$VERSION\"\n" >> $OUTPUT
 
-# Función para añadir archivos de una carpeta evitando el shebang
+# Función para añadir archivos evitando el shebang y los 'source'
 bundle_folder() {
-    local folder=$1
+    local folder="$BASE_PATH/$1"
     if [ -d "$folder" ]; then
-        echo "# --- Folder: $folder ---" >> $OUTPUT
+        echo "# --- Folder: $1 ---" >> $OUTPUT
         for f in "$folder"/*.sh; do
             echo "# File: $f" >> $OUTPUT
-            grep -v '^#!' "$f" >> $OUTPUT
+            # 1. Quitamos el shebang (#!/bin/bash)
+            # 2. Quitamos las líneas que empiezan por 'source ' o '. ' porque ya no son necesarias
+            grep -v '^#!' "$f" | grep -vE '^source |^\. ' >> $OUTPUT
             echo -e "\n" >> $OUTPUT
         done
     fi
 }
 
-# ORDEN CRÍTICO DE BUNDLING
+# ORDEN CRÍTICO DE BUNDLING (ahora busca dentro de packages/setup/...)
 bundle_folder "configs"
 bundle_folder "utils"
 bundle_folder "steps"
 
-# Añadir la lógica principal al final (asumiendo que se llama main_install.sh)
+# Añadir la lógica principal (que asumo es packages/setup/install.sh)
 echo "# --- Main Logic ---" >> $OUTPUT
-grep -v '^#!' "main_install.sh" >> $OUTPUT
+if [ -f "$BASE_PATH/install.sh" ]; then
+    grep -v '^#!' "$BASE_PATH/install.sh" | grep -vE '^source |^\. ' >> $OUTPUT
+else
+    echo "❌ Error: $BASE_PATH/install.sh not found!"
+    exit 1
+fi
 
 echo "✅ Bundle created at $OUTPUT"

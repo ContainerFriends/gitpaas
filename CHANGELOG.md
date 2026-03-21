@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/ContainerFriends/gitpaas/compare/v1.7.0...v1.8.0) (2026-03-21)
+
+
+### Features
+
+* optimize Github installer Dockerfile ([21cc02e](https://github.com/ContainerFriends/gitpaas/commit/21cc02e39a27da4cfc2a13daed073188b4e100f5))
+
 # [1.7.0](https://github.com/ContainerFriends/gitpaas/compare/v1.6.0...v1.7.0) (2026-03-21)
 
 

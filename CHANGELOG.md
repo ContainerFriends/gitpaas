@@ -1,3 +1,10 @@
+## [1.10.2](https://github.com/ContainerFriends/gitpaas/compare/v1.10.1...v1.10.2) (2026-03-21)
+
+
+### Bug Fixes
+
+* add basename to router ([a5fd9e2](https://github.com/ContainerFriends/gitpaas/commit/a5fd9e203a4cce4a150c20f0944efa63ce448975))
+
 ## [1.10.1](https://github.com/ContainerFriends/gitpaas/compare/v1.10.0...v1.10.1) (2026-03-21)
 
 

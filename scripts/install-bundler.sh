@@ -12,6 +12,7 @@ echo "# GitPaaS All-in-one Installer" >> $OUTPUT
 echo "# Version: $VERSION" >> $OUTPUT
 echo "# Generated: $(date)" >> $OUTPUT
 echo -e "export VERSION_TAG=\"$VERSION\"\n" >> $OUTPUT
+echo -e "export DOCKER_VERSION_TAG=\"$VERSION\"\n" >> $OUTPUT
 
 # Función para añadir archivos evitando el shebang y los 'source'
 bundle_folder() {

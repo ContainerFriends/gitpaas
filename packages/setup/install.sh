@@ -15,7 +15,6 @@ source ./utils/pull-image.sh
 source ./utils/ensure-postgres-secret.sh
 source ./utils/wait-for-postgres.sh
 source ./utils/connect-to-network.sh
-source ./utils/clean-version-for-docker.sh
 
 source ./steps/download-release.sh
 source ./steps/setup-directories.sh

@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react-swc';
 import { defineConfig } from 'vite';
 
 export default defineConfig(() => ({
+    base: process.env.VITE_BASE_URL || '/',
     server: {
         port: 3000,
         hmr: {

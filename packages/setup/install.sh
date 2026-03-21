@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source ./configs/gitpaas.sh
 source ./configs/paths.sh
 source ./configs/traefik.sh
 source ./configs/images.sh

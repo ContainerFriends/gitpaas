@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/ContainerFriends/gitpaas/compare/v1.4.0...v1.4.1) (2026-03-21)
+
+
+### Bug Fixes
+
+* change bundles name on workflows ([cf44eb8](https://github.com/ContainerFriends/gitpaas/commit/cf44eb824d0791028d883a9d0db29e5ddfbefbbb))
+
 # [1.4.0](https://github.com/ContainerFriends/gitpaas/compare/v1.3.7...v1.4.0) (2026-03-21)
 
 

@@ -1,3 +1,10 @@
+## [1.10.1](https://github.com/ContainerFriends/gitpaas/compare/v1.10.0...v1.10.1) (2026-03-21)
+
+
+### Bug Fixes
+
+* Nginx unable to locate assets ([0144f65](https://github.com/ContainerFriends/gitpaas/commit/0144f6560962b9e73c070c63a35e82f54454adef))
+
 # [1.10.0](https://github.com/ContainerFriends/gitpaas/compare/v1.9.1...v1.10.0) (2026-03-21)
 
 

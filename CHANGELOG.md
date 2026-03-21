@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/ContainerFriends/gitpaas/compare/v1.6.0...v1.7.0) (2026-03-21)
+
+
+### Features
+
+* prevent sync pr if Docker fails ([407a4a9](https://github.com/ContainerFriends/gitpaas/commit/407a4a97717b48474fa24fe40d56019b8e2a24ed))
+
 # [1.6.0](https://github.com/ContainerFriends/gitpaas/compare/v1.5.0...v1.6.0) (2026-03-21)
 
 

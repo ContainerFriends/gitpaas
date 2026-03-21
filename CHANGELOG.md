@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/ContainerFriends/gitpaas/compare/v1.5.0...v1.6.0) (2026-03-21)
+
+
+### Features
+
+* delete unnecesary version variables on installer ([b5b391d](https://github.com/ContainerFriends/gitpaas/commit/b5b391d7c9bb4ec6400db406888d799ea101e4d4))
+
 # [1.5.0](https://github.com/ContainerFriends/gitpaas/compare/v1.4.1...v1.5.0) (2026-03-21)
 
 

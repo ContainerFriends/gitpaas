@@ -1,3 +1,15 @@
+# [1.5.0](https://github.com/ContainerFriends/gitpaas/compare/v1.4.1...v1.5.0) (2026-03-21)
+
+
+### Bug Fixes
+
+* correcte install.sh references on bundler ([44fedb7](https://github.com/ContainerFriends/gitpaas/commit/44fedb707b9ce2a2f198f009f889e2f1753cce27))
+
+
+### Features
+
+* divide install and update scripts ([b315ba8](https://github.com/ContainerFriends/gitpaas/commit/b315ba82914b8d9d2f45f248960bd6517ca9979a))
+
 ## [1.4.1](https://github.com/ContainerFriends/gitpaas/compare/v1.4.0...v1.4.1) (2026-03-21)
 
 

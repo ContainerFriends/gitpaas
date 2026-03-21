@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/ContainerFriends/gitpaas/compare/v1.8.0...v1.8.1) (2026-03-21)
+
+
+### Bug Fixes
+
+* strip version to for Docker images on installation ([a372f4a](https://github.com/ContainerFriends/gitpaas/commit/a372f4ab693f1b98120e63c66ecd207491e125a3))
+
 # [1.8.0](https://github.com/ContainerFriends/gitpaas/compare/v1.7.0...v1.8.0) (2026-03-21)
 
 

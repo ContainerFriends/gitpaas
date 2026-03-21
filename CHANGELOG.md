@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/ContainerFriends/gitpaas/compare/v1.8.1...v1.9.0) (2026-03-21)
+
+
+### Features
+
+* add Github installer service on installation ([321725d](https://github.com/ContainerFriends/gitpaas/commit/321725d5591e9643ff3e7461f215eb5c5663a96e))
+
 ## [1.8.1](https://github.com/ContainerFriends/gitpaas/compare/v1.8.0...v1.8.1) (2026-03-21)
 
 

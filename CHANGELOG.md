@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/ContainerFriends/gitpaas/compare/v1.9.1...v1.10.0) (2026-03-21)
+
+
+### Features
+
+* adapte Nginx and Vite to live under installer path ([7cd22f0](https://github.com/ContainerFriends/gitpaas/commit/7cd22f0acb7afdca91529d62baf7156f6efbee68))
+
 ## [1.9.1](https://github.com/ContainerFriends/gitpaas/compare/v1.9.0...v1.9.1) (2026-03-21)
 
 

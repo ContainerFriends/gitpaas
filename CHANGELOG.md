@@ -1,3 +1,10 @@
+## [1.10.3](https://github.com/ContainerFriends/gitpaas/compare/v1.10.2...v1.10.3) (2026-03-21)
+
+
+### Bug Fixes
+
+* delete 302 redirections on nginx ([a517b53](https://github.com/ContainerFriends/gitpaas/commit/a517b5312c1424dbbf3639adadf131f2588f18f3))
+
 ## [1.10.2](https://github.com/ContainerFriends/gitpaas/compare/v1.10.1...v1.10.2) (2026-03-21)
 
 

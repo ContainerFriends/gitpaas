@@ -1,6 +1,6 @@
 {
   "name": "gitpaas",
-  "version": "1.9.1",
+  "version": "1.10.0",
   "private": true,
   "packageManager": "npm@11.9.0",
   "workspaces": [

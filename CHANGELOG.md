@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/ContainerFriends/gitpaas/compare/v1.9.0...v1.9.1) (2026-03-21)
+
+
+### Bug Fixes
+
+* add https traefik middleware to Github Installer service ([c3b8a53](https://github.com/ContainerFriends/gitpaas/commit/c3b8a53a0bec5096d1d73f2ce135634ff41a9bb7))
+
 # [1.9.0](https://github.com/ContainerFriends/gitpaas/compare/v1.8.1...v1.9.0) (2026-03-21)
 
 

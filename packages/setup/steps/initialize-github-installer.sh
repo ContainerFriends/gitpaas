@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Initialize Github Installer as a Docker service
+# Initialize Github Installer
 initialize_github_installer() {
     if [ -z "$INSTALLER_IMAGE" ]; then
         echo "❌ INSTALLER_IMAGE environment variable is required"

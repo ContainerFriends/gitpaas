@@ -48,9 +48,11 @@ initialize_backend() {
         --update-order stop-first \
         --label "traefik.enable=true" \
         --label "traefik.http.routers.backend.rule=PathPrefix(\"/\")" \
+        --label "traefik.http.routers.backend.priority=1" \
         --label "traefik.http.routers.backend.entrypoints=web" \
         --label "traefik.http.routers.backend.middlewares=redirect-to-https@file" \
         --label "traefik.http.routers.backend-secure.rule=PathPrefix(\"/\")" \
+        --label "traefik.http.routers.backend-secure.priority=1" \
         --label "traefik.http.routers.backend-secure.entrypoints=websecure" \
         --label "traefik.http.routers.backend-secure.tls=true" \
         --label "traefik.http.services.backend-secure.loadbalancer.server.port=4000" \

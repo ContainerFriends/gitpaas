@@ -30,7 +30,7 @@ initialize_github_installer() {
         --label "traefik.http.routers.installer.rule=PathPrefix(\`/installer\`)" \
         --label "traefik.http.routers.installer.priority=10" \
         --label "traefik.http.routers.installer.entrypoints=web" \
-        --label "traefik.http.routers.installer.middlewares=redirect-to-https" \
+        --label "traefik.http.routers.installer.middlewares=redirect-to-https@file" \
         --label "traefik.http.routers.installer-secure.rule=PathPrefix(\`/installer\`)" \
         --label "traefik.http.routers.installer-secure.priority=10" \
         --label "traefik.http.routers.installer-secure.entrypoints=websecure" \

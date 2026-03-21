@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Initialize Backend as a Docker service
+# Initialize Backend
 initialize_backend() {
     if [ -z "$BACKEND_IMAGE" ]; then
         echo "❌ BACKEND_IMAGE environment variable is required"

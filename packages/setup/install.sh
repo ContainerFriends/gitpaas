@@ -16,6 +16,7 @@ source ./utils/ensure-postgres-secret.sh
 source ./utils/wait-for-postgres.sh
 source ./utils/connect-to-network.sh
 
+source ./steps/install-docker.sh
 source ./steps/download-release.sh
 source ./steps/setup-directories.sh
 source ./steps/create-traefik-middlewares.sh
@@ -59,18 +60,7 @@ if ss -tulnp | grep ':443 ' >/dev/null; then
     exit 1
 fi
 
-if command_exists docker; then
-    echo "✅ Docker already installed"
-else
-    echo "📦 Installing Docker (this may take a minute)..."
-
-    if ! DOCKER_INSTALL_ERR=$(curl -sSL https://get.docker.com | sh -s -- --version 28.5.0 2>&1 >/dev/null); then
-        echo "❌ Docker installation failed:"
-        echo "$DOCKER_INSTALL_ERR"
-        exit 1
-    fi
-    echo "✅ Docker installed successfully"
-fi
+install_docker
 
 if command_exists jq; then
     echo "✅ jq already installed"
@@ -146,7 +136,7 @@ wait_for_postgres
 connect_to_network
 run_migrations
 initialize_backend
-#initialize_github_installer
+initialize_github_installer
 
 public_ip="${ADVERTISE_ADDR:-$(get_ip)}"
 

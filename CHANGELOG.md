@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/ContainerFriends/gitpaas/compare/v1.3.7...v1.4.0) (2026-03-21)
+
+
+### Features
+
+* partialize install script ([c174b9f](https://github.com/ContainerFriends/gitpaas/commit/c174b9f7f966558574153fd70369fc077d5f2381))
+
 ## [1.3.7](https://github.com/ContainerFriends/gitpaas/compare/v1.3.6...v1.3.7) (2026-03-20)
 
 
